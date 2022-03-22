@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Chess.Models.PiecesChess.Base
 {
-    internal interface IHaveIcon
+    public interface IHaveIcon
     {
         public string Icon { get; set; }
     }

@@ -14,6 +14,7 @@
     <None Remove="Data\Img\Black\Pawn.png" />
     <None Remove="Data\Img\Black\Queen.png" />
     <None Remove="Data\Img\Black\Rook.png" />
+    <None Remove="Data\Img\EmptyCell.png" />
     <None Remove="Data\Img\White\Bishop.png" />
     <None Remove="Data\Img\White\King.png" />
     <None Remove="Data\Img\White\Knight.png" />
@@ -44,6 +45,9 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Data\Img\Black\Rook.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Data\Img\EmptyCell.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Data\Img\White\Bishop.png">

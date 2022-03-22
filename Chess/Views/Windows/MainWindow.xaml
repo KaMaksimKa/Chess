@@ -14,12 +14,14 @@
     </Window.DataContext>
     
     <Grid>
-        <uc:ChessBoardUserControl SizeBoard="300" 
+        <uc:ChessBoardUserControl SizeBoard="300"  
                                   ChangePos="{Binding ChangePos,Mode=OneWay}"
-                                  StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
-                                  EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
-                                 ></uc:ChessBoardUserControl>
-        <TextBlock Width="150" Height="50" VerticalAlignment="Bottom" Text="{Binding Hints.IsHintsForKill}"></TextBlock>
+                                  StartPoint="{Binding StartPoint,Mode=TwoWay}"
+                                  EndPoint="{Binding EndPoint,Mode=TwoWay}"
+                                  Hints="{Binding Hints}"
+                                  Icons="{Binding Icons,Mode=OneWay}"></uc:ChessBoardUserControl>
+        
+
     </Grid>
     
 

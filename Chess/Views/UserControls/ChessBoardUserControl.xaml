@@ -8,7 +8,9 @@
              x:Name="UserC">
     <Grid >
         <Canvas x:Name="CanvasBack"></Canvas>
+        <Canvas x:Name="CanvasCell"></Canvas>
         <Canvas x:Name="CanvasHints"></Canvas>
-        <Canvas x:Name="CanvasFace"></Canvas>
+        <Canvas x:Name="CanvasEmptyCells"></Canvas>
+        <Canvas x:Name="CanvasPieces"></Canvas>
     </Grid>
 </UserControl>

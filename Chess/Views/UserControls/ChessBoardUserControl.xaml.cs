@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Chess.Models;
+using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Views.UserControls
 {
@@ -25,7 +26,7 @@ namespace Chess.Views.UserControls
                 _sizeCell = (int)value / 8;
                 Height = value;
                 Width = value;
-                DrawChessBoard();
+                DrawBoard();
             }
         }
 
@@ -51,13 +52,15 @@ namespace Chess.Views.UserControls
             {
                 userControl._images[startPoint.X, startPoint.Y] = null;
 
-                userControl.CanvasFace.Children.Remove(userControl._images[endPoint.X, endPoint.Y]);
+                userControl.CanvasPieces.Children.Remove(userControl._images[endPoint.X, endPoint.Y]);
 
                 userControl._images[endPoint.X, endPoint.Y] = img;
 
                 Canvas.SetLeft(img, endPoint.Y * userControl._sizeCell);
                 Canvas.SetTop(img, endPoint.X * userControl._sizeCell);
             }
+
+            userControl.DrawChoiceCell((System.Drawing.Point)endPoint);
         }
 
         #endregion
@@ -66,8 +69,19 @@ namespace Chess.Views.UserControls
         public System.Drawing.Point? StartPoint
         {
             get => (System.Drawing.Point?)GetValue(StartPointProperty);
-            set => SetValue(StartPointProperty, value);
+            set
+            {
+                SetValue(StartPointProperty, value);
+
+                if (value != null)
+                {
+                    CanvasCell.Children.Clear();
+                    DrawChoiceCell((System.Drawing.Point)value);
+                }
+                
+            }
         }
+
         public static readonly DependencyProperty StartPointProperty =
             DependencyProperty.Register("StartPoint", typeof(System.Drawing.Point?),
                 typeof(ChessBoardUserControl));
@@ -76,13 +90,14 @@ namespace Chess.Views.UserControls
         #endregion
 
         #region Свойство EndPoint
-        public System.Drawing.Point EndPoint
+        public System.Drawing.Point? EndPoint
         {
-            get => (System.Drawing.Point)GetValue(EndPointProperty);
+            get => (System.Drawing.Point?)GetValue(EndPointProperty);
             set => SetValue(EndPointProperty, value);
         }
+
         public static readonly DependencyProperty EndPointProperty =
-            DependencyProperty.Register("EndPoint", typeof(System.Drawing.Point),
+            DependencyProperty.Register("EndPoint", typeof(System.Drawing.Point?),
                 typeof(ChessBoardUserControl));
 
 
@@ -96,7 +111,117 @@ namespace Chess.Views.UserControls
         }
         public static readonly DependencyProperty HintsProperty =
             DependencyProperty.Register("Hints", typeof(HintsChess),
-                typeof(ChessBoardUserControl));
+                typeof(ChessBoardUserControl), new PropertyMetadata(DrawHints));
+
+        static void DrawHints(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            var canvasHints = ((ChessBoardUserControl) sender).CanvasHints;
+            var sizeSell = ((ChessBoardUserControl) sender)._sizeCell;
+            canvasHints.Children.Clear();
+
+            var hints=(HintsChess)e.NewValue;
+
+            if (hints.IsHintsForKill != null && hints.IsHintsForMove != null)
+            {
+
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if (hints.IsHintsForKill[i, j])
+                        {
+                            var ellipse = new Ellipse
+                            {
+                                Opacity = 0.2,
+                                Width = sizeSell,
+                                Height = sizeSell,
+                                Fill = Brushes.Black,
+                                OpacityMask = new RadialGradientBrush(new GradientStopCollection(new List<GradientStop>
+                                {
+                                    new GradientStop((Color)ColorConverter.ConvertFromString("#FFB94444") ,0.8),
+                                    new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFFFF") ,0.79),
+                                }))
+                            };
+
+                            Canvas.SetLeft(ellipse, j * sizeSell);
+                            Canvas.SetTop(ellipse, i * sizeSell);
+
+                            canvasHints.Children.Add(ellipse);
+                        }
+
+                        if (hints.IsHintsForMove[i, j])
+                        {
+                            var ellipse = new Ellipse
+                            {
+                                Opacity = 0.2,
+                                // ReSharper disable once PossibleLossOfFraction
+                                Width = sizeSell / 3,
+                                // ReSharper disable once PossibleLossOfFraction
+                                Height = sizeSell / 3,
+                                Fill = Brushes.Black
+                            };
+                            Canvas.SetLeft(ellipse, j * sizeSell + sizeSell / 3);
+                            Canvas.SetTop(ellipse, i * sizeSell + sizeSell / 3);
+
+                            canvasHints.Children.Add(ellipse);
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Свойство Icons
+        public IHaveIcon?[,] Icons
+        {
+            get => (IHaveIcon?[,])GetValue(IconsProperty);
+            set => SetValue(IconsProperty, value);
+        }
+        public static readonly DependencyProperty IconsProperty =
+            DependencyProperty.Register("Icons", typeof(IHaveIcon?[,]),
+                typeof(ChessBoardUserControl), new PropertyMetadata(DrawChessBoard));
+
+        private static void DrawChessBoard(DependencyObject o, DependencyPropertyChangedEventArgs e)
+        {
+            ChessBoardUserControl control = (ChessBoardUserControl)o;
+            var icons = (IHaveIcon?[,]) (e.NewValue);
+            var sizeCell = control._sizeCell;
+            var canvasPieces = control.CanvasPieces;
+
+
+            #region Нарисовать фигуры
+            canvasPieces.Children.Clear();
+
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (icons[i, j]?.Icon is { } icon)
+                    {
+                        var img = new Image()
+                        {
+                            Width = sizeCell,
+                            Height = sizeCell,
+                            Source = (new ImageSourceConverter()).ConvertFrom("../"+icon) as ImageSource
+                        };
+                        Canvas.SetLeft(img, j * sizeCell);
+                        Canvas.SetTop(img, i * sizeCell);
+
+                        img.MouseDown += control.Piece_OnMouseDown;
+                        img.MouseMove += control.Piece_OnMouseMove;
+                        img.MouseUp += control.Piece_OnMouseUp;
+
+                        canvasPieces.Children.Add(img);
+
+                        control._images[i, j] = img;
+                    }
+                }
+
+                #endregion
+
+            }
+        }
 
         #endregion
         public ChessBoardUserControl()
@@ -104,7 +229,21 @@ namespace Chess.Views.UserControls
            InitializeComponent();
         }
 
-        private void DrawChessBoard()
+        private void DrawChoiceCell(System.Drawing.Point point)
+        {
+            var rectangle = new Rectangle
+            {
+                Width = _sizeCell,
+                Height = _sizeCell,
+                Fill = ((new BrushConverter()).ConvertFrom("#baca2b") as Brush),
+                Opacity = 0.7
+            };
+            Canvas.SetLeft(rectangle, point.Y * _sizeCell);
+            Canvas.SetTop(rectangle, point.X * _sizeCell);
+            CanvasCell.Children.Add(rectangle);
+        }
+
+        private void DrawBoard()
         {
             #region Нарисовать поле
 
@@ -134,48 +273,51 @@ namespace Chess.Views.UserControls
 
             #endregion
 
-            #region Нарисовать фигуры
+            #region Добавить EmptyCells
 
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    var img = new Image()
+                    var rect = new Rectangle()
                     {
                         Width = _sizeCell,
-                        Height = _sizeCell
-                    };
-                    Canvas.SetLeft(img, j * _sizeCell);
-                    Canvas.SetTop(img, i * _sizeCell);
+                        Height = _sizeCell,
+                        Fill = ((new BrushConverter()).ConvertFrom("#000000") as Brush),
+                        Opacity = 0
+                };
+                    
+                    rect.MouseDown += EmptyCells_Down;
 
-                    Binding binding = new Binding
-                    {
-                        Path = new PropertyPath($"ChessBoard[{i},{j}].Icon")
-                    };
+                    Canvas.SetLeft(rect, j * _sizeCell);
+                    Canvas.SetTop(rect, i * _sizeCell);
 
-                    img.SetBinding(Image.SourceProperty, binding);
-                    img.MouseDown += Piece_OnMouseDown;
-                    img.MouseMove += Piece_OnMouseMove;
-                    img.MouseUp += Piece_OnMouseUp;
-
-                    CanvasFace.Children.Add(img);
-
-                    _images[i, j] = img;
+                    
+                    CanvasEmptyCells.Children.Add(rect);
                 }
-
-                #endregion
-
             }
+
+            #endregion
         }
 
+        private void EmptyCells_Down(object sender, MouseButtonEventArgs e)
+        {
+            if (StartPoint != null && EndPoint == null)
+            {
+                Point p = e.GetPosition(this) - (Vector)e.GetPosition((Rectangle)sender);
+                EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
+            }
+        }
         #region Анимация перемечения фигур
 
         private void Piece_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
+            
             Image img = (Image)sender;
             _movePoint = e.GetPosition(img);
             Point p = e.GetPosition(this) - (Vector)_movePoint.Value;
             StartPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
+
 
             Image newImg = new Image { Width = img.Width, Height = img.Height, Source = img.Source };
             newImg.MouseDown += Piece_OnMouseDown;
@@ -183,11 +325,11 @@ namespace Chess.Views.UserControls
             newImg.MouseUp += Piece_OnMouseUp;
             Canvas.SetLeft(newImg, _movePoint.Value.X);
             Canvas.SetTop(newImg, _movePoint.Value.Y);
-            CanvasFace.Children.Add(newImg);
+            CanvasPieces.Children.Add(newImg);
             _images[StartPoint.Value.X, StartPoint.Value.Y] = newImg;
 
 
-            CanvasFace.Children.Remove(img);
+            CanvasPieces.Children.Remove(img);
 
             newImg.CaptureMouse();
             

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows;
 using Chess.Models;
+using Chess.Models.PiecesChess.Base;
 using Chess.ViewModels.Base;
 using Point = System.Drawing.Point;
 
@@ -9,8 +11,23 @@ namespace Chess.ViewModels
     internal class GameViewModel:ViewModel
     {
   
-        public ChessBoard ChessBoard { get; set ; }= new ChessBoard();
+        public ChessBoard ChessBoard { get; set ; } = new ChessBoard();
 
+        #region Свойство Icons
+
+        private IHaveIcon?[,] _icons;
+
+        public IHaveIcon?[,] Icons
+        {
+            get => _icons;
+            set => Set(ref _icons, value);
+        }
+
+        public GameViewModel()
+        {
+            Icons = ChessBoard.GetIcons();
+        }
+        #endregion
         #region Свойство ChangePos
         private ChangePosition? _changePos;
         public ChangePosition? ChangePos
@@ -47,6 +64,10 @@ namespace Chess.ViewModels
             {
                 Set(ref _endPoint, value);
                 Move();
+                if (StartPoint == null)
+                {
+                    Hints = new HintsChess();
+                }
             }
         }
         #endregion
@@ -77,15 +98,18 @@ namespace Chess.ViewModels
 
                 ChangePos = new ChangePosition{StartPoint = new Point(pos.X, pos.Y),
                                                  EndPoint = new Point(newPos.X, newPos.Y)};
+                StartPoint = null;
             }
+
             catch (ApplicationException)
             {
                 ChangePos = new ChangePosition { StartPoint = new Point(pos.X, pos.Y),
                                                     EndPoint = new Point(pos.X, pos.Y) };
             }
 
-            StartPoint = null;
             EndPoint = null;
+
+
         }
         private async void SetNewHintsChessAsync(Point startPoint)
         {

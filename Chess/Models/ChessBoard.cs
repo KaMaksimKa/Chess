@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using Chess.Models.PiecesChess;
 using Chess.Models.PiecesChess.Base;
 using Chess.Models.PiecesChess.DifferentPiece;
@@ -20,7 +19,7 @@ namespace Chess.Models
             }
             foreach (var (x,y) in points)
             {
-                if (ArrayBoard[x, y] is not EmptyCell)
+                if (ArrayBoard[x, y] is not null)
                     return false;
             }
 
@@ -30,9 +29,9 @@ namespace Chess.Models
 
         public bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-
-            object sell = ArrayBoard[xStart, yStart];
-            object newSell = ArrayBoard[xEnd, yEnd];
+            
+            object? sell = ArrayBoard[xStart, yStart];
+            object? newSell = ArrayBoard[xEnd, yEnd];
 
             if (sell is Piece piece)
             {
@@ -57,8 +56,8 @@ namespace Chess.Models
         public bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
 
-            object sell = ArrayBoard[xStart, yStart];
-            object newSell = ArrayBoard[xEnd, yEnd];
+            object? sell = ArrayBoard[xStart, yStart];
+            object? newSell = ArrayBoard[xEnd, yEnd];
 
             if (sell is Piece piece)
             {
@@ -102,9 +101,10 @@ namespace Chess.Models
 
             if (IsKill(xStart,yStart,xEnd,yEnd) || IsMove(xStart, yStart, xEnd, yEnd))
             {
-                ((Piece) ArrayBoard[xStart, yStart]).IsFirstMove = false;
+                if (ArrayBoard[xStart, yStart] is Piece piece)
+                    piece.IsFirstMove = false;
                 ArrayBoard[xEnd, yEnd] = ArrayBoard[xStart, yStart];
-                ArrayBoard[xStart, yStart] = new EmptyCell();
+                ArrayBoard[xStart, yStart] = null;
             }
             else
             {
@@ -112,17 +112,22 @@ namespace Chess.Models
             }
             
         }
+
+        public IHaveIcon?[,] GetIcons()
+        {
+            return (IHaveIcon?[,]) ArrayBoard.Clone();
+        }
     }
 
     class Board
     {
-        public IHaveIcon this[int i, int j]
+        public IHaveIcon? this[int i, int j]
         {
             get => ArrayBoard[i,j];
             protected set => ArrayBoard[i,j] = value;
         }
 
-        protected readonly IHaveIcon[,] ArrayBoard;
+        protected readonly IHaveIcon?[,] ArrayBoard;
 
          
         public Board()
@@ -130,15 +135,15 @@ namespace Chess.Models
             ArrayBoard = GetNewBoard();
         }
 
-        private static IHaveIcon[,] GetNewBoard()
+        private static IHaveIcon?[,] GetNewBoard()
         {
-            IHaveIcon[,] board = new IHaveIcon[8,8];
+            IHaveIcon?[,] board = new IHaveIcon[8,8];
 
             #region Создание пустых ячеек
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
-                    board[i,j] = new EmptyCell();
+                    board[i,j] = null;
             }
             #endregion
 
