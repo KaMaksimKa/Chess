@@ -12,7 +12,7 @@ namespace Chess.Views.UserControls
     public partial class ChessBoardUserControl : UserControl
     {
         private Point? _movePoint;
-        private readonly Image?[,] _image = new Image?[8, 8];
+        private readonly Image?[,] _images = new Image?[8, 8];
 
         #region Свойство SizeBoard
 
@@ -45,48 +45,72 @@ namespace Chess.Views.UserControls
         {
             var userControl = (ChessBoardUserControl)o;
             var (startPoint, endPoint) = userControl.ChangePos;
-            var img = userControl._image[startPoint.X, startPoint.Y];
+            var img = userControl._images[startPoint.X, startPoint.Y];
 
             if (img != null)
             {
-                userControl._image[startPoint.X, startPoint.Y] = null;
+                userControl._images[startPoint.X, startPoint.Y] = null;
 
-                userControl.canvas.Children.Remove(userControl._image[endPoint.X, endPoint.Y]);
+                userControl.CanvasFace.Children.Remove(userControl._images[endPoint.X, endPoint.Y]);
 
-                userControl._image[endPoint.X, endPoint.Y] = img;
-                Canvas.SetLeft(img, endPoint.X * userControl._sizeCell);
-                Canvas.SetTop(img, endPoint.Y * userControl._sizeCell);
+                userControl._images[endPoint.X, endPoint.Y] = img;
+
+                Canvas.SetLeft(img, endPoint.Y * userControl._sizeCell);
+                Canvas.SetTop(img, endPoint.X * userControl._sizeCell);
             }
         }
 
         #endregion
 
         #region Свойство StartPoint
-        public System.Drawing.Point? StartPoint
+        public System.Drawing.Point StartPoint
         {
-            get => (System.Drawing.Point?)GetValue(StartPointProperty);
+            get => (System.Drawing.Point)GetValue(StartPointProperty);
             set => SetValue(StartPointProperty, value);
         }
         public static readonly DependencyProperty StartPointProperty =
-            DependencyProperty.Register("StartPoint", typeof(System.Drawing.Point?),
+            DependencyProperty.Register("StartPoint", typeof(System.Drawing.Point),
                 typeof(ChessBoardUserControl));
 
 
         #endregion
 
         #region Свойство EndPoint
-        public System.Drawing.Point? EndPoint
+        public System.Drawing.Point EndPoint
         {
-            get => (System.Drawing.Point?)GetValue(EndPointProperty);
+            get => (System.Drawing.Point)GetValue(EndPointProperty);
             set => SetValue(EndPointProperty, value);
         }
         public static readonly DependencyProperty EndPointProperty =
-            DependencyProperty.Register("EndPoint", typeof(System.Drawing.Point?),
+            DependencyProperty.Register("EndPoint", typeof(System.Drawing.Point),
                 typeof(ChessBoardUserControl));
 
 
         #endregion
 
+        #region Свойство IsHintsForMove
+        public bool[,] IsHintsForMove
+        {
+            get => (bool[,])GetValue(IsHintsForMoveProperty);
+            set => SetValue(IsHintsForMoveProperty, value);
+        }
+        public static readonly DependencyProperty IsHintsForMoveProperty =
+            DependencyProperty.Register("IsHintsForMove", typeof(bool[,]),
+                typeof(ChessBoardUserControl));
+
+        #endregion
+
+        #region Свойство IsHintsForKill
+        public bool[,] IsHintsForKill
+        {
+            get => (bool[,])GetValue(IsHintsForKillProperty);
+            set => SetValue(IsHintsForKillProperty, value);
+        }
+        public static readonly DependencyProperty IsHintsForKillProperty =
+            DependencyProperty.Register("IsHintsForKill", typeof(bool[,]),
+                typeof(ChessBoardUserControl));
+
+        #endregion
         public ChessBoardUserControl()
         {
            InitializeComponent();
@@ -116,7 +140,7 @@ namespace Chess.Views.UserControls
                     {
                         rect.Fill = ((new BrushConverter()).ConvertFrom("#ebecd0") as Brush);
                     }
-                    canvas.Children.Add(rect);
+                    CanvasBack.Children.Add(rect);
                 }
             }
 
@@ -145,9 +169,10 @@ namespace Chess.Views.UserControls
                     img.MouseDown += Piece_OnMouseDown;
                     img.MouseMove += Piece_OnMouseMove;
                     img.MouseUp += Piece_OnMouseUp;
-                    canvas.Children.Add(img);
 
-                    _image[j, i] = img;
+                    CanvasFace.Children.Add(img);
+
+                    _images[i, j] = img;
                 }
 
                 #endregion
@@ -162,8 +187,22 @@ namespace Chess.Views.UserControls
             Image img = (Image)sender;
             _movePoint = e.GetPosition(img);
             Point p = e.GetPosition(this) - (Vector)_movePoint.Value;
-            img.CaptureMouse();
-            StartPoint = new( (int)Math.Round(p.X / _sizeCell), (int)Math.Round(p.Y / _sizeCell));
+            StartPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
+
+            Image newImg = new Image { Width = img.Width, Height = img.Height, Source = img.Source };
+            newImg.MouseDown += Piece_OnMouseDown;
+            newImg.MouseMove += Piece_OnMouseMove;
+            newImg.MouseUp += Piece_OnMouseUp;
+            Canvas.SetLeft(newImg, _movePoint.Value.X);
+            Canvas.SetTop(newImg, _movePoint.Value.Y);
+            CanvasFace.Children.Add(newImg);
+            _images[StartPoint.X, StartPoint.Y] = newImg;
+
+
+            CanvasFace.Children.Remove(img);
+
+            newImg.CaptureMouse();
+            
         }
 
         private void Piece_OnMouseUp(object sender, MouseButtonEventArgs e)
@@ -172,8 +211,7 @@ namespace Chess.Views.UserControls
                 return;
             Image img = (Image)sender;
             Point p = e.GetPosition(this) - (Vector)_movePoint.Value;
-            EndPoint = new((int)Math.Round(p.X / _sizeCell), (int)Math.Round(p.Y / _sizeCell));
-
+            EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
             _movePoint = null;
             img.ReleaseMouseCapture();
         }

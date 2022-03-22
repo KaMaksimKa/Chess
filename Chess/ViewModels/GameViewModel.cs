@@ -41,6 +41,29 @@ namespace Chess.ViewModels
         }
         #endregion
 
+        #region Свойство IsHintsForMove
+
+        private bool[,] _isHintsForMove = new bool[8,8];
+
+        public bool[,] IsHintsForMove
+        {
+            get => _isHintsForMove;
+            set => Set(ref _isHintsForMove, value);
+        }
+
+        #endregion
+
+        #region Свойство IsHintsForKill
+
+        private bool[,] _isHintsForKill = new bool[8, 8];
+
+        public bool[,] IsHintsForKill
+        {
+            get => _isHintsForKill;
+            set => Set(ref _isHintsForKill, value);
+        }
+
+        #endregion
         public void Move()
         {
             if (StartPoint==null || EndPoint==null)

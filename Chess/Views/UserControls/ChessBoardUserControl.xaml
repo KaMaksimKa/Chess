@@ -7,7 +7,8 @@
              d:DesignHeight="300" d:DesignWidth="400"
              x:Name="UserC">
     <Grid >
-        <Canvas x:Name="canvas">
-        </Canvas>
+        <Canvas x:Name="CanvasBack"></Canvas>
+        <Canvas x:Name="CanvasHints"></Canvas>
+        <Canvas x:Name="CanvasFace"></Canvas>
     </Grid>
 </UserControl>

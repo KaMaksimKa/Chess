@@ -15,9 +15,11 @@
     
     <Grid>
         <uc:ChessBoardUserControl SizeBoard="300" 
-                                  ChangePos="{Binding ChangePos}"
-                                  StartPoint="{Binding StartPoint,Mode=TwoWay}"
-                                  EndPoint="{Binding EndPoint,Mode=TwoWay}"></uc:ChessBoardUserControl>
+                                  ChangePos="{Binding ChangePos,Mode=OneWay}"
+                                  StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
+                                  EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
+                                  IsHintsForMove="{Binding IsHintsForMove,Mode=OneWay}"
+                                  IsHintsForKill="{Binding IsHintsForKill,Mode=OneWay}"></uc:ChessBoardUserControl>
     </Grid>
 
 

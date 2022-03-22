@@ -23,18 +23,54 @@ namespace Chess.Models
             return true;
         }
 
-        public void Move(Point pos, Point newPos)
-        {
-            pos = new Point(pos.Y, pos.X);
-            newPos = new Point(newPos.Y, newPos.X);
 
+        public bool IsMove(Point pos, Point newPos)
+        {
             if (newPos.X > 7 || newPos.Y > 7)
             {
-                throw new ApplicationException("Попытка хода за границу");
+                return false;
             }
 
             object sell = ArrayBoard[pos.X, pos.Y];
             object newSell = ArrayBoard[newPos.X, newPos.Y];
+
+            if (sell is Piece piece)
+            {
+                if (piece.Team == WhoseMove)
+                {
+                    if (newSell is Piece)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            return CheckIsEmptySells(piece.GetTrajectoryForMove(pos, newPos));
+                        }
+                        catch (ApplicationException)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else
+                    return false;
+            }
+            else
+                return false;
+        }
+
+        public bool IsKill(Point pos, Point newPos)
+        {
+            if (newPos.X > 7 || newPos.Y > 7)
+            {
+                return false;
+            }
+
+            object sell = ArrayBoard[pos.X, pos.Y];
+            object newSell = ArrayBoard[newPos.X, newPos.Y];
+
             if (sell is Piece piece)
             {
                 if (piece.Team == WhoseMove)
@@ -42,51 +78,46 @@ namespace Chess.Models
                     if (newSell is Piece newPiece)
                     {
                         if (newPiece.Team == WhoseMove)
-                            throw new ApplicationException("Нельзя съесть свою фигуру");
+                            return false;
                         else
                         {
                             try
                             {
-                                if (CheckIsEmptySells(piece.GetTrajectoryForKill(pos, newPos)))
-                                {
-                                    ArrayBoard[newPos.X, newPos.Y] = piece;
-                                    ArrayBoard[pos.X, pos.Y] = new EmptyCell();
-                                    piece.IsFirstMove = false;
-                                }
-                                else
-                                    throw new ApplicationException("Сюда нельзя походить");
+                                return CheckIsEmptySells(piece.GetTrajectoryForKill(pos, newPos));
                             }
-                            catch (ApplicationException e)
+                            catch (ApplicationException)
                             {
-                                throw new ApplicationException(e.Message, e);
+                                return false;
                             }
                         }
                     }
                     else
                     {
-                        try
-                        {
-                            if (CheckIsEmptySells(piece.GetTrajectoryForMove(pos, newPos)))
-                            {
-                                ArrayBoard[newPos.X, newPos.Y] = piece;
-                                ArrayBoard[pos.X, pos.Y] = new EmptyCell();
-                                piece.IsFirstMove = false;
-                            }
-                            else
-                                throw new ApplicationException("Сюда нельзя походить");
-                        }
-                        catch (ApplicationException e)
-                        {
-                            throw new ApplicationException(e.Message, e);
-                        }
-
+                        return false;
                     }
                 }
                 else
-                    throw new ApplicationException("Это не твоя фигура");
+                    return false;
             }
             else
-                throw new ApplicationException("Пустая клетка.");
+                return false;
+        }
+
+
+        public void Move(Point pos, Point newPos)
+        {
+
+            if (IsKill(pos, newPos) || IsMove(pos, newPos))
+            {
+                ((Piece) ArrayBoard[pos.X, pos.Y]).IsFirstMove = false;
+                ArrayBoard[newPos.X, newPos.Y] = ArrayBoard[pos.X, pos.Y];
+                ArrayBoard[pos.X, pos.Y] = new EmptyCell();
+            }
+            else
+            {
+                throw new ApplicationException("Сюда ходить нельзя");
+            }
+            
         }
     }
 
