@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
@@ -11,10 +10,12 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         {
         }
 
-        private bool IsMove(Point pos, Point newPos)
+        private bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            Point changePos = new(newPos.X- pos.X, newPos.Y - pos.Y);
-            if (Math.Abs(changePos.X) <= 1 && Math.Abs(changePos.Y) <= 1)
+            var xChange = xEnd - xStart;
+            var yChange = yEnd - yStart;
+
+            if (Math.Abs(xChange) <= 1 && Math.Abs(yChange) <= 1)
             {
                 return true;
             }
@@ -24,32 +25,32 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
-        private bool IsKill(Point pos, Point newPos)
+        private bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            return IsMove(pos, newPos);
+            return IsMove( xStart,  yStart,  xEnd,  yEnd);
         }
 
-        public override IEnumerable<Point> GetTrajectoryForMove(Point pos, Point newPos)
+        public override IEnumerable<(byte,byte)>? GetTrajectoryForMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            if (IsMove(pos, newPos))
+            if (IsMove( xStart,  yStart,  xEnd,  yEnd))
             {
-                return MovePieces.GetStraightTrajectory(pos, newPos);
+                return MovePieces.GetStraightTrajectory( xStart,  yStart,  xEnd,  yEnd);
             }
             else
             {
-                throw new ApplicationException("Сюда нельзя походить");
+                return null;
             }
         }
 
-        public override IEnumerable<Point> GetTrajectoryForKill(Point pos, Point newPos)
+        public override IEnumerable<(byte, byte)>? GetTrajectoryForKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            if (IsKill(pos, newPos))
+            if (IsKill( xStart,  yStart,  xEnd,  yEnd))
             {
-                return MovePieces.GetStraightTrajectory(pos, newPos);
+                return MovePieces.GetStraightTrajectory( xStart,  yStart,  xEnd,  yEnd);
             }
             else
             {
-                throw new ApplicationException("Сюда нельзя походить");
+                return null;
             }
         }
     }

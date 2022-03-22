@@ -7,18 +7,23 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal static class MovePieces
     {
-        public static IEnumerable<Point> GetStraightTrajectory(Point pos, Point newPos)
+        public static IEnumerable<(byte, byte)> GetStraightTrajectory(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            Point changePos = new(newPos.X - pos.X, newPos.Y - pos.Y);
-            Point stepChangePos = new(changePos.X/Math.Max(Math.Abs(changePos.X), Math.Abs(changePos.Y)),
-                                        changePos.Y / Math.Max(Math.Abs(changePos.X), Math.Abs(changePos.Y)));
-            Point currentPos = new(pos.X, pos.Y);
-            List<Point> trajectory = new List<Point>();
-            while (!((currentPos.X + stepChangePos.X) == newPos.X && (currentPos.Y + stepChangePos.Y) == newPos.Y))
+            var xChange = xEnd - xStart;
+            var yChange = yEnd - yStart;
+
+            var xChangeStep = xChange / Math.Max(Math.Abs(xChange), Math.Abs(yChange));
+            var yChangeStep = yChange / Math.Max(Math.Abs(xChange), Math.Abs(yChange));
+
+            int currentX = xStart;
+            int currentY = yStart;
+
+            List<(byte,byte)> trajectory = new List<(byte, byte)>();
+            while (!((currentX + xChangeStep) == xEnd && (currentY + yChangeStep) == yEnd))
             {
-                currentPos.X += stepChangePos.X;
-                currentPos.Y += stepChangePos.Y;
-                trajectory.Add(new Point(currentPos.X,currentPos.Y));
+                currentX += xChangeStep;
+                currentY += yChangeStep;
+                trajectory.Add(((byte)currentX,(byte)currentY));
             }
             return trajectory;
         }

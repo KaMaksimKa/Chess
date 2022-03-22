@@ -15,7 +15,7 @@ namespace Chess.Models.PiecesChess.Base
             Team = team;
 
         }
-        public abstract IEnumerable<Point> GetTrajectoryForMove(Point pos, Point newPos);
-        public abstract IEnumerable<Point> GetTrajectoryForKill(Point pos, Point newPos);
+        public abstract IEnumerable<(byte, byte)>? GetTrajectoryForMove(byte xStart, byte yStart, byte xEnd, byte yEnd);
+        public abstract IEnumerable<(byte, byte)>? GetTrajectoryForKill(byte xStart, byte yStart, byte xEnd, byte yEnd);
     }
 }

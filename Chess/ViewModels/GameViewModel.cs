@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Windows;
 using Chess.Models;
 using Chess.ViewModels.Base;
 using Point = System.Drawing.Point;
@@ -72,7 +71,7 @@ namespace Chess.ViewModels
             var newPos = (Point)EndPoint;
             try
             {
-                ChessBoard.Move(pos, newPos);
+                ChessBoard.Move((byte)pos.X, (byte)pos.Y, (byte)newPos.X, (byte)newPos.Y);
 
                 ChessBoard.WhoseMove = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
 
@@ -96,12 +95,12 @@ namespace Chess.ViewModels
                 bool[,] hintsForMove = new bool[8, 8];
                 bool[,] hintsForKill = new bool[8, 8];
 
-                for (int i = 0; i < 8; i++)
+                for (byte i = 0; i < 8; i++)
                 {
-                    for (int j = 0; j < 8; j++)
+                    for (byte j = 0; j < 8; j++)
                     {
-                        hintsForMove[i, j] = ChessBoard.IsMove(startPoint, new Point(i, j));
-                        hintsForKill[i, j] = ChessBoard.IsKill(startPoint, new Point(i, j));
+                        hintsForMove[i, j] = ChessBoard.IsMove((byte)startPoint.X, (byte)startPoint.Y, i, j);
+                        hintsForKill[i, j] = ChessBoard.IsKill((byte)startPoint.X, (byte)startPoint.Y, i, j);
                     }
                 }
                 Hints = new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
@@ -110,6 +109,7 @@ namespace Chess.ViewModels
 
            
         }
+        
 
     }
 }

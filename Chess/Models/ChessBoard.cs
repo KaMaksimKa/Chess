@@ -12,11 +12,15 @@ namespace Chess.Models
         public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
         
 
-        private bool CheckIsEmptySells(IEnumerable<Point> points)
+        private bool CheckIsEmptySells(IEnumerable<(byte,byte)>? points)
         {
-            foreach (Point point in points)
+            if (points == null)
             {
-                if (ArrayBoard[point.X, point.Y] is not EmptyCell)
+                return false;
+            }
+            foreach (var (x,y) in points)
+            {
+                if (ArrayBoard[x, y] is not EmptyCell)
                     return false;
             }
 
@@ -24,15 +28,11 @@ namespace Chess.Models
         }
 
 
-        public bool IsMove(Point pos, Point newPos)
+        public bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            if (newPos.X > 7 || newPos.Y > 7)
-            {
-                return false;
-            }
 
-            object sell = ArrayBoard[pos.X, pos.Y];
-            object newSell = ArrayBoard[newPos.X, newPos.Y];
+            object sell = ArrayBoard[xStart, yStart];
+            object newSell = ArrayBoard[xEnd, yEnd];
 
             if (sell is Piece piece)
             {
@@ -44,14 +44,7 @@ namespace Chess.Models
                     }
                     else
                     {
-                        try
-                        {
-                            return CheckIsEmptySells(piece.GetTrajectoryForMove(pos, newPos));
-                        }
-                        catch (ApplicationException)
-                        {
-                            return false;
-                        }
+                        return CheckIsEmptySells(piece.GetTrajectoryForMove(xStart,yStart,xEnd,yEnd ));
                     }
                 }
                 else
@@ -61,15 +54,11 @@ namespace Chess.Models
                 return false;
         }
 
-        public bool IsKill(Point pos, Point newPos)
+        public bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
-            if (newPos.X > 7 || newPos.Y > 7)
-            {
-                return false;
-            }
 
-            object sell = ArrayBoard[pos.X, pos.Y];
-            object newSell = ArrayBoard[newPos.X, newPos.Y];
+            object sell = ArrayBoard[xStart, yStart];
+            object newSell = ArrayBoard[xEnd, yEnd];
 
             if (sell is Piece piece)
             {
@@ -83,7 +72,7 @@ namespace Chess.Models
                         {
                             try
                             {
-                                return CheckIsEmptySells(piece.GetTrajectoryForKill(pos, newPos));
+                                return CheckIsEmptySells(piece.GetTrajectoryForKill(xStart,yStart, xEnd,yEnd));
                             }
                             catch (ApplicationException)
                             {
@@ -104,14 +93,18 @@ namespace Chess.Models
         }
 
 
-        public void Move(Point pos, Point newPos)
+        public void Move(byte xStart,byte yStart,byte xEnd,byte yEnd)
         {
-
-            if (IsKill(pos, newPos) || IsMove(pos, newPos))
+            if (xStart>7 || yStart>7 || xEnd>7 || yEnd>7)
             {
-                ((Piece) ArrayBoard[pos.X, pos.Y]).IsFirstMove = false;
-                ArrayBoard[newPos.X, newPos.Y] = ArrayBoard[pos.X, pos.Y];
-                ArrayBoard[pos.X, pos.Y] = new EmptyCell();
+                throw new ApplicationException("Сюда ходить нельзя");
+            }
+
+            if (IsKill(xStart,yStart,xEnd,yEnd) || IsMove(xStart, yStart, xEnd, yEnd))
+            {
+                ((Piece) ArrayBoard[xStart, yStart]).IsFirstMove = false;
+                ArrayBoard[xEnd, yEnd] = ArrayBoard[xStart, yStart];
+                ArrayBoard[xStart, yStart] = new EmptyCell();
             }
             else
             {
