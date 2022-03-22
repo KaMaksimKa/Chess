@@ -18,9 +18,9 @@
                                   ChangePos="{Binding ChangePos,Mode=OneWay}"
                                   StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
                                   EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
-                                  IsHintsForMove="{Binding IsHintsForMove,Mode=OneWay}"
-                                  IsHintsForKill="{Binding IsHintsForKill,Mode=OneWay}"></uc:ChessBoardUserControl>
+                                 ></uc:ChessBoardUserControl>
+        <TextBlock Width="150" Height="50" VerticalAlignment="Bottom" Text="{Binding Hints.IsHintsForKill}"></TextBlock>
     </Grid>
-
+    
 
 </Window>

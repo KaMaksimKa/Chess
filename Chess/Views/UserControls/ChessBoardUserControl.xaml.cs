@@ -63,13 +63,13 @@ namespace Chess.Views.UserControls
         #endregion
 
         #region Свойство StartPoint
-        public System.Drawing.Point StartPoint
+        public System.Drawing.Point? StartPoint
         {
-            get => (System.Drawing.Point)GetValue(StartPointProperty);
+            get => (System.Drawing.Point?)GetValue(StartPointProperty);
             set => SetValue(StartPointProperty, value);
         }
         public static readonly DependencyProperty StartPointProperty =
-            DependencyProperty.Register("StartPoint", typeof(System.Drawing.Point),
+            DependencyProperty.Register("StartPoint", typeof(System.Drawing.Point?),
                 typeof(ChessBoardUserControl));
 
 
@@ -88,26 +88,14 @@ namespace Chess.Views.UserControls
 
         #endregion
 
-        #region Свойство IsHintsForMove
-        public bool[,] IsHintsForMove
+        #region Свойство Hints
+        public HintsChess Hints
         {
-            get => (bool[,])GetValue(IsHintsForMoveProperty);
-            set => SetValue(IsHintsForMoveProperty, value);
+            get => (HintsChess)GetValue(HintsProperty);
+            set => SetValue(HintsProperty, value);
         }
-        public static readonly DependencyProperty IsHintsForMoveProperty =
-            DependencyProperty.Register("IsHintsForMove", typeof(bool[,]),
-                typeof(ChessBoardUserControl));
-
-        #endregion
-
-        #region Свойство IsHintsForKill
-        public bool[,] IsHintsForKill
-        {
-            get => (bool[,])GetValue(IsHintsForKillProperty);
-            set => SetValue(IsHintsForKillProperty, value);
-        }
-        public static readonly DependencyProperty IsHintsForKillProperty =
-            DependencyProperty.Register("IsHintsForKill", typeof(bool[,]),
+        public static readonly DependencyProperty HintsProperty =
+            DependencyProperty.Register("Hints", typeof(HintsChess),
                 typeof(ChessBoardUserControl));
 
         #endregion
@@ -196,7 +184,7 @@ namespace Chess.Views.UserControls
             Canvas.SetLeft(newImg, _movePoint.Value.X);
             Canvas.SetTop(newImg, _movePoint.Value.Y);
             CanvasFace.Children.Add(newImg);
-            _images[StartPoint.X, StartPoint.Y] = newImg;
+            _images[StartPoint.Value.X, StartPoint.Value.Y] = newImg;
 
 
             CanvasFace.Children.Remove(img);

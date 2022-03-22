@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using System.Windows;
 using Chess.Models;
 using Chess.ViewModels.Base;
 using Point = System.Drawing.Point;
@@ -24,8 +26,17 @@ namespace Chess.ViewModels
         public Point? StartPoint
         {
             get => _startPoint;
-            set => Set(ref _startPoint, value);
+            set
+            {
+                Set(ref _startPoint, value);
+                if (value is not null)
+                {
+                    SetNewHintsChessAsync((Point)value);
+                }
+                    
+            }
         }
+
         #endregion
 
         #region Свойство EndPoint
@@ -41,26 +52,14 @@ namespace Chess.ViewModels
         }
         #endregion
 
-        #region Свойство IsHintsForMove
+        #region Свойство Hints
 
-        private bool[,] _isHintsForMove = new bool[8,8];
+        private HintsChess _hints = new HintsChess();
 
-        public bool[,] IsHintsForMove
+        public HintsChess Hints
         {
-            get => _isHintsForMove;
-            set => Set(ref _isHintsForMove, value);
-        }
-
-        #endregion
-
-        #region Свойство IsHintsForKill
-
-        private bool[,] _isHintsForKill = new bool[8, 8];
-
-        public bool[,] IsHintsForKill
-        {
-            get => _isHintsForKill;
-            set => Set(ref _isHintsForKill, value);
+            get => _hints;
+            set => Set(ref _hints, value);
         }
 
         #endregion
@@ -88,6 +87,28 @@ namespace Chess.ViewModels
 
             StartPoint = null;
             EndPoint = null;
+        }
+        private async void SetNewHintsChessAsync(Point startPoint)
+        {
+
+            await Task.Run(() =>
+            {
+                bool[,] hintsForMove = new bool[8, 8];
+                bool[,] hintsForKill = new bool[8, 8];
+
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        hintsForMove[i, j] = ChessBoard.IsMove(startPoint, new Point(i, j));
+                        hintsForKill[i, j] = ChessBoard.IsKill(startPoint, new Point(i, j));
+                    }
+                }
+                Hints = new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
+            });
+            
+
+           
         }
 
     }
