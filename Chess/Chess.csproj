@@ -47,9 +47,6 @@
     <Resource Include="Data\Img\Black\Rook.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Data\Img\EmptyCell.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Data\Img\White\Bishop.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>

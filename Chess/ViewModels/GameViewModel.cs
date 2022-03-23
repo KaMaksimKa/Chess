@@ -10,8 +10,18 @@ namespace Chess.ViewModels
 {
     internal class GameViewModel:ViewModel
     {
-  
-        public ChessBoard ChessBoard { get; set ; } = new ChessBoard();
+
+
+        private ChessBoard _chessBoard;
+        public ChessBoard ChessBoard
+        {
+            get => _chessBoard;
+            set
+            {
+                _chessBoard = value;
+                Icons = value.GetIcons();
+            }
+        } 
 
         #region Свойство Icons
 
@@ -25,9 +35,10 @@ namespace Chess.ViewModels
 
         public GameViewModel()
         {
-            Icons = ChessBoard.GetIcons();
+            ChessBoard = new ChessBoard();
         }
         #endregion
+
         #region Свойство ChangePos
         private ChangePosition? _changePos;
         public ChangePosition? ChangePos

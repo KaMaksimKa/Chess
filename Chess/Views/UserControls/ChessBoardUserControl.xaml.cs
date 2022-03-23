@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Chess.Models;
 using Chess.Models.PiecesChess.Base;
@@ -56,13 +58,38 @@ namespace Chess.Views.UserControls
 
                 userControl._images[endPoint.X, endPoint.Y] = img;
 
-                Canvas.SetLeft(img, endPoint.Y * userControl._sizeCell);
-                Canvas.SetTop(img, endPoint.X * userControl._sizeCell);
+                var imgLeftPos = Canvas.GetLeft(img);
+                var imgTopPos = Canvas.GetTop(img);
+
+                var endLeftPos = endPoint.Y * userControl._sizeCell;
+                var endTopPos = endPoint.X * userControl._sizeCell;
+
+                int speed = startPoint == endPoint ? 4000 : 400;
+
+                var duration = new Duration(TimeSpan.FromSeconds(
+                    Math.Sqrt(Math.Pow(endTopPos - imgTopPos,2)+ Math.Pow(endLeftPos - imgLeftPos, 2)) / speed));
+
+                img.BeginAnimation(Canvas.TopProperty, new DoubleAnimation
+                {
+                    From = imgTopPos,
+                    To = endTopPos,
+                    Duration = duration
+                });
+
+                img.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation
+                {
+                    From = imgLeftPos,
+                    To = endLeftPos,
+                    Duration = duration
+                });
+
+                
             }
 
             userControl.DrawChoiceCell((System.Drawing.Point)endPoint);
         }
 
+       
         #endregion
 
         #region Свойство StartPoint
@@ -192,7 +219,6 @@ namespace Chess.Views.UserControls
 
             #region Нарисовать фигуры
             canvasPieces.Children.Clear();
-
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
@@ -213,8 +239,9 @@ namespace Chess.Views.UserControls
                         img.MouseUp += control.Piece_OnMouseUp;
 
                         canvasPieces.Children.Add(img);
-
+                         
                         control._images[i, j] = img;
+
                     }
                 }
 
