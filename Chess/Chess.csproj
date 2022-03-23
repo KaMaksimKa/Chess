@@ -67,4 +67,8 @@
     </Resource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\BotChess\" />
+  </ItemGroup>
+
 </Project>

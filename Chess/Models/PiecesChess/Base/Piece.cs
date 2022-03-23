@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Collections.Generic;
 namespace Chess.Models.PiecesChess.Base
 {
     internal abstract class Piece:IHaveIcon

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Windows;
 using Chess.Models;
 using Chess.Models.PiecesChess.Base;
 using Chess.ViewModels.Base;
