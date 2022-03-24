@@ -18,14 +18,12 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             int currentX = xStart;
             int currentY = yStart;
 
-            List<(byte,byte)> trajectory = new List<(byte, byte)>();
             while (!((currentX + xChangeStep) == xEnd && (currentY + yChangeStep) == yEnd))
             {
                 currentX += xChangeStep;
                 currentY += yChangeStep;
-                trajectory.Add(((byte)currentX,(byte)currentY));
+                yield return ((byte) currentX, (byte) currentY);
             }
-            return trajectory;
         }
         
     }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Chess.Models;
 using Chess.Models.PiecesChess.Base;
@@ -102,13 +104,15 @@ namespace Chess.ViewModels
             var newPos = (Point)EndPoint;
             try
             {
-                ChessBoard.Move((byte)pos.X, (byte)pos.Y, (byte)newPos.X, (byte)newPos.Y);
+                IEnumerable<(Point,Point)> moves =  ChessBoard.Move((byte)pos.X, (byte)pos.Y, (byte)newPos.X, (byte)newPos.Y);
 
                 ChessBoard.WhoseMove = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
 
-                ChangePos = new ChangePosition{StartPoint = new Point(pos.X, pos.Y),
-                                                 EndPoint = new Point(newPos.X, newPos.Y)};
                 StartPoint = null;
+                foreach (var (startPoint,endPoint) in moves)
+                {
+                    ChangePos = new ChangePosition(startPoint,endPoint);
+                }
             }
 
             catch (ApplicationException)
