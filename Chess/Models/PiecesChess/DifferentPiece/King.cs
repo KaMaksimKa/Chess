@@ -26,6 +26,51 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
+        private MoveInfo Castling(Point startPoint, Point endPoint,Board board)
+        {
+            //Доделать
+            MoveInfo moveInfo = new MoveInfo();
+
+            var xChange = endPoint.X - startPoint.X;
+            var yChange = endPoint.Y - startPoint.Y;
+            if (xChange == 0)
+            {
+                if (yChange == 2)
+                {
+                    if (board[startPoint.X, 7] is Rook { IsFirstMove: true })
+                    {
+                        var trajectory = MovePieces.GetStraightTrajectory(startPoint, new Point(startPoint.X, 7));
+                        if (board.CheckIsEmptySells(trajectory))
+                        {
+                            moveInfo.ChangePositions = new List<ChangePosition>
+                            {
+                                new ChangePosition(startPoint, endPoint),
+                                new ChangePosition(new Point(startPoint.X, 7),new Point(startPoint.X,endPoint.Y-1))
+                            };
+
+                        }
+                    }
+                }
+                else if (yChange == -2)
+                {
+                    if (board[startPoint.X, 0] is Rook { IsFirstMove: true })
+                    {
+                        var trajectory = MovePieces.GetStraightTrajectory(startPoint, new Point(startPoint.X, 0));
+                        if (board.CheckIsEmptySells(trajectory))
+                        {
+                            moveInfo.ChangePositions = new List<ChangePosition>
+                            {
+                                new ChangePosition(startPoint, endPoint),
+                                new ChangePosition(new Point(startPoint.X, 0),new Point(startPoint.X,endPoint.Y+1))
+                            };
+                        }
+                    }
+                }
+            }
+
+            return moveInfo;
+        }
+
 
 
         public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
@@ -39,6 +84,13 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     moveInfo.KillPoint = endPoint;
                 }
+            }
+            else if (Castling(startPoint,  endPoint,  board) is {ChangePositions:{}} moveInfoCastling)
+            {
+                return moveInfoCastling;
+            }
+            {
+                
             }
             return moveInfo;
         }

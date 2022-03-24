@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Windows.Documents;
 
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal static class MovePieces
     {
-        public static IEnumerable<Point> GetStraightTrajectory(Point startPoint, Point endPoint)
+        public static List<Point> GetStraightTrajectory(Point startPoint, Point endPoint)
         {
+            List<Point> straightTrajectory = new List<Point>();
+
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
@@ -22,8 +25,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             {
                 currentX += xChangeStep;
                 currentY += yChangeStep;
-                yield return new Point(currentX,currentY);
+                straightTrajectory.Add(new Point(currentX, currentY));
             }
+
+            return straightTrajectory;
         }
         
     }

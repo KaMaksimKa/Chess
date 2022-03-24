@@ -71,8 +71,8 @@ namespace Chess.Models
 
         public MoveInfo Move(Point startPoint, Point endPoint)
         {
-            if (startPoint.X is > 0 and < 7 && startPoint.Y is > 0 and < 7 &&
-                endPoint.X is > 0 and < 7 && endPoint.Y is > 0 and < 7)
+            if (startPoint.X is >= 0 and <= 7 && startPoint.Y is >= 0 and <= 7 &&
+                endPoint.X is >= 0 and <= 7 && endPoint.Y is >= 0 and <= 7)
             {
                 if (ArrayBoard[startPoint.X, startPoint.Y] is { } piece && piece.Team == WhoseMove)
                 {
