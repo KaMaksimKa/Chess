@@ -77,7 +77,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         {
             MoveInfo moveInfo = new MoveInfo();
             if (IsMove(startPoint, endPoint) && board[endPoint.X, endPoint.Y]?.Team != Team &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)) &&
+                !board.IsCellForKill(startPoint,endPoint,Team))
             {
                 moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) };
                 if (board[endPoint.X, endPoint.Y] != null)
@@ -93,6 +94,11 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 
             }
             return moveInfo;
+        }
+
+        public override object Clone()
+        {
+            return new King(Icon, Team) { IsFirstMove = IsFirstMove };
         }
     }
 }

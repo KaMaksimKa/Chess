@@ -104,6 +104,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
+        private void IsEnPassant(Point startPoint, Point endPoint)
+        {
+
+        }
         public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
             MoveInfo moveInfo = new MoveInfo();
@@ -125,6 +129,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 }
             }
             return moveInfo;
+        }
+        public override object Clone()
+        {
+            return new Pawn(Icon, Team,_direction) { IsFirstMove = IsFirstMove };
         }
 
     }

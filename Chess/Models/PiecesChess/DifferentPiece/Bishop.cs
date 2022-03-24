@@ -43,8 +43,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             return moveInfo;
         }
 
-        
 
-        
+        public override object Clone()
+        {
+            return new Bishop(Icon, Team) {IsFirstMove = IsFirstMove};
+        }
     }
 }

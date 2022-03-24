@@ -42,5 +42,9 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
             return moveInfo;
         }
+        public override object Clone()
+        {
+            return new Queen(Icon, Team) { IsFirstMove = IsFirstMove };
+        }
     }
 }

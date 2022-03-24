@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Chess.Models.PiecesChess;
@@ -7,40 +8,9 @@ using Chess.Models.PiecesChess.DifferentPiece;
 
 namespace Chess.Models
 {
-    internal class ChessBoard:Board
+    internal class ChessBoard:Board,ICloneable
     {
         public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
-
-        /*public bool IsCastling(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            if (ArrayBoard[xStart, yStart] is King {IsFirstMove: true} &&
-                ArrayBoard[xStart, yStart]?.Team == WhoseMove)
-            {
-                var xChange = xEnd - xStart;
-                var yChange = yEnd - yStart;
-
-                if (xChange == 0)
-                {
-                    if (yChange == 2)
-                    {
-                        if (ArrayBoard[xStart, 7] is Rook {IsFirstMove: true})
-                        {
-                            var trajectory = MovePieces.GetStraightTrajectory(xStart, yStart, xStart, 7);
-                            return CheckIsEmptySells(trajectory);
-                        }
-                    }
-                    else if (yChange == -2)
-                    {
-                        if (ArrayBoard[xStart, 0] is Rook { IsFirstMove: true })
-                        {
-                            var trajectory = MovePieces.GetStraightTrajectory(xStart, yStart, xStart, 0);
-                            return CheckIsEmptySells(trajectory);
-                        }
-                    }
-                }
-            }
-            return false;
-        }*/
 
         public HintsChess GetHintsForPiece(Point startPoint)
         {
@@ -69,6 +39,15 @@ namespace Chess.Models
             return new HintsChess {IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove};
         }
 
+        public ChessBoard()
+        {
+            
+        }
+
+        public ChessBoard(Piece?[,] arrayBoard) :base(arrayBoard)
+        {
+            
+        }
         public MoveInfo Move(Point startPoint, Point endPoint)
         {
             if (startPoint.X is >= 0 and <= 7 && startPoint.Y is >= 0 and <= 7 &&
@@ -98,45 +77,7 @@ namespace Chess.Models
             }
             
             return new MoveInfo();
-            /*else if (IsCastling(xStart, yStart, xEnd, yEnd))
-            {
-                if (ArrayBoard[xStart, yStart] is King king)
-                {
-                    var yChange = yEnd - yStart;
-
-                    ArrayBoard[xStart, yStart] = null;
-                    ArrayBoard[xEnd, yEnd] = king;
-                    king.IsFirstMove = false;
-                    var posChangeKing = (new Point(xStart, yStart), new Point(xEnd, yEnd));
-                    if (yChange == 2 && ArrayBoard[xStart, 7] is Rook rook1)
-                    {
-                        ArrayBoard[xStart, 7] = null;
-                        ArrayBoard[xEnd, yEnd -yChange/2] = rook1;
-                        rook1.IsFirstMove = false;
-                        var posChangeRook = (new Point(xStart, 7), new Point(xEnd, yEnd-yChange/2));
-
-                        return new[] {posChangeKing,posChangeRook };
-                    }
-                    else if (yChange == -2 && ArrayBoard[xStart, 0] is Rook rook2)
-                    {
-                        ArrayBoard[xStart, 0] = null;
-                        ArrayBoard[xEnd, yEnd - yChange / 2] = rook2;
-                        rook2.IsFirstMove = false;
-                        var posChangeRook = (new Point(xStart, 0), new Point(xEnd, yEnd - yChange / 2));
-                        
-                        return new[] { posChangeKing, posChangeRook };
-                    }
-                    else
-                    {
-                        throw new ApplicationException("Ошибка в IsCastling");
-                    }
-                }
-                else
-                {
-                    throw new ApplicationException("Ошибка в IsCastling");
-                }
-
-            }*/
+            
 
         }
 
@@ -144,9 +85,23 @@ namespace Chess.Models
         {
             return (IHaveIcon?[,]) ArrayBoard.Clone();
         }
+
+        public object Clone()
+        {
+            var arrayBoard = new Piece?[8, 8];
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    arrayBoard[i,j] = ArrayBoard.Clone() as Piece;
+                }
+            }
+            return new ChessBoard(arrayBoard) {WhoseMove = WhoseMove};
+        }
     }
 
-    class Board
+
+    class Board:ICloneable
     {
         public Piece? this[int i, int j]
         {
@@ -156,15 +111,19 @@ namespace Chess.Models
 
         protected readonly Piece?[,] ArrayBoard;
 
-         
         public Board()
         {
             ArrayBoard = GetNewBoard();
         }
 
+        public Board(Piece?[,] arrayBoard)
+        {
+            ArrayBoard = arrayBoard;
+        }
+        
         private static Piece?[,] GetNewBoard()
         {
-            Piece?[,] board = new Piece[8,8];
+            Piece?[,] board = new Piece?[8,8];
 
             #region Создание пустых ячеек
             for (int i = 0; i < 8; i++)
@@ -233,6 +192,45 @@ namespace Chess.Models
             }
 
         }
+
+        public bool IsCellForKill(Point starPoint,Point endPoint,TeamEnum team)
+        {
+            if (this.Clone() is Board board)
+            {
+                board[endPoint.X, endPoint.Y] = board[starPoint.X, starPoint.Y];
+                board[starPoint.X, starPoint.Y] = null;
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if (ArrayBoard[i, j] is { } enemyPiece && enemyPiece.Team != team)
+                        {
+                            MoveInfo moveInfo = enemyPiece.Move(new Point(i, j), endPoint, board);
+                            if (moveInfo.KillPoint is { })
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public object Clone()
+        {
+            var arrayBoard = new Piece?[8, 8];
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    arrayBoard[i, j] = ArrayBoard[i,j]?.Clone() as Piece;
+                }
+            }
+            return new Board(arrayBoard);
+        }
+
     }
 
 }
