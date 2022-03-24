@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
+
 namespace Chess.Models.PiecesChess.Base
 {
     internal abstract class Piece:IHaveIcon
@@ -13,7 +15,7 @@ namespace Chess.Models.PiecesChess.Base
             Team = team;
 
         }
-        public abstract IEnumerable<(byte, byte)>? GetTrajectoryForMove(byte xStart, byte yStart, byte xEnd, byte yEnd);
-        public abstract IEnumerable<(byte, byte)>? GetTrajectoryForKill(byte xStart, byte yStart, byte xEnd, byte yEnd);
+        public abstract MoveInfo Move(Point startPoint,Point endPoint,Board board);
+        
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,63 +32,86 @@ namespace Chess.Views.UserControls
         }
 
         #endregion
-        
-        #region Свойство ChangePos
-        public ChangePosition ChangePos
+
+        #region Свойство MoveInfo
+        public MoveInfo MoveInfo
         {
-            get => (ChangePosition)GetValue(ChangePosProperty);
+            get => (MoveInfo)GetValue(ChangePosProperty);
             set => SetValue(ChangePosProperty, value);
         }
         public static readonly DependencyProperty ChangePosProperty =
-            DependencyProperty.Register("ChangePos", typeof(ChangePosition),
+            DependencyProperty.Register("MoveInfo", typeof(MoveInfo),
                 typeof(ChessBoardUserControl),new PropertyMetadata(PosChanged));
 
         static void PosChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
-            var userControl = (ChessBoardUserControl)o;
-            var (startPoint, endPoint) = userControl.ChangePos;
-            var img = userControl._images[startPoint.X, startPoint.Y];
-
-            if (img != null)
+            var val = e.NewValue;
+            var control = (ChessBoardUserControl)o;
+            control.CanvasHints.Children.Clear();
+            var moveInfo = control.MoveInfo;
+            
+            if (moveInfo.KillPoint is { } killPoint)
             {
-                userControl._images[startPoint.X, startPoint.Y] = null;
-
-                userControl.CanvasPieces.Children.Remove(userControl._images[endPoint.X, endPoint.Y]);
-
-                userControl._images[endPoint.X, endPoint.Y] = img;
-
-                var imgLeftPos = Canvas.GetLeft(img);
-                var imgTopPos = Canvas.GetTop(img);
-
-                var endLeftPos = endPoint.Y * userControl._sizeCell;
-                var endTopPos = endPoint.X * userControl._sizeCell;
-
-                int speed = startPoint == endPoint ? 4000 : 400;
-
-                var duration = new Duration(TimeSpan.FromSeconds(
-                    Math.Sqrt(Math.Pow(endTopPos - imgTopPos,2)+ Math.Pow(endLeftPos - imgLeftPos, 2)) / speed));
-
-                img.BeginAnimation(Canvas.TopProperty, new DoubleAnimation
+                if (control._images[killPoint.X, killPoint.Y] is { } img)
                 {
-                    From = imgTopPos,
-                    To = endTopPos,
-                    Duration = duration
-                });
-
-                img.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation
-                {
-                    From = imgLeftPos,
-                    To = endLeftPos,
-                    Duration = duration
-                });
-
-                
+                    control.CanvasPieces.Children.Remove(img);
+                    control._images[killPoint.X, killPoint.Y] = null;
+                }
             }
 
-            userControl.DrawChoiceCell((System.Drawing.Point)endPoint);
+            if (moveInfo.ChangePositions is { } changePositions)
+            {
+                foreach (var (startPoint,endPoint) in changePositions)
+                {
+                    if (control._images[startPoint.X, startPoint.Y] is { } img)
+                    {
+                        control._images[endPoint.X, endPoint.Y] = img;
+                        control._images[startPoint.X, startPoint.Y] = null;
+                        control.ChangePosImgOnCanvas(img,endPoint,control._sizeCell,400);
+                        control.DrawChoiceCell(endPoint);
+                    }
+                }
+            }
+            
+            else
+            {
+                if (control.StartPoint is { } startPoint)
+                {
+                    var img = control._images[startPoint.X, startPoint.Y];
+                    if (img != null)
+                    {
+                        control.ChangePosImgOnCanvas(img, startPoint, control._sizeCell, 4000);
+                    }
+                }
+            }
+            
         }
 
-       
+        private void ChangePosImgOnCanvas(Image img, System.Drawing.Point endPoint,int sizeSell,int speed)
+        {
+            var imgLeftPos = Canvas.GetLeft(img);
+            var imgTopPos = Canvas.GetTop(img);
+
+            var endLeftPos = endPoint.Y * sizeSell;
+            var endTopPos = endPoint.X * sizeSell;
+
+            var duration = new Duration(TimeSpan.FromSeconds(
+                Math.Sqrt(Math.Pow(endTopPos - imgTopPos, 2) + Math.Pow(endLeftPos - imgLeftPos, 2)) / speed));
+
+            img.BeginAnimation(Canvas.TopProperty, new DoubleAnimation
+            {
+                From = imgTopPos,
+                To = endTopPos,
+                Duration = duration
+            });
+
+            img.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation
+            {
+                From = imgLeftPos,
+                To = endLeftPos,
+                Duration = duration
+            });
+        }
         #endregion
 
         #region Свойство StartPoint

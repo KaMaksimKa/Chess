@@ -18,10 +18,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             _direction = direction;
         }
 
-        private bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        private bool IsMove(Point startPoint, Point endPoint)
         {
-            var xChange = xEnd - xStart;
-            var yChange = yEnd - yStart;
+            var xChange = endPoint.X - startPoint.X;
+            var yChange = endPoint.Y - startPoint.Y;
 
             if (_direction == PawnDirection.Up)
             {
@@ -75,10 +75,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
-        private bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        private bool IsKill(Point startPoint, Point endPoint)
         {
-            var xChange = xEnd - xStart;
-            var yChange = yEnd - yStart;
+            var xChange = endPoint.X - startPoint.X;
+            var yChange = endPoint.Y - startPoint.Y;
 
             if (_direction == PawnDirection.Up)
             {
@@ -104,28 +104,28 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
-        public override IEnumerable<(byte,byte)>? GetTrajectoryForMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
-            if (IsMove(xStart, yStart, xEnd, yEnd))
+            MoveInfo moveInfo = new MoveInfo();
+            if (IsMove(startPoint, endPoint) &&
+                board[endPoint.X, endPoint.Y] is null &&
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
             {
-                return MovePieces.GetStraightTrajectory(xStart, yStart, xEnd, yEnd);
+                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint)  };
             }
-            else
+            else if (IsKill(startPoint, endPoint) &&
+                     board[endPoint.X, endPoint.Y] is {} piece &&
+                     piece.Team != Team &&
+                     board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
             {
-                return null;
+                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) };
+                if (board[endPoint.X, endPoint.Y] != null)
+                {
+                    moveInfo.KillPoint = endPoint;
+                }
             }
+            return moveInfo;
         }
 
-        public override IEnumerable<(byte, byte)>? GetTrajectoryForKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            if (IsKill( xStart,  yStart,  xEnd,  yEnd))
-            {
-                return MovePieces.GetStraightTrajectory(xStart, yStart, xEnd, yEnd);
-            }
-            else
-            {
-                return null;
-            }
-        }
     }
 }

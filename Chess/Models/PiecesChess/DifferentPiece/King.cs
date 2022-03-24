@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
@@ -10,10 +11,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         {
         }
 
-        private bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        private bool IsMove(Point startPoint, Point endPoint)
         {
-            var xChange = xEnd - xStart;
-            var yChange = yEnd - yStart;
+            var xChange = endPoint.X - startPoint.X;
+            var yChange = endPoint.Y - startPoint.Y;
 
             if (Math.Abs(xChange) <= 1 && Math.Abs(yChange) <= 1)
             {
@@ -25,33 +26,21 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
-        private bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            return IsMove( xStart,  yStart,  xEnd,  yEnd);
-        }
 
-        public override IEnumerable<(byte,byte)>? GetTrajectoryForMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            if (IsMove( xStart,  yStart,  xEnd,  yEnd))
-            {
-                return MovePieces.GetStraightTrajectory( xStart,  yStart,  xEnd,  yEnd);
-            }
-            else
-            {
-                return null;
-            }
-        }
 
-        public override IEnumerable<(byte, byte)>? GetTrajectoryForKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
-            if (IsKill( xStart,  yStart,  xEnd,  yEnd))
+            MoveInfo moveInfo = new MoveInfo();
+            if (IsMove(startPoint, endPoint) && board[endPoint.X, endPoint.Y]?.Team != Team &&
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
             {
-                return MovePieces.GetStraightTrajectory( xStart,  yStart,  xEnd,  yEnd);
+                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) };
+                if (board[endPoint.X, endPoint.Y] != null)
+                {
+                    moveInfo.KillPoint = endPoint;
+                }
             }
-            else
-            {
-                return null;
-            }
+            return moveInfo;
         }
     }
 }

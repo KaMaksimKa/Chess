@@ -12,10 +12,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         {
         }
 
-        private bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        private bool IsMove(Point startPoint, Point endPoint)
         {
-            var xChange = xEnd - xStart;
-            var yChange = yEnd - yStart;
+            var xChange = endPoint.X - startPoint.X;
+            var yChange = endPoint.Y - startPoint.Y;
 
             if ((Math.Abs(xChange) == 2 && Math.Abs(yChange) == 1) ||
                 (Math.Abs(xChange) == 1 && Math.Abs(yChange) == 2))
@@ -28,25 +28,20 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
         }
 
-        private bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            return IsMove( xStart,  yStart,  xEnd,  yEnd);
-        }
 
-        public override IEnumerable<(byte,byte)>? GetTrajectoryForMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
-            if (IsMove( xStart,  yStart,  xEnd,  yEnd))
-                return new List<(byte,byte)>();
-            else
-                return null;
-        }
+            MoveInfo moveInfo = new MoveInfo();
+            if (IsMove(startPoint, endPoint) && board[endPoint.X, endPoint.Y]?.Team != Team)
+            {
+                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) };
+                if (board[endPoint.X, endPoint.Y] != null)
+                {
+                    moveInfo.KillPoint = endPoint;
+                }
+            }
 
-        public override IEnumerable<(byte,byte)>? GetTrajectoryForKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            if (IsKill( xStart,  yStart,  xEnd,  yEnd))
-                return new List<(byte,byte)>();
-            else
-                return null;
+            return moveInfo;
         }
     }
 }

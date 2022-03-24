@@ -10,58 +10,8 @@ namespace Chess.Models
     internal class ChessBoard:Board
     {
         public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
-        
 
-        private bool CheckIsEmptySells(IEnumerable<(byte,byte)>? points)
-        {
-            if (points is {})
-            {
-                foreach (var (x, y) in points)
-                {
-                    if (ArrayBoard[x, y] is not null)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-           
-        }
-
-
-        public bool IsMove(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-            
-            object? sell = ArrayBoard[xStart, yStart];
-            object? newSell = ArrayBoard[xEnd, yEnd];
-
-            if (sell is Piece piece && piece.Team == WhoseMove && newSell is not Piece)
-            {
-                return CheckIsEmptySells(piece.GetTrajectoryForMove(xStart, yStart, xEnd, yEnd));
-            }
-            return false;
-        }
-
-        public bool IsKill(byte xStart, byte yStart, byte xEnd, byte yEnd)
-        {
-
-            object? sell = ArrayBoard[xStart, yStart];
-            object? newSell = ArrayBoard[xEnd, yEnd];
-
-            if (sell is Piece piece && piece.Team == WhoseMove &&
-                (newSell is Piece newPiece) && newPiece.Team != WhoseMove)
-            {
-                return CheckIsEmptySells(piece.GetTrajectoryForKill(xStart, yStart, xEnd, yEnd));
-            }
-            return false;
-        }
-
-        public bool IsCastling(byte xStart, byte yStart, byte xEnd, byte yEnd)
+        /*public bool IsCastling(byte xStart, byte yStart, byte xEnd, byte yEnd)
         {
             if (ArrayBoard[xStart, yStart] is King {IsFirstMove: true} &&
                 ArrayBoard[xStart, yStart]?.Team == WhoseMove)
@@ -90,27 +40,65 @@ namespace Chess.Models
                 }
             }
             return false;
+        }*/
+
+        public HintsChess GetHintsForPiece(Point startPoint)
+        {
+            bool[,] hintsForMove = new bool[8, 8];
+            bool[,] hintsForKill = new bool[8, 8];
+            if (ArrayBoard[startPoint.X, startPoint.Y] is { } piece && piece.Team == WhoseMove)
+            {
+                for (byte i = 0; i < 8; i++)
+                {
+                    for (byte j = 0; j < 8; j++)
+                    {
+                        MoveInfo moveInfo = piece.Move(startPoint,new Point(i,j),this);
+
+                        if (moveInfo.KillPoint != null)
+                        {
+                            hintsForKill[i,j] = true;
+                        }
+                        else if (moveInfo.ChangePositions != null)
+                        {
+                            hintsForMove[i,j] = true;
+                        }
+                    }
+                }
+            }
+
+            return new HintsChess {IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove};
         }
 
-        public IEnumerable<(Point,Point)> Move(byte xStart,byte yStart,byte xEnd,byte yEnd)
+        public MoveInfo Move(Point startPoint, Point endPoint)
         {
-            if (xStart>7 || yStart>7 || xEnd>7 || yEnd>7)
+            if (startPoint.X is > 0 and < 7 && startPoint.Y is > 0 and < 7 &&
+                endPoint.X is > 0 and < 7 && endPoint.Y is > 0 and < 7)
             {
-                throw new ApplicationException("Сюда ходить нельзя");
-            }
-
-            if (IsKill(xStart,yStart,xEnd,yEnd) || IsMove(xStart, yStart, xEnd, yEnd))
-            {
-                if (ArrayBoard[xStart, yStart] is { } piece)
-                    piece.IsFirstMove = false;
-                ArrayBoard[xEnd, yEnd] = ArrayBoard[xStart, yStart];
-                ArrayBoard[xStart, yStart] = null;
-                return new List<(Point,Point)>
+                if (ArrayBoard[startPoint.X, startPoint.Y] is { } piece && piece.Team == WhoseMove)
                 {
-                    (new Point(xStart,yStart),new Point(xEnd,yEnd))
-                };
+                    MoveInfo moveInfo = piece.Move(startPoint, endPoint, this);
+
+                    if (moveInfo.KillPoint is { } killPoint)
+                    {
+                        ArrayBoard[killPoint.X, killPoint.Y] = null;
+                    }
+
+                    if (moveInfo.ChangePositions is { } changePositions)
+                    {
+                        foreach (var (startP, endP) in changePositions)
+                        {
+                            ArrayBoard[endP.X, endP.Y] = ArrayBoard[startP.X, startP.Y];
+                            ArrayBoard[startP.X, startP.Y] = null;
+                        }
+                    }
+
+
+                    return moveInfo;
+                }
             }
-            else if (IsCastling(xStart, yStart, xEnd, yEnd))
+            
+            return new MoveInfo();
+            /*else if (IsCastling(xStart, yStart, xEnd, yEnd))
             {
                 if (ArrayBoard[xStart, yStart] is King king)
                 {
@@ -148,12 +136,8 @@ namespace Chess.Models
                     throw new ApplicationException("Ошибка в IsCastling");
                 }
 
-            }
-            else
-            {
-                throw new ApplicationException("Сюда ходить нельзя");
-            }
-            
+            }*/
+
         }
 
         public IHaveIcon?[,] GetIcons()
@@ -227,6 +211,27 @@ namespace Chess.Models
             #endregion
 
             return board;
+        }
+
+        public bool CheckIsEmptySells(IEnumerable<Point>? points)
+        {
+            if (points is { })
+            {
+                foreach (var point in points)
+                {
+                    if (ArrayBoard[point.X, point.Y] is not null)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
 

@@ -15,7 +15,7 @@
     
     <Grid>
         <uc:ChessBoardUserControl SizeBoard="300"  
-                                  ChangePos="{Binding ChangePos,Mode=OneWay}"
+                                  MoveInfo="{Binding MoveInfo,Mode=OneWay}"
                                   StartPoint="{Binding StartPoint,Mode=TwoWay}"
                                   EndPoint="{Binding EndPoint,Mode=TwoWay}"
                                   Hints="{Binding Hints}"
