@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Chess.Infrastructure.Commands;
 using Chess.Models;
 using Chess.Models.PiecesChess.Base;
 using Chess.ViewModels.Base;
@@ -8,9 +11,12 @@ namespace Chess.ViewModels
 {
     internal class GameViewModel:ViewModel
     {
+        private List<ChessBoard> _listChessBoards = new List<ChessBoard>();
+        private int _currentBoardId;
 
+        #region Свойство ChessBoard
 
-        private ChessBoard _chessBoard;
+        private ChessBoard _chessBoard = new ChessBoard();
         public ChessBoard ChessBoard
         {
             get => _chessBoard;
@@ -19,11 +25,13 @@ namespace Chess.ViewModels
                 _chessBoard = value;
                 Icons = value.GetIcons();
             }
-        } 
+        }
+
+        #endregion
 
         #region Свойство Icons
 
-        private IHaveIcon?[,] _icons;
+        private IHaveIcon?[,] _icons = new IHaveIcon[8,8];
 
         public IHaveIcon?[,] Icons
         {
@@ -31,14 +39,10 @@ namespace Chess.ViewModels
             set => Set(ref _icons, value);
         }
 
-        public GameViewModel()
-        {
-            ChessBoard = new ChessBoard();
-        }
         #endregion
 
         #region Свойство MoveInfo
-        private MoveInfo _moveInfo;
+        private MoveInfo _moveInfo = new MoveInfo();
         public MoveInfo MoveInfo
         {
             get => _moveInfo;
@@ -92,6 +96,60 @@ namespace Chess.ViewModels
         }
 
         #endregion
+
+        #region Команды
+
+        #region Команда NextStateStateChessBoard 
+        public ICommand NextStateStateChessBoardCommand { get; }
+
+        private bool CanNextStateStateChessBoardCommandExecute(object p) => true;
+
+        private void OnNextStateStateChessBoardCommandExecuted(object p)
+        {
+            if (_currentBoardId + 1 < _listChessBoards.Count)
+            {
+                _currentBoardId += 1;
+                ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
+            }
+        }
+
+        #endregion
+
+        #region Команда PrevStateStateChessBoard 
+
+        public ICommand PrevStateStateChessBoardCommand { get; }
+
+        private bool CanPrevStateStateChessBoardCommandExecute(object p) => true;
+
+        private void OnPrevStateStateChessBoardCommandExecuted(object p)
+        {
+            if (_currentBoardId - 1 >= 0)
+            {
+                _currentBoardId -= 1;
+                ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        public GameViewModel()
+        {
+            #region Команды
+            NextStateStateChessBoardCommand = new LambdaCommand(OnNextStateStateChessBoardCommandExecuted,
+                                                                CanNextStateStateChessBoardCommandExecute);
+
+            PrevStateStateChessBoardCommand = new LambdaCommand(OnPrevStateStateChessBoardCommandExecuted,
+                                                                CanPrevStateStateChessBoardCommandExecute);
+            #endregion
+
+            ChessBoard = new ChessBoard();
+
+            _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
+            _currentBoardId = 0;
+
+        }
         public void Move()
         {
             if (StartPoint is { } startPoint && EndPoint is { } endPoint)
@@ -101,6 +159,18 @@ namespace Chess.ViewModels
                 if (MoveInfo.ChangePositions != null)
                 {
                     ChessBoard.WhoseMove = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+
+                    if (_currentBoardId + 1 != _listChessBoards.Count)
+                    {
+                        _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId+1);
+                        _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
+                        _currentBoardId += 1;
+                    }
+                    else
+                    {
+                        _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
+                        _currentBoardId += 1;
+                    }
                 }
 
             }

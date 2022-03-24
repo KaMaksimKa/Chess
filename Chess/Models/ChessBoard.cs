@@ -8,7 +8,7 @@ using Chess.Models.PiecesChess.DifferentPiece;
 
 namespace Chess.Models
 {
-    internal class ChessBoard:Board,ICloneable
+    internal class ChessBoard:Board
     {
         public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
 
@@ -68,6 +68,7 @@ namespace Chess.Models
                         {
                             ArrayBoard[endP.X, endP.Y] = ArrayBoard[startP.X, startP.Y];
                             ArrayBoard[startP.X, startP.Y] = null;
+                            LastMoveInfo = moveInfo;
                         }
                     }
 
@@ -86,17 +87,17 @@ namespace Chess.Models
             return (IHaveIcon?[,]) ArrayBoard.Clone();
         }
 
-        public object Clone()
+        public override object Clone()
         {
             var arrayBoard = new Piece?[8, 8];
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    arrayBoard[i,j] = ArrayBoard.Clone() as Piece;
+                    arrayBoard[i,j] = ArrayBoard[i,j]?.Clone() as Piece;
                 }
             }
-            return new ChessBoard(arrayBoard) {WhoseMove = WhoseMove};
+            return new ChessBoard(arrayBoard) {WhoseMove = WhoseMove,LastMoveInfo = LastMoveInfo};
         }
     }
 
@@ -111,6 +112,7 @@ namespace Chess.Models
 
         protected readonly Piece?[,] ArrayBoard;
 
+        public MoveInfo LastMoveInfo { get; set; } = new MoveInfo();
         public Board()
         {
             ArrayBoard = GetNewBoard();
@@ -218,7 +220,7 @@ namespace Chess.Models
             return false;
         }
 
-        public object Clone()
+        public virtual object Clone()
         {
             var arrayBoard = new Piece?[8, 8];
             for (int i = 0; i < 8; i++)
@@ -228,7 +230,7 @@ namespace Chess.Models
                     arrayBoard[i, j] = ArrayBoard[i,j]?.Clone() as Piece;
                 }
             }
-            return new Board(arrayBoard);
+            return new Board(arrayBoard){LastMoveInfo = LastMoveInfo};
         }
 
     }

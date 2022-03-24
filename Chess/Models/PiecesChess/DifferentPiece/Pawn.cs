@@ -31,20 +31,12 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
                 }
                 else
                 {
                     if (xChange == 1 && yChange == 0)
                     {
                         return true;
-                    }
-                    else
-                    {
-                        return false;
                     }
                 }
             }
@@ -56,10 +48,6 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
                 }
                 else
                 {
@@ -67,12 +55,9 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
                 }
             }
+            return false;
         }
 
         private bool IsKill(Point startPoint, Point endPoint)
@@ -86,10 +71,6 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
             }
             else
             {
@@ -97,16 +78,59 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
             }
+            return false;
         }
 
-        private void IsEnPassant(Point startPoint, Point endPoint)
+        private MoveInfo EnPassant(Point startPoint, Point endPoint, Board board)
         {
+            MoveInfo moveInfo = new MoveInfo();
 
+            var xChange = endPoint.X - startPoint.X;
+            var yChange = endPoint.Y - startPoint.Y;
+
+            if (_direction == PawnDirection.Up)
+            {
+                if (xChange == 1 && Math.Abs(yChange) == 1 &&
+                    board.LastMoveInfo.ChangePositions is {} changePositions)
+                {
+                    foreach (var (startP,endP) in changePositions)
+                    {
+                        if (startP.X == endP.X+2 && startP.Y == endPoint.Y &&
+                            endP.X == startPoint.X && endP.Y == endPoint.Y)
+                        {
+                            moveInfo.ChangePositions = new List<ChangePosition>
+                            {
+                                new ChangePosition(startPoint, endPoint)
+                            };
+                            moveInfo.KillPoint = new Point(startPoint.X,endPoint.Y);
+                        }
+                    }
+                    
+
+                }
+            }
+            else
+            {
+                if (xChange == -1 && Math.Abs(yChange) == 1 &&
+                    board.LastMoveInfo.ChangePositions is { } changePositions)
+                {
+                    foreach (var (startP, endP) in changePositions)
+                    {
+                        if (startP.X == endP.X - 2 && startP.Y == endPoint.Y &&
+                            endP.X == startPoint.X && endP.Y == endPoint.Y)
+                        {
+                            moveInfo.ChangePositions = new List<ChangePosition>
+                            {
+                                new ChangePosition(startPoint, endPoint)
+                            };
+                            moveInfo.KillPoint = new Point(startPoint.X, endPoint.Y);
+                        }
+                    }
+                }
+            }
+
+            return moveInfo;
         }
         public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
@@ -127,6 +151,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     moveInfo.KillPoint = endPoint;
                 }
+            }
+            else if (EnPassant(startPoint,endPoint,board) is {ChangePositions:{}} moveInfoEnPassant)
+            {
+                return moveInfoEnPassant;
             }
             return moveInfo;
         }

@@ -237,6 +237,7 @@ namespace Chess.Views.UserControls
             var icons = (IHaveIcon?[,]) (e.NewValue);
             var sizeCell = control._sizeCell;
             var canvasPieces = control.CanvasPieces;
+            control.CanvasCell.Children.Clear();
 
 
             #region Нарисовать фигуры
