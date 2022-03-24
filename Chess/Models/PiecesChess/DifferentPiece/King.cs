@@ -11,19 +11,31 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         {
         }
 
-        private bool IsMove(Point startPoint, Point endPoint)
+        private MoveInfo? IsMove(Point startPoint, Point endPoint,Board board)
         {
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
-            if (Math.Abs(xChange) <= 1 && Math.Abs(yChange) <= 1)
+            if (Math.Abs(xChange) <= 1 && Math.Abs(yChange) <= 1 && 
+                board[endPoint.X, endPoint.Y]?.Team != Team &&
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)) &&
+                !board.IsCellForKill(startPoint, endPoint, Team))
             {
-                return true;
+                MoveInfo moveInfo = new MoveInfo
+                {
+                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
+                };
+                if (board[endPoint.X, endPoint.Y] != null)
+                {
+                    moveInfo.KillPoint = endPoint;
+                }
+
+                return moveInfo;
             }
-            else
-            {
-                return false;
-            }
+            
+            
+            return null;
+            
         }
 
         private MoveInfo Castling(Point startPoint, Point endPoint,Board board)
@@ -75,25 +87,16 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
         public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
-            MoveInfo moveInfo = new MoveInfo();
-            if (IsMove(startPoint, endPoint) && board[endPoint.X, endPoint.Y]?.Team != Team &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)) &&
-                !board.IsCellForKill(startPoint,endPoint,Team))
+            
+            if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
             {
-                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) };
-                if (board[endPoint.X, endPoint.Y] != null)
-                {
-                    moveInfo.KillPoint = endPoint;
-                }
+                return moveInfoIsMove;
             }
             else if (Castling(startPoint,  endPoint,  board) is {ChangePositions:{}} moveInfoCastling)
             {
                 return moveInfoCastling;
             }
-            {
-                
-            }
-            return moveInfo;
+            return new MoveInfo();
         }
 
         public override object Clone()

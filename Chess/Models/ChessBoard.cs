@@ -69,6 +69,10 @@ namespace Chess.Models
                             ArrayBoard[endP.X, endP.Y] = ArrayBoard[startP.X, startP.Y];
                             ArrayBoard[startP.X, startP.Y] = null;
                             LastMoveInfo = moveInfo;
+                            if (ArrayBoard[endP.X, endP.Y] is { } p)
+                            {
+                                p.IsFirstMove = false;
+                            }
                         }
                     }
 

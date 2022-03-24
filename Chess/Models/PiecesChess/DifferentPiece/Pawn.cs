@@ -18,7 +18,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             _direction = direction;
         }
 
-        private bool IsMove(Point startPoint, Point endPoint)
+        private MoveInfo? IsMove(Point startPoint, Point endPoint,Board board)
         {
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
@@ -27,16 +27,16 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             {
                 if (IsFirstMove)
                 {
-                    if ((xChange == 1 || (xChange == 2)) && yChange == 0)
+                    if (!(xChange == 1 || (xChange == 2)) || yChange != 0)
                     {
-                        return true;
+                        return null;
                     }
                 }
                 else
                 {
-                    if (xChange == 1 && yChange == 0)
+                    if (xChange != 1 || yChange != 0)
                     {
-                        return true;
+                        return null;
                     }
                 }
             }
@@ -44,42 +44,68 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             {
                 if (IsFirstMove)
                 {
-                    if ((xChange == -1 || (xChange == -2)) && yChange == 0)
+                    if (!(xChange == -1 || (xChange == -2)) || yChange != 0)
                     {
-                        return true;
+                        return null;
                     }
                 }
                 else
                 {
-                    if (xChange == -1 && yChange == 0)
+                    if (xChange != -1 || yChange != 0)
                     {
-                        return true;
+                        return null;
                     }
                 }
             }
-            return false;
+
+            if (board[endPoint.X, endPoint.Y] is null &&
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
+            {
+                MoveInfo moveInfo = new MoveInfo
+                {
+                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
+                };
+                return moveInfo;
+            }
+            return null;
         }
 
-        private bool IsKill(Point startPoint, Point endPoint)
+        private MoveInfo? IsKill(Point startPoint, Point endPoint,Board board)
         {
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
             if (_direction == PawnDirection.Up)
             {
-                if (xChange == 1 && Math.Abs(yChange) == 1)
+                if (xChange != 1 || Math.Abs(yChange) != 1)
                 {
-                    return true;
+                    return null;
                 }
             }
             else
             {
-                if (xChange == -1 && Math.Abs(yChange) == 1)
+                if (xChange != -1 || Math.Abs(yChange) != 1)
                 {
-                    return true;
+                    return null;
                 }
             }
-            return false;
+
+            if (board[endPoint.X, endPoint.Y] is { } piece &&
+                piece.Team != Team &&
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
+            {
+                MoveInfo moveInfo = new MoveInfo
+                {
+                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
+                };
+                if (board[endPoint.X, endPoint.Y] != null)
+                {
+                    moveInfo.KillPoint = endPoint;
+                }
+                return moveInfo;
+            }
+
+            return null;
         }
 
         private MoveInfo EnPassant(Point startPoint, Point endPoint, Board board)
@@ -134,29 +160,20 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         }
         public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
         {
-            MoveInfo moveInfo = new MoveInfo();
-            if (IsMove(startPoint, endPoint) &&
-                board[endPoint.X, endPoint.Y] is null &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
+            if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
             {
-                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint)  };
+                return moveInfoIsMove;
             }
-            else if (IsKill(startPoint, endPoint) &&
-                     board[endPoint.X, endPoint.Y] is {} piece &&
-                     piece.Team != Team &&
-                     board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
+            else if (IsKill(startPoint, endPoint ,board) is {} moveInfoIsKill)
             {
-                moveInfo.ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) };
-                if (board[endPoint.X, endPoint.Y] != null)
-                {
-                    moveInfo.KillPoint = endPoint;
-                }
+                return moveInfoIsKill;
             }
             else if (EnPassant(startPoint,endPoint,board) is {ChangePositions:{}} moveInfoEnPassant)
             {
                 return moveInfoEnPassant;
             }
-            return moveInfo;
+
+            return new MoveInfo();
         }
         public override object Clone()
         {
