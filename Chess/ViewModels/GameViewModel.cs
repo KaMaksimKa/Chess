@@ -23,20 +23,20 @@ namespace Chess.ViewModels
             set
             {
                 _chessBoard = value;
-                Icons = value.GetIcons();
+                BoardForDraw = new BoardForDraw { Icons = value.GetIcons(),LastMoveInfo = value.LastMoveInfo};
             }
         }
 
         #endregion
 
-        #region Свойство Icons
+        #region Свойство BoardForDraw
 
-        private IHaveIcon?[,] _icons = new IHaveIcon[8,8];
+        private BoardForDraw _boardForDraw = new BoardForDraw();
 
-        public IHaveIcon?[,] Icons
+        public BoardForDraw BoardForDraw
         {
-            get => _icons;
-            set => Set(ref _icons, value);
+            get => _boardForDraw;
+            set => Set(ref _boardForDraw, value);
         }
 
         #endregion

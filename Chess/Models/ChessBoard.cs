@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Chess.Models.PiecesChess;
 using Chess.Models.PiecesChess.Base;
 using Chess.Models.PiecesChess.DifferentPiece;
@@ -130,7 +131,6 @@ namespace Chess.Models
         private static Piece?[,] GetNewBoard()
         {
             Piece?[,] board = new Piece?[8,8];
-
             #region Создание пустых ячеек
             for (int i = 0; i < 8; i++)
             {

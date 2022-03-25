@@ -45,11 +45,10 @@ namespace Chess.Views.UserControls
 
         static void PosChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
-            var val = e.NewValue;
             var control = (ChessBoardUserControl)o;
-            control.CanvasHints.Children.Clear();
             var moveInfo = control.MoveInfo;
             
+
             if (moveInfo.KillPoint is { } killPoint)
             {
                 if (control._images[killPoint.X, killPoint.Y] is { } img)
@@ -61,6 +60,8 @@ namespace Chess.Views.UserControls
 
             if (moveInfo.ChangePositions is { } changePositions)
             {
+                control.CanvasHints.Children.Clear();
+                control.CanvasCell.Children.Clear();
                 foreach (var (startPoint,endPoint) in changePositions)
                 {
                     if (control._images[startPoint.X, startPoint.Y] is { } img)
@@ -68,9 +69,14 @@ namespace Chess.Views.UserControls
                         control._images[endPoint.X, endPoint.Y] = img;
                         control._images[startPoint.X, startPoint.Y] = null;
                         control.ChangePosImgOnCanvas(img,endPoint,control._sizeCell,400);
+                        
+                        control.DrawChoiceCell(startPoint);
                         control.DrawChoiceCell(endPoint);
                     }
                 }
+
+                control.StartPoint = null;
+                control.EndPoint = null;
             }
             
             else
@@ -83,6 +89,8 @@ namespace Chess.Views.UserControls
                         control.ChangePosImgOnCanvas(img, startPoint, control._sizeCell, 4000);
                     }
                 }
+
+                control.EndPoint = null;
             }
             
         }
@@ -120,14 +128,15 @@ namespace Chess.Views.UserControls
             get => (System.Drawing.Point?)GetValue(StartPointProperty);
             set
             {
-                SetValue(StartPointProperty, value);
-
                 if (value != null)
                 {
-                    CanvasCell.Children.Clear();
+                    if (StartPoint != null)
+                    {
+                        CanvasCell.Children.RemoveRange(CanvasCell.Children.Count - 1, 1);
+                    }
                     DrawChoiceCell((System.Drawing.Point)value);
                 }
-                
+                SetValue(StartPointProperty, value);
             }
         }
 
@@ -221,24 +230,23 @@ namespace Chess.Views.UserControls
 
         #endregion
 
-        #region Свойство Icons
-        public IHaveIcon?[,] Icons
+        #region Свойство BoardForDraw
+        public BoardForDraw BoardForDraw
         {
-            get => (IHaveIcon?[,])GetValue(IconsProperty);
-            set => SetValue(IconsProperty, value);
+            get => (BoardForDraw)GetValue(BoardForDrawProperty);
+            set => SetValue(BoardForDrawProperty, value);
         }
-        public static readonly DependencyProperty IconsProperty =
-            DependencyProperty.Register("Icons", typeof(IHaveIcon?[,]),
+        public static readonly DependencyProperty BoardForDrawProperty =
+            DependencyProperty.Register("BoardForDraw", typeof(BoardForDraw),
                 typeof(ChessBoardUserControl), new PropertyMetadata(DrawChessBoard));
 
         private static void DrawChessBoard(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             ChessBoardUserControl control = (ChessBoardUserControl)o;
-            var icons = (IHaveIcon?[,]) (e.NewValue);
+            var icons = ((BoardForDraw)e.NewValue).Icons;
             var sizeCell = control._sizeCell;
             var canvasPieces = control.CanvasPieces;
             control.CanvasCell.Children.Clear();
-
 
             #region Нарисовать фигуры
             canvasPieces.Children.Clear();
@@ -268,9 +276,21 @@ namespace Chess.Views.UserControls
                     }
                 }
 
-                #endregion
-
             }
+            #endregion
+
+            #region Нарисовать последний ход
+
+            if (((BoardForDraw) e.NewValue).LastMoveInfo.ChangePositions is { } changePositions)
+            {
+                foreach (var (startP,endP) in changePositions)
+                {
+                    control.DrawChoiceCell(startP);
+                    control.DrawChoiceCell(endP);
+                }
+            }
+
+            #endregion
         }
 
         #endregion
@@ -358,6 +378,7 @@ namespace Chess.Views.UserControls
                 EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
             }
         }
+
         #region Анимация перемечения фигур
 
         private void Piece_OnMouseDown(object sender, MouseButtonEventArgs e)

@@ -19,10 +19,10 @@
                                   StartPoint="{Binding StartPoint,Mode=TwoWay}"
                                   EndPoint="{Binding EndPoint,Mode=TwoWay}"
                                   Hints="{Binding Hints}"
-                                  Icons="{Binding Icons,Mode=OneWay}"></uc:ChessBoardUserControl>
+                                  BoardForDraw="{Binding BoardForDraw,Mode=OneWay}"></uc:ChessBoardUserControl>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20" Height="30" VerticalAlignment="Bottom" >
-            <Button VerticalAlignment="Bottom"  Width="100" Content="Назат" Command="{Binding PrevStateStateChessBoardCommand}" ></Button>
+            <Button VerticalAlignment="Bottom"  Width="100" Content="Назад" Command="{Binding PrevStateStateChessBoardCommand}" ></Button>
             <Button VerticalAlignment="Bottom"  Width="100" Content="Вперед" Command="{Binding NextStateStateChessBoardCommand}"></Button>
         </StackPanel>
         
