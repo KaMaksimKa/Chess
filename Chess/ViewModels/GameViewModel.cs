@@ -154,15 +154,15 @@ namespace Chess.ViewModels
         {
             if (StartPoint is { } startPoint && EndPoint is { } endPoint)
             {
-
-                MoveInfo = ChessBoard.Move(startPoint, endPoint);
-                if (MoveInfo.ChangePositions != null)
+                if (ChessBoard.Move(startPoint, endPoint) is { } moveInfo)
                 {
+                    MoveInfo = moveInfo;
+                    
                     ChessBoard.WhoseMove = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
 
                     if (_currentBoardId + 1 != _listChessBoards.Count)
                     {
-                        _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId+1);
+                        _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId + 1);
                         _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
                         _currentBoardId += 1;
                     }
@@ -171,6 +171,11 @@ namespace Chess.ViewModels
                         _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
                         _currentBoardId += 1;
                     }
+                    
+                }
+                else
+                {
+                    MoveInfo = new MoveInfo();
                 }
 
             }
@@ -180,7 +185,28 @@ namespace Chess.ViewModels
 
             await Task.Run(() =>
             {
-                Hints = ChessBoard.GetHintsForPiece(startPoint);
+                bool[,] hintsForMove = new bool[8, 8];
+                bool[,] hintsForKill = new bool[8, 8];
+                
+                for (byte i = 0; i < 8; i++)
+                {
+                    for (byte j = 0; j < 8; j++)
+                    {
+                        if (ChessBoard.IsMove(startPoint, new Point(i, j)) is {} moveInfo)
+                        {
+                            if (moveInfo.KillPoint != null)
+                            {
+                                hintsForKill[i, j] = true;
+                            }
+                            else if (moveInfo.ChangePositions != null)
+                            {
+                                hintsForMove[i, j] = true;
+                            }
+                        }
+                    }
+                }
+
+                Hints =  new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
             });
         }
 

@@ -1,8 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using Chess.Models.PiecesChess;
 using Chess.Models.PiecesChess.Base;
 using Chess.Models.PiecesChess.DifferentPiece;
@@ -12,86 +10,76 @@ namespace Chess.Models
     internal class ChessBoard:Board
     {
         public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
-
-        public HintsChess GetHintsForPiece(Point startPoint)
-        {
-            bool[,] hintsForMove = new bool[8, 8];
-            bool[,] hintsForKill = new bool[8, 8];
-            if (ArrayBoard[startPoint.X, startPoint.Y] is { } piece && piece.Team == WhoseMove)
-            {
-                for (byte i = 0; i < 8; i++)
-                {
-                    for (byte j = 0; j < 8; j++)
-                    {
-                        MoveInfo moveInfo = piece.Move(startPoint,new Point(i,j),this);
-
-                        if (moveInfo.KillPoint != null)
-                        {
-                            hintsForKill[i,j] = true;
-                        }
-                        else if (moveInfo.ChangePositions != null)
-                        {
-                            hintsForMove[i,j] = true;
-                        }
-                    }
-                }
-            }
-
-            return new HintsChess {IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove};
-        }
-
         public ChessBoard()
         {
             
         }
-
         public ChessBoard(Piece?[,] arrayBoard) :base(arrayBoard)
         {
             
         }
-        public MoveInfo Move(Point startPoint, Point endPoint)
+
+        public bool IsCheck(Point startPoint, Point endPoint)
         {
-            if (startPoint.X is >= 0 and <= 7 && startPoint.Y is >= 0 and <= 7 &&
-                endPoint.X is >= 0 and <= 7 && endPoint.Y is >= 0 and <= 7)
+            for (int i = 0; i < 8; i++)
             {
-                if (ArrayBoard[startPoint.X, startPoint.Y] is { } piece && piece.Team == WhoseMove)
+                for (int j = 0; j < 8; j++)
                 {
-                    MoveInfo moveInfo = piece.Move(startPoint, endPoint, this);
-
-                    if (moveInfo.KillPoint is { } killPoint)
+                    if (ArrayBoard[i, j] is King king && king.Team == WhoseMove)
                     {
-                        ArrayBoard[killPoint.X, killPoint.Y] = null;
-                    }
-
-                    if (moveInfo.ChangePositions is { } changePositions)
-                    {
-                        foreach (var (startP, endP) in changePositions)
+                        if (ArrayBoard[startPoint.X, startPoint.Y] is not King)
                         {
-                            ArrayBoard[endP.X, endP.Y] = ArrayBoard[startP.X, startP.Y];
-                            ArrayBoard[startP.X, startP.Y] = null;
-                            LastMoveInfo = moveInfo;
-                            if (ArrayBoard[endP.X, endP.Y] is { } p)
-                            {
-                                p.IsFirstMove = false;
-                            }
+                            return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
+                                    .Move(startPoint, endPoint, this) ?? new MoveInfo()
+                                , new Point(i, j), king.Team);
+                        }
+                        else
+                        {
+                            return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
+                                    .Move(startPoint, endPoint, this) ?? new MoveInfo()
+                                , endPoint, king.Team);
                         }
                     }
-
-
-                    return moveInfo;
                 }
             }
+
+            return false;
+        }
+
+        public MoveInfo? IsMove(Point startPoint, Point endPoint)
+        {
+            if (startPoint.X is >= 0 and <= 7 &&
+                startPoint.Y is >= 0 and <= 7 &&
+                endPoint.X is >= 0 and <= 7 &&
+                endPoint.Y is >= 0 and <= 7 &&
+                ArrayBoard[startPoint.X, startPoint.Y] is { } piece &&
+                piece.Team == WhoseMove &&
+                piece.Move(startPoint, endPoint, this) is {} moveInfo &&
+                !IsCheck(startPoint, endPoint))
+            {
+                return moveInfo;
+            }
+            return null;
+        }
+
+        
+        public MoveInfo? Move(Point startPoint, Point endPoint)
+        {
+            if (IsMove(startPoint,endPoint) is {} moveInfo)
+            {
+                Board.Move(moveInfo,this);
+                return moveInfo;
+                
+            }
             
-            return new MoveInfo();
+            return null;
             
 
         }
-
         public IHaveIcon?[,] GetIcons()
         {
             return (IHaveIcon?[,]) ArrayBoard.Clone();
         }
-
         public override object Clone()
         {
             var arrayBoard = new Piece?[8, 8];
@@ -199,23 +187,20 @@ namespace Chess.Models
 
         }
 
-        public bool IsCellForKill(Point starPoint,Point endPoint,TeamEnum team)
+        public bool IsCellForKill(MoveInfo moveInfo,Point checkPoint,TeamEnum team)
         {
             if (this.Clone() is Board board)
             {
-                board[endPoint.X, endPoint.Y] = board[starPoint.X, starPoint.Y];
-                board[starPoint.X, starPoint.Y] = null;
+                Board.Move(moveInfo,board);
                 for (int i = 0; i < 8; i++)
                 {
                     for (int j = 0; j < 8; j++)
                     {
-                        if (ArrayBoard[i, j] is { } enemyPiece && enemyPiece.Team != team)
+                        if (ArrayBoard[i, j] is { } enemyPiece &&
+                            enemyPiece.Team != team &&
+                            enemyPiece.Move(new Point(i, j), checkPoint, board)?.KillPoint is {})
                         {
-                            MoveInfo moveInfo = enemyPiece.Move(new Point(i, j), endPoint, board);
-                            if (moveInfo.KillPoint is { })
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }
@@ -224,6 +209,27 @@ namespace Chess.Models
             return false;
         }
 
+        protected static void Move(MoveInfo moveInfo, Board board)
+        {
+            if (moveInfo.KillPoint is { } killPoint)
+            {
+                board.ArrayBoard[killPoint.X, killPoint.Y] = null;
+            }
+
+            if (moveInfo.ChangePositions is { } changePositions)
+            {
+                foreach (var (startP, endP) in changePositions)
+                {
+                    board.ArrayBoard[endP.X, endP.Y] = board.ArrayBoard[startP.X, startP.Y];
+                    board.ArrayBoard[startP.X, startP.Y] = null;
+                    board.LastMoveInfo = moveInfo;
+                    if (board.ArrayBoard[endP.X, endP.Y] is { } p)
+                    {
+                        p.IsFirstMove = false;
+                    }
+                }
+            }
+        }
         public virtual object Clone()
         {
             var arrayBoard = new Piece?[8, 8];

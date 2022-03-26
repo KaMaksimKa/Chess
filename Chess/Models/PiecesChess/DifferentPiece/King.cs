@@ -18,8 +18,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
             if (Math.Abs(xChange) <= 1 && Math.Abs(yChange) <= 1 && 
                 board[endPoint.X, endPoint.Y]?.Team != Team &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)) &&
-                !board.IsCellForKill(startPoint, endPoint, Team))
+                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
             {
                 MoveInfo moveInfo = new MoveInfo
                 {
@@ -38,7 +37,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             
         }
 
-        private MoveInfo Castling(Point startPoint, Point endPoint,Board board)
+        private MoveInfo IsCastling(Point startPoint, Point endPoint,Board board)
         {
             //Доделать
             MoveInfo moveInfo = new MoveInfo();
@@ -85,18 +84,18 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
 
 
-        public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
+        public override MoveInfo? Move(Point startPoint, Point endPoint, Board board)
         {
             
             if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
             {
                 return moveInfoIsMove;
             }
-            else if (Castling(startPoint,  endPoint,  board) is {ChangePositions:{}} moveInfoCastling)
+            else if (IsCastling(startPoint,  endPoint,  board) is {ChangePositions:{}} moveInfoCastling)
             {
                 return moveInfoCastling;
             }
-            return new MoveInfo();
+            return null;
         }
 
         public override object Clone()

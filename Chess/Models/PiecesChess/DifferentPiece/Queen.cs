@@ -36,13 +36,13 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             return null;
         }
 
-        public override MoveInfo Move(Point startPoint, Point endPoint, Board board)
+        public override MoveInfo? Move(Point startPoint, Point endPoint, Board board)
         {
             if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
             {
                 return moveInfoIsMove;
             }
-            return new MoveInfo();
+            return null;
         }
         public override object Clone()
         {

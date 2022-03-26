@@ -16,7 +16,7 @@ namespace Chess.Models.PiecesChess.Base
             Team = team;
 
         }
-        public abstract MoveInfo Move(Point startPoint,Point endPoint,Board board);
+        public abstract MoveInfo? Move(Point startPoint,Point endPoint,Board board);
 
         public abstract object Clone();
     }
