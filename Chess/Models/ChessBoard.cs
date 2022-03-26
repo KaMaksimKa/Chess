@@ -131,7 +131,7 @@ namespace Chess.Models
 
             for (int i = 0; i < 8; i++)
             {
-                board[1,i] = new WhitePawn(PawnDirection.Up);
+                /*board[1,i] = new WhitePawn(PawnDirection.Up);*/
             }
 
             board[0,0] = new WhiteRook();
@@ -149,16 +149,16 @@ namespace Chess.Models
 
             for (int i = 0; i < 8; i++)
             {
-                board[6,i] = new BlackPawn(PawnDirection.Down);
+                /*board[6,i] = new BlackPawn(PawnDirection.Down);*/
             }
 
             board[7,0] = new BlackRook();
-            board[7,7] = new BlackRook();
+            /*board[7,7] = new BlackRook();
             board[7,1] = new BlackKnight();
             board[7,6] = new BlackKnight();
             board[7,2] = new BlackBishop();
             board[7,5] = new BlackBishop();
-            board[7,4] = new BlackQueen();
+            board[7,4] = new BlackQueen();*/
             board[7,3] = new BlackKing();
 
             #endregion
@@ -196,7 +196,7 @@ namespace Chess.Models
                 {
                     for (int j = 0; j < 8; j++)
                     {
-                        if (ArrayBoard[i, j] is { } enemyPiece &&
+                        if (board[i, j] is { } enemyPiece &&
                             enemyPiece.Team != team &&
                             enemyPiece.Move(new Point(i, j), checkPoint, board)?.KillPoint is {})
                         {

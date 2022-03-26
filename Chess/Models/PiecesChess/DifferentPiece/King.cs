@@ -37,11 +37,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             
         }
 
-        private MoveInfo IsCastling(Point startPoint, Point endPoint,Board board)
+        private MoveInfo? IsCastling(Point startPoint, Point endPoint,Board board)
         {
-            //Доделать
-            MoveInfo moveInfo = new MoveInfo();
-
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
             if (xChange == 0)
@@ -53,12 +50,14 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                         var trajectory = MovePieces.GetStraightTrajectory(startPoint, new Point(startPoint.X, 7));
                         if (board.CheckIsEmptySells(trajectory))
                         {
-                            moveInfo.ChangePositions = new List<ChangePosition>
+                            return new MoveInfo
                             {
-                                new ChangePosition(startPoint, endPoint),
-                                new ChangePosition(new Point(startPoint.X, 7),new Point(startPoint.X,endPoint.Y-1))
+                                ChangePositions = new List<ChangePosition>
+                                {
+                                    new ChangePosition(startPoint, endPoint),
+                                    new ChangePosition(new Point(startPoint.X, 7),new Point(startPoint.X,endPoint.Y-1))
+                                }
                             };
-
                         }
                     }
                 }
@@ -69,20 +68,36 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                         var trajectory = MovePieces.GetStraightTrajectory(startPoint, new Point(startPoint.X, 0));
                         if (board.CheckIsEmptySells(trajectory))
                         {
-                            moveInfo.ChangePositions = new List<ChangePosition>
+                            foreach (var point in trajectory)
                             {
-                                new ChangePosition(startPoint, endPoint),
-                                new ChangePosition(new Point(startPoint.X, 0),new Point(startPoint.X,endPoint.Y+1))
+                                var checkMoveInfo = new MoveInfo
+                                {
+                                    ChangePositions = new List<ChangePosition>
+                                    {
+                                        new ChangePosition(new Point(startPoint.X, 0), point),
+                                    }
+                                };
+                                if (board.IsCellForKill(checkMoveInfo, point, Team))
+                                {
+                                    return null;
+                                }
+                            }
+
+                            return new MoveInfo
+                            {
+                                ChangePositions = new List<ChangePosition>
+                                {
+                                    new ChangePosition(startPoint, endPoint),
+                                    new ChangePosition(new Point(startPoint.X, 0),new Point(startPoint.X,endPoint.Y+1))
+                                }
                             };
                         }
                     }
                 }
             }
 
-            return moveInfo;
+            return null;
         }
-
-
 
         public override MoveInfo? Move(Point startPoint, Point endPoint, Board board)
         {
@@ -91,7 +106,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             {
                 return moveInfoIsMove;
             }
-            else if (IsCastling(startPoint,  endPoint,  board) is {ChangePositions:{}} moveInfoCastling)
+            else if (IsCastling(startPoint,  endPoint,  board) is {} moveInfoCastling)
             {
                 return moveInfoCastling;
             }

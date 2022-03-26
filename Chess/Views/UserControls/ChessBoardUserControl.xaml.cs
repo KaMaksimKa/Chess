@@ -248,6 +248,9 @@ namespace Chess.Views.UserControls
             var canvasPieces = control.CanvasPieces;
             control.CanvasCell.Children.Clear();
 
+            control.StartPoint = null;
+            control.EndPoint = null;
+
             #region Нарисовать фигуры
             canvasPieces.Children.Clear();
             for (int i = 0; i < 8; i++)

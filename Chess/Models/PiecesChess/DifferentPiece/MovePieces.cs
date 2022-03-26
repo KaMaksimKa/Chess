@@ -14,7 +14,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
-
+            if (xChange == 0 && yChange == 0)
+            {
+                return straightTrajectory;
+            }
             var xChangeStep = xChange / Math.Max(Math.Abs(xChange), Math.Abs(yChange));
             var yChangeStep = yChange / Math.Max(Math.Abs(xChange), Math.Abs(yChange));
 
