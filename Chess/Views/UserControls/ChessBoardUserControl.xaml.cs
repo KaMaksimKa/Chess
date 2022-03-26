@@ -7,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Chess.Models;
-using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Views.UserControls
 {
@@ -132,7 +131,7 @@ namespace Chess.Views.UserControls
                 {
                     if (StartPoint != null)
                     {
-                        CanvasCell.Children.RemoveRange(CanvasCell.Children.Count - 1, 1);
+                        CanvasCell.Children.RemoveAt(CanvasCell.Children.Count-1);
                     }
                     DrawChoiceCell((System.Drawing.Point)value);
                 }
@@ -178,53 +177,41 @@ namespace Chess.Views.UserControls
             canvasHints.Children.Clear();
 
             var hints=(HintsChess)e.NewValue;
-
-            if (hints.IsHintsForKill != null && hints.IsHintsForMove != null)
+            foreach (var movePoint in hints.IsHintsForMove)
             {
-
-                for (int i = 0; i < 8; i++)
+                var ellipse = new Ellipse
                 {
-                    for (int j = 0; j < 8; j++)
+                    Opacity = 0.2,
+                    // ReSharper disable once PossibleLossOfFraction
+                    Width = sizeSell / 3,
+                    // ReSharper disable once PossibleLossOfFraction
+                    Height = sizeSell / 3,
+                    Fill = Brushes.Black
+                };
+                Canvas.SetLeft(ellipse, movePoint.Y * sizeSell + sizeSell / 3);
+                Canvas.SetTop(ellipse, movePoint.X * sizeSell + sizeSell / 3);
+
+                canvasHints.Children.Add(ellipse);
+            }
+            foreach (var killPoint in hints.IsHintsForKill)
+            {
+                var ellipse = new Ellipse
+                {
+                    Opacity = 0.2,
+                    Width = sizeSell,
+                    Height = sizeSell,
+                    Fill = Brushes.Black,
+                    OpacityMask = new RadialGradientBrush(new GradientStopCollection(new List<GradientStop>
                     {
-                        if (hints.IsHintsForKill[i, j])
-                        {
-                            var ellipse = new Ellipse
-                            {
-                                Opacity = 0.2,
-                                Width = sizeSell,
-                                Height = sizeSell,
-                                Fill = Brushes.Black,
-                                OpacityMask = new RadialGradientBrush(new GradientStopCollection(new List<GradientStop>
-                                {
-                                    new GradientStop((Color)ColorConverter.ConvertFromString("#FFB94444") ,0.8),
-                                    new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFFFF") ,0.79),
-                                }))
-                            };
+                        new GradientStop((Color)ColorConverter.ConvertFromString("#FFB94444") ,0.8),
+                        new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFFFF") ,0.79),
+                    }))
+                };
 
-                            Canvas.SetLeft(ellipse, j * sizeSell);
-                            Canvas.SetTop(ellipse, i * sizeSell);
+                Canvas.SetLeft(ellipse, killPoint.Y * sizeSell);
+                Canvas.SetTop(ellipse, killPoint.X * sizeSell);
 
-                            canvasHints.Children.Add(ellipse);
-                        }
-
-                        if (hints.IsHintsForMove[i, j])
-                        {
-                            var ellipse = new Ellipse
-                            {
-                                Opacity = 0.2,
-                                // ReSharper disable once PossibleLossOfFraction
-                                Width = sizeSell / 3,
-                                // ReSharper disable once PossibleLossOfFraction
-                                Height = sizeSell / 3,
-                                Fill = Brushes.Black
-                            };
-                            Canvas.SetLeft(ellipse, j * sizeSell + sizeSell / 3);
-                            Canvas.SetTop(ellipse, i * sizeSell + sizeSell / 3);
-
-                            canvasHints.Children.Add(ellipse);
-                        }
-                    }
-                }
+                canvasHints.Children.Add(ellipse);
             }
         }
 

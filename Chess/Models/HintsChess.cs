@@ -1,9 +1,12 @@
-﻿namespace Chess.Models
+﻿using System.Collections.Generic;
+using System.Drawing;
+
+namespace Chess.Models
 {
     public class HintsChess
     {
-        public bool[,]? IsHintsForMove { get; set; } 
-        public bool[,]? IsHintsForKill { get; set; }
+        public List<Point> IsHintsForMove { get; set; } = new List<Point>();
+        public List<Point> IsHintsForKill { get; set; } = new List<Point>();
 
     }
 }

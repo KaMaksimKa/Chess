@@ -19,7 +19,7 @@ namespace Chess.Models
             
         }
 
-        public bool IsCheck(Point startPoint, Point endPoint)
+        public bool IsCheck(ChangePosition? changePosition)
         {
             for (int i = 0; i < 8; i++)
             {
@@ -27,18 +27,27 @@ namespace Chess.Models
                 {
                     if (ArrayBoard[i, j] is King king && king.Team == WhoseMove)
                     {
-                        if (ArrayBoard[startPoint.X, startPoint.Y] is not King)
+                        if (changePosition is { })
                         {
-                            return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
-                                    .Move(startPoint, endPoint, this) ?? new MoveInfo()
-                                , new Point(i, j), king.Team);
+                            var startPoint = changePosition.StartPoint;
+                            var endPoint = changePosition.EndPoint;
+                            if (ArrayBoard[startPoint.X, startPoint.Y] is not King)
+                            {
+                                return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
+                                        .Move(startPoint, endPoint, this),
+                                    new Point(i, j), king.Team);
+                            }
+                            else
+                            {
+                                return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
+                                        .Move(startPoint, endPoint, this), endPoint, king.Team);
+                            }
                         }
                         else
                         {
-                            return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
-                                    .Move(startPoint, endPoint, this) ?? new MoveInfo()
-                                , endPoint, king.Team);
+                            return IsCellForKill(null, new Point(i, j), king.Team);
                         }
+                        
                     }
                 }
             }
@@ -55,7 +64,7 @@ namespace Chess.Models
                 ArrayBoard[startPoint.X, startPoint.Y] is { } piece &&
                 piece.Team == WhoseMove &&
                 piece.Move(startPoint, endPoint, this) is {} moveInfo &&
-                !IsCheck(startPoint, endPoint))
+                !IsCheck(new ChangePosition{StartPoint = startPoint,EndPoint = endPoint}))
             {
                 return moveInfo;
             }
@@ -131,7 +140,7 @@ namespace Chess.Models
 
             for (int i = 0; i < 8; i++)
             {
-                /*board[1,i] = new WhitePawn(PawnDirection.Up);*/
+                board[1, i] = new WhitePawn(PawnDirection.Up);
             }
 
             board[0,0] = new WhiteRook();
@@ -149,16 +158,16 @@ namespace Chess.Models
 
             for (int i = 0; i < 8; i++)
             {
-                /*board[6,i] = new BlackPawn(PawnDirection.Down);*/
+                board[6, i] = new BlackPawn(PawnDirection.Down);
             }
 
             board[7,0] = new BlackRook();
-            /*board[7,7] = new BlackRook();
-            board[7,1] = new BlackKnight();
-            board[7,6] = new BlackKnight();
-            board[7,2] = new BlackBishop();
-            board[7,5] = new BlackBishop();
-            board[7,4] = new BlackQueen();*/
+            board[7, 7] = new BlackRook();
+            board[7, 1] = new BlackKnight();
+            board[7, 6] = new BlackKnight();
+            board[7, 2] = new BlackBishop();
+            board[7, 5] = new BlackBishop();
+            board[7, 4] = new BlackQueen();
             board[7,3] = new BlackKing();
 
             #endregion
@@ -187,7 +196,7 @@ namespace Chess.Models
 
         }
 
-        public bool IsCellForKill(MoveInfo moveInfo,Point checkPoint,TeamEnum team)
+        public bool IsCellForKill(MoveInfo? moveInfo,Point checkPoint,TeamEnum team)
         {
             if (this.Clone() is Board board)
             {
@@ -209,23 +218,26 @@ namespace Chess.Models
             return false;
         }
 
-        protected static void Move(MoveInfo moveInfo, Board board)
+        protected static void Move(MoveInfo? moveInfo, Board board)
         {
-            if (moveInfo.KillPoint is { } killPoint)
+            if (moveInfo is { })
             {
-                board.ArrayBoard[killPoint.X, killPoint.Y] = null;
-            }
-
-            if (moveInfo.ChangePositions is { } changePositions)
-            {
-                foreach (var (startP, endP) in changePositions)
+                if (moveInfo.KillPoint is { } killPoint)
                 {
-                    board.ArrayBoard[endP.X, endP.Y] = board.ArrayBoard[startP.X, startP.Y];
-                    board.ArrayBoard[startP.X, startP.Y] = null;
-                    board.LastMoveInfo = moveInfo;
-                    if (board.ArrayBoard[endP.X, endP.Y] is { } p)
+                    board.ArrayBoard[killPoint.X, killPoint.Y] = null;
+                }
+
+                if (moveInfo.ChangePositions is { } changePositions)
+                {
+                    foreach (var (startP, endP) in changePositions)
                     {
-                        p.IsFirstMove = false;
+                        board.ArrayBoard[endP.X, endP.Y] = board.ArrayBoard[startP.X, startP.Y];
+                        board.ArrayBoard[startP.X, startP.Y] = null;
+                        board.LastMoveInfo = moveInfo;
+                        if (board.ArrayBoard[endP.X, endP.Y] is { } p)
+                        {
+                            p.IsFirstMove = false;
+                        }
                     }
                 }
             }

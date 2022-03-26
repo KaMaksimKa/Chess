@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
@@ -150,6 +151,47 @@ namespace Chess.ViewModels
             _currentBoardId = 0;
 
         }
+
+        public bool IsMate()
+        {
+            for (byte i = 0; i < 8; i++)
+            {
+                for (byte j = 0; j < 8; j++)
+                {
+                    if (GetHintsChess(new Point(i, j)).IsHintsForMove.Count > 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public HintsChess GetHintsChess(Point point)
+        {
+            List<Point> hintsForMove = new List<Point>();
+            List<Point> hintsForKill = new List<Point>();
+
+            for (byte i = 0; i < 8; i++)
+            {
+                for (byte j = 0; j < 8; j++)
+                {
+                    if (ChessBoard.IsMove(point, new Point(i, j)) is { } moveInfo)
+                    {
+                        if (moveInfo.KillPoint != null)
+                        {
+                            hintsForKill.Add(new Point(i, j));
+                        }
+                        else if (moveInfo.ChangePositions != null)
+                        {
+                            hintsForMove.Add(new Point(i, j));
+                        }
+                    }
+                }
+            }
+            return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
+        }
         public void Move()
         {
             if (StartPoint is { } startPoint && EndPoint is { } endPoint)
@@ -159,6 +201,7 @@ namespace Chess.ViewModels
                     MoveInfo = moveInfo;
                     
                     ChessBoard.WhoseMove = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+
 
                     if (_currentBoardId + 1 != _listChessBoards.Count)
                     {
@@ -171,7 +214,19 @@ namespace Chess.ViewModels
                         _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
                         _currentBoardId += 1;
                     }
-                    
+
+                    if (IsMate())
+                    {
+                        if (ChessBoard.IsCheck(null))
+                        {
+                            MessageBox.Show("Шах и мат ");
+                        }
+                        else
+                        {
+                            MessageBox.Show("Ничья ");
+                        }
+                    }
+
                 }
                 else
                 {
@@ -185,28 +240,7 @@ namespace Chess.ViewModels
 
             await Task.Run(() =>
             {
-                bool[,] hintsForMove = new bool[8, 8];
-                bool[,] hintsForKill = new bool[8, 8];
-                
-                for (byte i = 0; i < 8; i++)
-                {
-                    for (byte j = 0; j < 8; j++)
-                    {
-                        if (ChessBoard.IsMove(startPoint, new Point(i, j)) is {} moveInfo)
-                        {
-                            if (moveInfo.KillPoint != null)
-                            {
-                                hintsForKill[i, j] = true;
-                            }
-                            else if (moveInfo.ChangePositions != null)
-                            {
-                                hintsForMove[i, j] = true;
-                            }
-                        }
-                    }
-                }
-
-                Hints =  new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
+                Hints = GetHintsChess(startPoint);
             });
         }
 
