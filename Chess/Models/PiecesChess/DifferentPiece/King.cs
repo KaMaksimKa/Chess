@@ -5,9 +5,9 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal class King:Piece
+    internal abstract class King:Piece
     {
-        public King(string icon, TeamEnum team) : base(icon, team)
+        protected King(string icon, TeamEnum team) : base(icon, team)
         {
         }
 
@@ -77,10 +77,6 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                                         new ChangePosition(new Point(startPoint.X, 0), point),
                                     }
                                 };
-                                if (board.IsCellForKill(checkMoveInfo, point, Team))
-                                {
-                                    return null;
-                                }
                             }
 
                             return new MoveInfo
@@ -113,9 +109,5 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             return null;
         }
 
-        public override object Clone()
-        {
-            return new King(Icon, Team) { IsFirstMove = IsFirstMove };
-        }
     }
 }

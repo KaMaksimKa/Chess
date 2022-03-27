@@ -5,9 +5,9 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal class Bishop:Piece
+    internal abstract class Bishop:Piece
     {
-        public Bishop(string icon, TeamEnum team) : base(icon, team)
+        protected Bishop(string icon, TeamEnum team) : base(icon, team)
         {
         }
 
@@ -45,10 +45,5 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             return null;
         }
 
-
-        public override object Clone()
-        {
-            return new Bishop(Icon, Team) {IsFirstMove = IsFirstMove};
-        }
     }
 }

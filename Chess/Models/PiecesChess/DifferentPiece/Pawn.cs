@@ -10,12 +10,13 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         Up,
         Down
     }
-    internal class Pawn:Piece
+    internal abstract class Pawn:Piece
     {
-        private readonly PawnDirection _direction;
-        public Pawn(string icon, TeamEnum team, PawnDirection direction) : base(icon, team)
+        protected readonly PawnDirection Direction;
+
+        protected Pawn(string icon, TeamEnum team, PawnDirection direction) : base(icon, team)
         {
-            _direction = direction;
+            Direction = direction;
         }
 
         private MoveInfo? IsMove(Point startPoint, Point endPoint,Board board)
@@ -23,7 +24,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
-            if (_direction == PawnDirection.Up)
+            if (Direction == PawnDirection.Up)
             {
                 if (IsFirstMove)
                 {
@@ -75,7 +76,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
-            if (_direction == PawnDirection.Up)
+            if (Direction == PawnDirection.Up)
             {
                 if (xChange != 1 || Math.Abs(yChange) != 1)
                 {
@@ -115,7 +116,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
-            if (_direction == PawnDirection.Up)
+            if (Direction == PawnDirection.Up)
             {
                 if (xChange == 1 && Math.Abs(yChange) == 1 &&
                     board.LastMoveInfo.ChangePositions is {} changePositions)
@@ -175,10 +176,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
             return null;
         }
-        public override object Clone()
-        {
-            return new Pawn(Icon, Team,_direction) { IsFirstMove = IsFirstMove };
-        }
+        
 
     }
 }

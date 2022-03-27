@@ -5,9 +5,9 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal class Queen:Piece
+    internal abstract class Queen:Piece
     {
-        public Queen(string icon, TeamEnum team) : base(icon, team)
+        protected Queen(string icon, TeamEnum team) : base(icon, team)
         {
         }
 
@@ -43,10 +43,6 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 return moveInfoIsMove;
             }
             return null;
-        }
-        public override object Clone()
-        {
-            return new Queen(Icon, Team) { IsFirstMove = IsFirstMove };
         }
     }
 }

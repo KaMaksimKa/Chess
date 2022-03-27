@@ -16,8 +16,8 @@
     <Grid>
         <uc:ChessBoardUserControl SizeBoard="300"  
                                   MoveInfo="{Binding MoveInfo,Mode=OneWay}"
-                                  StartPoint="{Binding StartPoint,Mode=TwoWay}"
-                                  EndPoint="{Binding EndPoint,Mode=TwoWay}"
+                                  StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
+                                  EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
                                   Hints="{Binding Hints}"
                                   BoardForDraw="{Binding BoardForDraw,Mode=OneWay}"></uc:ChessBoardUserControl>
 

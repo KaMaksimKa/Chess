@@ -12,5 +12,9 @@ namespace Chess.Models.PiecesChess
         {
             return "W_Roo";
         }
+        public override object Clone()
+        {
+            return new WhiteRook() { IsFirstMove = IsFirstMove };
+        }
     }
 }

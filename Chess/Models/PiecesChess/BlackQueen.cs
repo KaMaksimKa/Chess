@@ -12,5 +12,9 @@ namespace Chess.Models.PiecesChess
         {
             return "B_Que";
         }
+        public override object Clone()
+        {
+            return new BlackQueen() { IsFirstMove = IsFirstMove };
+        }
     }
 }

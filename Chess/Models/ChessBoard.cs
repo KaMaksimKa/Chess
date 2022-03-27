@@ -9,6 +9,7 @@ namespace Chess.Models
 {
     internal class ChessBoard:Board
     {
+        public event Action<MoveInfo?>? ChessBoardMovedEvent;
         public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
         public ChessBoard()
         {
@@ -31,17 +32,10 @@ namespace Chess.Models
                         {
                             var startPoint = changePosition.StartPoint;
                             var endPoint = changePosition.EndPoint;
-                            if (ArrayBoard[startPoint.X, startPoint.Y] is not King)
-                            {
-                                return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
-                                        .Move(startPoint, endPoint, this),
-                                    new Point(i, j), king.Team);
-                            }
-                            else
-                            {
-                                return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
-                                        .Move(startPoint, endPoint, this), endPoint, king.Team);
-                            }
+                            
+                            return IsCellForKill(ArrayBoard[startPoint.X, startPoint.Y]?
+                                    .Move(startPoint, endPoint, this),
+                                new Point(i, j), king.Team);
                         }
                         else
                         {
@@ -77,10 +71,14 @@ namespace Chess.Models
             if (IsMove(startPoint,endPoint) is {} moveInfo)
             {
                 Board.Move(moveInfo,this);
-                return moveInfo;
+
+                WhoseMove = WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+
+                ChessBoardMovedEvent?.Invoke(moveInfo);
                 
+                return moveInfo;
             }
-            
+            ChessBoardMovedEvent?.Invoke(null);
             return null;
             
 
@@ -99,7 +97,12 @@ namespace Chess.Models
                     arrayBoard[i,j] = ArrayBoard[i,j]?.Clone() as Piece;
                 }
             }
-            return new ChessBoard(arrayBoard) {WhoseMove = WhoseMove,LastMoveInfo = LastMoveInfo};
+            return new ChessBoard(arrayBoard) 
+            {
+                WhoseMove = WhoseMove,
+                LastMoveInfo = LastMoveInfo,
+                ChessBoardMovedEvent = ChessBoardMovedEvent
+            };
         }
     }
 
@@ -140,17 +143,17 @@ namespace Chess.Models
 
             for (int i = 0; i < 8; i++)
             {
-                board[1, i] = new WhitePawn(PawnDirection.Up);
+                board[6, i] = new WhitePawn(PawnDirection.Down);
             }
 
-            board[0,0] = new WhiteRook();
-            board[0,7] = new WhiteRook();
-            board[0,1] = new WhiteKnight();
-            board[0,6] = new WhiteKnight();
-            board[0,2] = new WhiteBishop();
-            board[0,5] = new WhiteBishop();
-            board[0,3] = new WhiteKing();
-            board[0,4] = new WhiteQueen();
+            board[7,0] = new WhiteRook();
+            board[7,7] = new WhiteRook();
+            board[7,1] = new WhiteKnight();
+            board[7,6] = new WhiteKnight();
+            board[7,2] = new WhiteBishop();
+            board[7,5] = new WhiteBishop();
+            board[7,3] = new WhiteKing();
+            board[7,4] = new WhiteQueen();
 
             #endregion
 
@@ -158,17 +161,17 @@ namespace Chess.Models
 
             for (int i = 0; i < 8; i++)
             {
-                board[6, i] = new BlackPawn(PawnDirection.Down);
+                board[1, i] = new BlackPawn(PawnDirection.Up);
             }
 
-            board[7,0] = new BlackRook();
-            board[7, 7] = new BlackRook();
-            board[7, 1] = new BlackKnight();
-            board[7, 6] = new BlackKnight();
-            board[7, 2] = new BlackBishop();
-            board[7, 5] = new BlackBishop();
-            board[7, 4] = new BlackQueen();
-            board[7,3] = new BlackKing();
+            board[0,0] = new BlackRook();
+            board[0, 7] = new BlackRook();
+            board[0, 1] = new BlackKnight();
+            board[0, 6] = new BlackKnight();
+            board[0, 2] = new BlackBishop();
+            board[0, 5] = new BlackBishop();
+            board[0, 4] = new BlackQueen();
+            board[0,3] = new BlackKing();
 
             #endregion
 
@@ -200,7 +203,22 @@ namespace Chess.Models
         {
             if (this.Clone() is Board board)
             {
+                var checkPiece = board[checkPoint.X, checkPoint.Y];
+
                 Board.Move(moveInfo,board);
+
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if (board[i, j] == checkPiece)
+                        {
+                            checkPoint = new Point(i, j);
+                        }
+                    }
+                }
+
+
                 for (int i = 0; i < 8; i++)
                 {
                     for (int j = 0; j < 8; j++)
@@ -218,7 +236,7 @@ namespace Chess.Models
             return false;
         }
 
-        protected static void Move(MoveInfo? moveInfo, Board board)
+        public static void Move(MoveInfo? moveInfo, Board board)
         {
             if (moveInfo is { })
             {
@@ -233,11 +251,13 @@ namespace Chess.Models
                     {
                         board.ArrayBoard[endP.X, endP.Y] = board.ArrayBoard[startP.X, startP.Y];
                         board.ArrayBoard[startP.X, startP.Y] = null;
-                        board.LastMoveInfo = moveInfo;
+                        
                         if (board.ArrayBoard[endP.X, endP.Y] is { } p)
                         {
                             p.IsFirstMove = false;
                         }
+
+                        board.LastMoveInfo = moveInfo;
                     }
                 }
             }

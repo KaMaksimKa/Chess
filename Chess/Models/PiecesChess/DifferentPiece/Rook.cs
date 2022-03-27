@@ -5,7 +5,7 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal class Rook:Piece
+    internal abstract class Rook:Piece
     {
         public Rook(string icon, TeamEnum team) : base(icon, team)
         {
@@ -43,9 +43,6 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             }
             return null;
         }
-        public override object Clone()
-        {
-            return new Rook(Icon, Team) { IsFirstMove = IsFirstMove };
-        }
+        
     }
 }

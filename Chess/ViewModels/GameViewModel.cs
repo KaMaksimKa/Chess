@@ -4,7 +4,8 @@ using System.Windows;
 using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
-using Chess.Models.PiecesChess.Base;
+using Chess.Models.BotChess;
+
 using Chess.ViewModels.Base;
 using Point = System.Drawing.Point;
 
@@ -14,6 +15,11 @@ namespace Chess.ViewModels
     {
         private List<ChessBoard> _listChessBoards = new List<ChessBoard>();
         private int _currentBoardId;
+        /*private readonly BotChess _botChess = new BotChess();*/
+
+        private readonly Player _playerWhite;
+        private readonly Player _playerBlack;
+        private Player _currentPlayer;
 
         #region Свойство ChessBoard
 
@@ -59,11 +65,12 @@ namespace Chess.ViewModels
             set
             {
                 Set(ref _startPoint, value);
-                if (value is not null)
+
+                if (_currentPlayer is SelfPlayer selfPlayer)
                 {
-                    SetNewHintsChessAsync((Point)value);
+                    selfPlayer.StartPoint = value;
+                    SetNewHintsChessAsync(value);
                 }
-                    
             }
         }
 
@@ -77,11 +84,20 @@ namespace Chess.ViewModels
             set
             {
                 Set(ref _endPoint, value);
-                Move();
+
+                if (_currentPlayer is SelfPlayer selfPlayer)
+                {
+                    selfPlayer.EndPoint = value;
+                    if (selfPlayer.StartPoint is { } && selfPlayer.EndPoint is { })
+                    {
+                        selfPlayer.Move();
+                    }
+                }
                 if (StartPoint == null)
                 {
                     Hints = new HintsChess();
                 }
+                
             }
         }
         #endregion
@@ -111,6 +127,8 @@ namespace Chess.ViewModels
             {
                 _currentBoardId += 1;
                 ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
+                _playerWhite.ChessBoard = ChessBoard;
+                _playerBlack.ChessBoard = ChessBoard;
             }
         }
 
@@ -128,6 +146,8 @@ namespace Chess.ViewModels
             {
                 _currentBoardId -= 1;
                 ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
+                _playerWhite.ChessBoard = ChessBoard;
+                _playerBlack.ChessBoard = ChessBoard;
             }
         }
 
@@ -146,6 +166,12 @@ namespace Chess.ViewModels
             #endregion
 
             ChessBoard = new ChessBoard();
+            ChessBoard.ChessBoardMovedEvent += MovedAsync;
+
+
+            _playerWhite = new SelfPlayer(TeamEnum.WhiteTeam, ChessBoard);
+            _playerBlack = new BotChess(TeamEnum.BlackTeam, ChessBoard);
+            _currentPlayer = _playerWhite;
 
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
@@ -168,41 +194,99 @@ namespace Chess.ViewModels
             return true;
         }
 
-        public HintsChess GetHintsChess(Point point)
+        public HintsChess GetHintsChess(Point? startPoint)
         {
             List<Point> hintsForMove = new List<Point>();
             List<Point> hintsForKill = new List<Point>();
-
-            for (byte i = 0; i < 8; i++)
+            if (startPoint is { } point)
             {
-                for (byte j = 0; j < 8; j++)
+                for (byte i = 0; i < 8; i++)
                 {
-                    if (ChessBoard.IsMove(point, new Point(i, j)) is { } moveInfo)
+                    for (byte j = 0; j < 8; j++)
                     {
-                        if (moveInfo.KillPoint != null)
+                        if (ChessBoard.IsMove(point, new Point(i, j)) is { } moveInfo)
                         {
-                            hintsForKill.Add(new Point(i, j));
-                        }
-                        else if (moveInfo.ChangePositions != null)
-                        {
-                            hintsForMove.Add(new Point(i, j));
+                            if (moveInfo.KillPoint != null)
+                            {
+                                hintsForKill.Add(new Point(i, j));
+                            }
+                            else if (moveInfo.ChangePositions != null)
+                            {
+                                hintsForMove.Add(new Point(i, j));
+                            }
                         }
                     }
                 }
             }
             return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
         }
-        public void Move()
+
+        public void SaveStateChessBoard()
         {
-            if (StartPoint is { } startPoint && EndPoint is { } endPoint)
+            if (_currentBoardId + 1 != _listChessBoards.Count)
             {
+                _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId + 1);
+                _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
+                _currentBoardId += 1;
+            }
+            else
+            {
+                _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
+                _currentBoardId += 1;
+            }
+        }
+        public async void MovedAsync(MoveInfo? moveInfo)
+        {
+            
+            if (moveInfo is { })
+            {
+                if (_currentPlayer is SelfPlayer selfPlayer)
+                {
+                    selfPlayer.StartPoint = null;
+                    selfPlayer.EndPoint = null;
+                }
+                _currentPlayer = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? _playerWhite : _playerBlack;
+                
+                if (IsMate())
+                {
+                    if (ChessBoard.IsCheck(null))
+                    {
+                        MessageBox.Show("Шах и мат ");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Ничья ");
+                    }
+                }
+                MoveInfo = moveInfo;
+            }
+            else
+            {
+                MoveInfo = new MoveInfo();
+            }
+
+            
+            if (_currentPlayer is BotChess botChess)
+            {
+                await Task.Run(() => botChess.Move());
+                
+                SaveStateChessBoard();
+            }
+
+            if (_playerBlack is SelfPlayer && _playerWhite is SelfPlayer && moveInfo is {})
+            {
+                SaveStateChessBoard();
+            }
+
+        }
+
+        public MoveInfo Move(Point startPoint,Point endPoint)
+        {
+            
+            /*if (_team == ChessBoard.WhoseMove)
+            {*/
                 if (ChessBoard.Move(startPoint, endPoint) is { } moveInfo)
                 {
-                    MoveInfo = moveInfo;
-                    
-                    ChessBoard.WhoseMove = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-
-
                     if (_currentBoardId + 1 != _listChessBoards.Count)
                     {
                         _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId + 1);
@@ -215,27 +299,34 @@ namespace Chess.ViewModels
                         _currentBoardId += 1;
                     }
 
-                    if (IsMate())
+                if (IsMate())
+                {
+                    if (ChessBoard.IsCheck(null))
                     {
-                        if (ChessBoard.IsCheck(null))
-                        {
-                            MessageBox.Show("Шах и мат ");
-                        }
-                        else
-                        {
-                            MessageBox.Show("Ничья ");
-                        }
+                        MessageBox.Show("Шах и мат ");
                     }
-
+                    else
+                    {
+                        MessageBox.Show("Ничья ");
+                    }
+                }
+                StartPoint = null;
+                    EndPoint = null;
+                return moveInfo;
                 }
                 else
                 {
-                    MoveInfo = new MoveInfo();
+                    EndPoint = null;
+                    return new MoveInfo();
                 }
-
-            }
+            /*}
+            else
+            {
+                return new MoveInfo();
+            }*/
+            
         }
-        private async void SetNewHintsChessAsync(Point startPoint)
+        private async void SetNewHintsChessAsync(Point? startPoint)
         {
 
             await Task.Run(() =>
