@@ -77,6 +77,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                                         new ChangePosition(new Point(startPoint.X, 0), point),
                                     }
                                 };
+                                if (board.IsCellForKill(checkMoveInfo, point, Team))
+                                {
+                                    return null;
+                                }
                             }
 
                             return new MoveInfo
