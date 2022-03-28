@@ -12,7 +12,7 @@ namespace Chess.Views.UserControls
 {
     public partial class ChessBoardUserControl : UserControl
     {
-        private Point? _movePoint;
+        private Point? _currentMovePoint;
         private readonly Image?[,] _images = new Image?[8, 8];
 
         #region Свойство SizeBoard
@@ -90,20 +90,26 @@ namespace Chess.Views.UserControls
 
             if (moveInfo.KillPoint == null && moveInfo.ChangePositions == null)
             {
-                if (control.EndPoint is { } endP && control._images[endP.X, endP.Y] is { })
+                if (control.EndPoint is { } endP &&
+                    endP.X is <=7 and >= 0 &&
+                    endP.Y is <= 7 and >= 0&&
+                    control._images[endP.X, endP.Y] is { })
                 {
                     control.StartPoint = new System.Drawing.Point(endP.X, endP.Y);
                     control.EndPoint = null;
+                   
                 }
                 else
                 {
                     control.EndPoint = null;
+                    control._currentMovePoint = null;
                 }
             }
             else
             {
                 control.StartPoint = null;
                 control.EndPoint = null;
+                control._currentMovePoint = null;
             }
         }
 
@@ -288,7 +294,7 @@ namespace Chess.Views.UserControls
 
             #region Нарисовать последний ход
 
-            if (((BoardForDraw) e.NewValue)?.LastMoveInfo?.ChangePositions is { } changePositions)
+            if (((BoardForDraw) e.NewValue).LastMoveInfo?.ChangePositions is { } changePositions)
             {
                 foreach (var (startP,endP) in changePositions)
                 {
@@ -388,60 +394,74 @@ namespace Chess.Views.UserControls
 
         #region Анимация перемечения фигур
 
+        private void ReplaceImg(Image img,Point p)
+        {
+            
+            Image newImg = new Image { Width = img.Width, Height = img.Height, Source = img.Source };
+            CanvasPieces.Children.Remove(img);
+            newImg.MouseDown += Piece_OnMouseDown;
+            newImg.MouseMove += Piece_OnMouseMove;
+            newImg.MouseUp += Piece_OnMouseUp;
+            Canvas.SetLeft(newImg, p.X);
+            Canvas.SetTop(newImg, p.Y);
+            CanvasPieces.Children.Add(newImg);
+            _images[(int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell)] = newImg;
+
+
+            newImg.CaptureMouse();
+            
+            
+        }
         private void Piece_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             Image img = (Image)sender;
-            _movePoint = e.GetPosition(img);
-            Point p = e.GetPosition(this) - (Vector)_movePoint.Value;
-            if (StartPoint == null)
+            _currentMovePoint = e.GetPosition(img);
+            
+            Point p = e.GetPosition(this) - (Vector)e.GetPosition(img);
+
+            System.Drawing.Point point = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
+            if (StartPoint == null || StartPoint == point)
             {
-                StartPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
-
-
-                Image newImg = new Image { Width = img.Width, Height = img.Height, Source = img.Source };
-                newImg.MouseDown += Piece_OnMouseDown;
-                newImg.MouseMove += Piece_OnMouseMove;
-                newImg.MouseUp += Piece_OnMouseUp;
-                Canvas.SetLeft(newImg, _movePoint.Value.X);
-                Canvas.SetTop(newImg, _movePoint.Value.Y);
-                CanvasPieces.Children.Add(newImg);
-                _images[StartPoint.Value.X, StartPoint.Value.Y] = newImg;
-
-
-                CanvasPieces.Children.Remove(img);
-
-                newImg.CaptureMouse();
+                StartPoint = point;
             }
             else
             {
-                var rp = new System.Drawing.Point((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
-                EndPoint = rp;
-                _movePoint = null;
-
+                EndPoint = point;
             }
 
+            ReplaceImg(img, p);
 
-}
+        }
 
         private void Piece_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_movePoint == null)
+            if (_currentMovePoint == null)
                 return;
             Image img = (Image)sender;
-            Point p = e.GetPosition(this) - (Vector)_movePoint.Value;
+            Point p = e.GetPosition(this) - (Vector)_currentMovePoint.Value;
             EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
-            _movePoint = null;
+            _currentMovePoint = null;
             img.ReleaseMouseCapture();
         }
 
         private void Piece_OnMouseMove(object sender, MouseEventArgs e)
         {
-            if (_movePoint == null)
-                return;
             Image img = (Image)sender;
-            Point p = e.GetPosition(this) - (Vector)_movePoint.Value;
+            if (_currentMovePoint == null || StartPoint == null)
+                return;
+            
+            Point p = e.GetPosition(this) - (Vector)_currentMovePoint.Value;
             Canvas.SetLeft(img, p.X);
             Canvas.SetTop(img, p.Y);
+            /*if ((int)Math.Round(p.X / _sizeCell) == 3 && (int)Math.Round(p.Y / _sizeCell) == 3 )
+            {
+                Canvas.SetLeft(img, p.X);
+                Canvas.SetTop(img, p.Y);
+                var l = Canvas.GetLeft(img);
+                var t = Canvas.GetTop(img);
+
+            }*/
+
         }
 
         #endregion
