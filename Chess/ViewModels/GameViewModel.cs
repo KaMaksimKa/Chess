@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
+using Chess.Models.Boards;
 using Chess.Models.Players;
 using Chess.Models.Players.Base;
 using Chess.ViewModels.Base;
@@ -164,12 +165,12 @@ namespace Chess.ViewModels
                                                                 CanPrevStateStateChessBoardCommandExecute);
             #endregion
 
-            ChessBoard = new ChessBoard();
+            ChessBoard = new Chess960Board();
             ChessBoard.ChessBoardMovedEvent += MovedAsync;
 
 
             _playerWhite = new SelfPlayer(TeamEnum.WhiteTeam, ChessBoard);
-            _playerBlack = new SelfPlayer(TeamEnum.BlackTeam, ChessBoard);
+            _playerBlack = new BotPlayer(TeamEnum.BlackTeam, ChessBoard);
             _currentPlayer = _playerWhite;
 
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());

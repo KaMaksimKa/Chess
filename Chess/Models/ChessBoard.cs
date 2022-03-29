@@ -42,7 +42,7 @@ namespace Chess.Models
                 piece.Team == WhoseMove)
             {
                 var moves = piece.GetMoves(startP, this);
-                return moves?.Where(i => !IsCheck(i.Value))
+                return moves.Where(i => !IsCheck(i.Value))
                     .ToDictionary(i => i.Key, i => i.Value);
             }
 
@@ -107,7 +107,7 @@ namespace Chess.Models
         public MoveInfo LastMoveInfo { get; set; } = new MoveInfo();
         public Board()
         {
-            ArrayBoard = GetNewBoard();
+            ArrayBoard = GetNewClassicBoard();
         }
 
         public Board(Piece?[,] arrayBoard)
@@ -115,17 +115,10 @@ namespace Chess.Models
             ArrayBoard = arrayBoard;
         }
         
-        private static Piece?[,] GetNewBoard()
+        private static Piece?[,] GetNewClassicBoard()
         {
             Piece?[,] board = new Piece?[8,8];
-            #region Создание пустых ячеек
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                    board[i,j] = null;
-            }
-            #endregion
-
+            
             #region Создание белой команды
 
             for (int i = 0; i < 8; i++)
