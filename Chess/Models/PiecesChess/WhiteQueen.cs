@@ -12,9 +12,5 @@ namespace Chess.Models.PiecesChess
         {
             return "W_Que";
         }
-        public override object Clone()
-        {
-            return new WhiteQueen() { IsFirstMove = IsFirstMove };
-        }
     }
 }

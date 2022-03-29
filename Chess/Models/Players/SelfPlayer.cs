@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using System.Drawing;
 using System.Threading.Tasks;
+using Chess.Models.Players.Base;
 
-namespace Chess.Models
+namespace Chess.Models.Players
 {
     internal class SelfPlayer:Player
     {

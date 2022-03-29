@@ -1,5 +1,4 @@
 ﻿
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Chess.Models.PiecesChess.Base;
@@ -12,40 +11,47 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         {
         }
 
-        private MoveInfo? IsMove(Point startPoint, Point endPoint,Board board)
+        public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {
-            var xChange = endPoint.X - startPoint.X;
-            var yChange = endPoint.Y - startPoint.Y;
-
-            if (((Math.Abs(xChange) == 2 && Math.Abs(yChange) == 1) ||
-                (Math.Abs(xChange) == 1 && Math.Abs(yChange) == 2)) &&
-                board[endPoint.X, endPoint.Y]?.Team != Team)
+            List<(short, short)> moveVectors = new List<(short, short)>
             {
-                MoveInfo moveInfo = new MoveInfo
+                (2, 1), (2, -1), (-2, 1), (-2, -1),(1, 2), (1, -2), (-1, 2), (-1, -2)
+            };
+
+            Dictionary<(Point, Point), MoveInfo> moveInfos = new Dictionary<(Point, Point), MoveInfo>();
+
+            var currentPoint = new Point();
+
+            foreach (var (xVector,yVector) in moveVectors)
+            {
+                currentPoint.X = startPoint.X + xVector;
+                currentPoint.Y = startPoint.Y + yVector;
+                if (currentPoint.X is < 0 or > 7 || currentPoint.Y is < 0 or > 7)
                 {
-                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
-                };
-                if (board[endPoint.X, endPoint.Y] != null)
-                {
-                    moveInfo.KillPoint = endPoint;
+                    continue;
                 }
-                return moveInfo;
+                if (board[currentPoint.X, currentPoint.Y]?.Team != Team)
+                {
+                    var moveInfo = new MoveInfo
+                    {
+                        ChangePositions = new[]{new ChangePosition
+                        {
+                            StartPoint = startPoint,
+                            EndPoint = currentPoint
+                        }}
+                    };
+                    if (board[currentPoint.X, currentPoint.Y] is { })
+                    {
+                        moveInfo.KillPoint = currentPoint;
+                    }
+                    moveInfos.Add((startPoint,currentPoint),moveInfo);
+                }
             }
-            
-            return null;
-            
+
+            return moveInfos;
         }
 
-
-        public override MoveInfo? Move(Point startPoint, Point endPoint, Board board)
-        {
-            if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
-            {
-                return moveInfoIsMove;
-            }
-
-            return null;
-        }
+        
         
     }
 }

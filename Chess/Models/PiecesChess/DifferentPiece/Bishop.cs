@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Windows.Documents;
 using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
@@ -10,39 +11,10 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         protected Bishop(string icon, TeamEnum team) : base(icon, team)
         {
         }
-
-        private MoveInfo? IsMove(Point startPoint, Point endPoint,Board board)
+        public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {
-            var xChange = endPoint.X - startPoint.X;
-            var yChange = endPoint.Y - startPoint.Y;
-
-            if (Math.Abs(xChange) == Math.Abs(yChange) && board[endPoint.X, endPoint.Y]?.Team != Team &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
-            {
-                var moveInfo = new MoveInfo
-                {
-                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
-                };
-                if (board[endPoint.X, endPoint.Y] != null)
-                {
-                    moveInfo.KillPoint = endPoint;
-                }
-                return moveInfo;
-            }
-
-            return null;
-        }
-
-
-        public override MoveInfo? Move(Point startPoint, Point endPoint, Board board)
-        {
-            
-            if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
-            {
-                return moveInfoIsMove;
-            }
-
-            return null;
+            List<(short, short)> moveVectors = new List<(short, short)> { (1,1),(-1,1),(1,-1),(-1,-1) };
+            return MovePieces.GetStraightMoves(moveVectors,startPoint,board,Team);
         }
 
     }

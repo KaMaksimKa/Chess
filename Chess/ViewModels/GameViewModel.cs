@@ -4,8 +4,8 @@ using System.Windows;
 using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
-using Chess.Models.BotChess;
-
+using Chess.Models.Players;
+using Chess.Models.Players.Base;
 using Chess.ViewModels.Base;
 using Point = System.Drawing.Point;
 
@@ -15,7 +15,6 @@ namespace Chess.ViewModels
     {
         private List<ChessBoard> _listChessBoards = new List<ChessBoard>();
         private int _currentBoardId;
-        /*private readonly BotChess _botChess = new BotChess();*/
 
         private readonly Player _playerWhite;
         private readonly Player _playerBlack;
@@ -170,21 +169,21 @@ namespace Chess.ViewModels
 
 
             _playerWhite = new SelfPlayer(TeamEnum.WhiteTeam, ChessBoard);
-            _playerBlack = new SelfPlayer(TeamEnum.BlackTeam, ChessBoard);
+            _playerBlack = new BotPlayer(TeamEnum.BlackTeam, ChessBoard);
             _currentPlayer = _playerWhite;
 
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
 
         }
-
         public bool IsMate()
         {
             for (byte i = 0; i < 8; i++)
             {
                 for (byte j = 0; j < 8; j++)
                 {
-                    if (GetHintsChess(new Point(i, j)).IsHintsForMove.Count > 0)
+                    var hints = GetHintsChess(new Point(i, j));
+                    if (hints.IsHintsForMove.Count > 0 || hints.IsHintsForKill.Count > 0)
                     {
                         return false;
                     }
@@ -193,34 +192,29 @@ namespace Chess.ViewModels
 
             return true;
         }
-
         public HintsChess GetHintsChess(Point? startPoint)
         {
             List<Point> hintsForMove = new List<Point>();
             List<Point> hintsForKill = new List<Point>();
-            if (startPoint is { } point)
+            
+            var moves = ChessBoard.GetMovesForPiece(startPoint);
+            if (moves != null)
             {
-                for (byte i = 0; i < 8; i++)
+                foreach (var ((_,endP),moveInfo) in moves)
                 {
-                    for (byte j = 0; j < 8; j++)
+                    if (moveInfo.KillPoint != null)
                     {
-                        if (ChessBoard.IsMove(point, new Point(i, j)) is { } moveInfo)
-                        {
-                            if (moveInfo.KillPoint != null)
-                            {
-                                hintsForKill.Add(new Point(i, j));
-                            }
-                            else if (moveInfo.ChangePositions != null)
-                            {
-                                hintsForMove.Add(new Point(i, j));
-                            }
-                        }
+                        hintsForKill.Add(endP);
+                    }
+                    else if (moveInfo.ChangePositions != null)
+                    {
+                        hintsForMove.Add(endP);
                     }
                 }
             }
+            
             return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
         }
-
         public void SaveStateChessBoard()
         {
             if (_currentBoardId + 1 != _listChessBoards.Count)
@@ -266,7 +260,7 @@ namespace Chess.ViewModels
             }
 
             
-            if (_currentPlayer is BotChess botChess)
+            if (_currentPlayer is BotPlayer botChess)
             {
                 await Task.Run(() => botChess.Move());
                 
@@ -279,60 +273,12 @@ namespace Chess.ViewModels
             }
 
         }
-
-        public MoveInfo Move(Point startPoint,Point endPoint)
-        {
-            
-            /*if (_team == ChessBoard.WhoseMove)
-            {*/
-                if (ChessBoard.Move(startPoint, endPoint) is { } moveInfo)
-                {
-                    if (_currentBoardId + 1 != _listChessBoards.Count)
-                    {
-                        _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId + 1);
-                        _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
-                        _currentBoardId += 1;
-                    }
-                    else
-                    {
-                        _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
-                        _currentBoardId += 1;
-                    }
-
-                if (IsMate())
-                {
-                    if (ChessBoard.IsCheck(null))
-                    {
-                        MessageBox.Show("Шах и мат ");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ничья ");
-                    }
-                }
-                StartPoint = null;
-                    EndPoint = null;
-                return moveInfo;
-                }
-                else
-                {
-                    EndPoint = null;
-                    return new MoveInfo();
-                }
-            /*}
-            else
-            {
-                return new MoveInfo();
-            }*/
-            
-        }
-        private async void SetNewHintsChessAsync(Point? startPoint)
+        private void SetNewHintsChessAsync(Point? startPoint)
         {
 
-            await Task.Run(() =>
-            {
+            
                 Hints = GetHintsChess(startPoint);
-            });
+            
         }
 
     }

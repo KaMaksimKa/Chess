@@ -11,9 +11,5 @@ namespace Chess.Models.PiecesChess
         {
             return "B_Paw";
         }
-        public override object Clone()
-        {
-            return new BlackPawn(Direction) { IsFirstMove = IsFirstMove };
-        }
     }
 }

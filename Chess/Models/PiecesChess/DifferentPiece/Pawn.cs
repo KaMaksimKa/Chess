@@ -12,101 +12,11 @@ namespace Chess.Models.PiecesChess.DifferentPiece
     }
     internal abstract class Pawn:Piece
     {
-        protected readonly PawnDirection Direction;
+        public readonly PawnDirection Direction;
 
         protected Pawn(string icon, TeamEnum team, PawnDirection direction) : base(icon, team)
         {
             Direction = direction;
-        }
-
-        private MoveInfo? IsMove(Point startPoint, Point endPoint,Board board)
-        {
-            var xChange = endPoint.X - startPoint.X;
-            var yChange = endPoint.Y - startPoint.Y;
-
-            if (Direction == PawnDirection.Up)
-            {
-                if (IsFirstMove)
-                {
-                    if (!(xChange == 1 || (xChange == 2)) || yChange != 0)
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    if (xChange != 1 || yChange != 0)
-                    {
-                        return null;
-                    }
-                }
-            }
-            else
-            {
-                if (IsFirstMove)
-                {
-                    if (!(xChange == -1 || (xChange == -2)) || yChange != 0)
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    if (xChange != -1 || yChange != 0)
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            if (board[endPoint.X, endPoint.Y] is null &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
-            {
-                MoveInfo moveInfo = new MoveInfo
-                {
-                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
-                };
-                return moveInfo;
-            }
-            return null;
-        }
-
-        private MoveInfo? IsKill(Point startPoint, Point endPoint,Board board)
-        {
-            var xChange = endPoint.X - startPoint.X;
-            var yChange = endPoint.Y - startPoint.Y;
-
-            if (Direction == PawnDirection.Up)
-            {
-                if (xChange != 1 || Math.Abs(yChange) != 1)
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                if (xChange != -1 || Math.Abs(yChange) != 1)
-                {
-                    return null;
-                }
-            }
-
-            if (board[endPoint.X, endPoint.Y] is { } piece &&
-                piece.Team != Team &&
-                board.CheckIsEmptySells(MovePieces.GetStraightTrajectory(startPoint, endPoint)))
-            {
-                MoveInfo moveInfo = new MoveInfo
-                {
-                    ChangePositions = new List<ChangePosition> { new ChangePosition(startPoint, endPoint) }
-                };
-                if (board[endPoint.X, endPoint.Y] != null)
-                {
-                    moveInfo.KillPoint = endPoint;
-                }
-                return moveInfo;
-            }
-
-            return null;
         }
 
         private MoveInfo EnPassant(Point startPoint, Point endPoint, Board board)
@@ -133,8 +43,6 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                             moveInfo.KillPoint = new Point(startPoint.X,endPoint.Y);
                         }
                     }
-                    
-
                 }
             }
             else
@@ -159,24 +67,72 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
             return moveInfo;
         }
-        public override MoveInfo? Move(Point startPoint, Point endPoint, Board board)
+
+        public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {
-            if (IsMove(startPoint, endPoint,board) is {} moveInfoIsMove)
+            Dictionary<(Point, Point), MoveInfo> moveInfos = new Dictionary<(Point, Point), MoveInfo>();
+
+            int direction = Direction == PawnDirection.Up ? 1 : -1;
+
+            List<(int, int)> moveVectors = new List<(int, int)>
             {
-                return moveInfoIsMove;
-            }
-            else if (IsKill(startPoint, endPoint ,board) is {} moveInfoIsKill)
+                (direction,0),(2*direction,0),(direction,1),(direction,-1)
+            };
+
+            var currPoint = new Point();
+            foreach (var (xVector, yVector) in moveVectors)
             {
-                return moveInfoIsKill;
-            }
-            else if (EnPassant(startPoint,endPoint,board) is {ChangePositions:{}} moveInfoEnPassant)
-            {
-                return moveInfoEnPassant;
+                currPoint.X = startPoint.X + xVector;
+                currPoint.Y = startPoint.Y + yVector;
+                if (currPoint.X is < 0 or > 7 || currPoint.Y is < 0 or > 7)
+                {
+                    continue;
+                }
+
+                if ((xVector, yVector) == (direction, 0) && board[currPoint.X,currPoint.Y] == null)
+                {
+                    moveInfos.Add((startPoint, currPoint), new MoveInfo
+                    {
+                        ChangePositions = new[]
+                        {
+                            new ChangePosition(startPoint,currPoint)
+                        }
+                    });
+                }
+                else if ((xVector, yVector) == (2*direction, 0) && board[currPoint.X,currPoint.Y] == null &&
+                         board[currPoint.X-direction, currPoint.Y] == null && IsFirstMove)
+                {
+                    moveInfos.Add((startPoint, currPoint), new MoveInfo
+                    {
+                        ChangePositions = new[]
+                        {
+                            new ChangePosition(startPoint,currPoint)
+                        }
+                    });
+                }
+                else if ((xVector, yVector) == (direction, 1) || (xVector, yVector) == (direction, -1))
+                {
+                    if (board[currPoint.X, currPoint.Y] is { } piece && piece.Team!=Team)
+                    {
+                        moveInfos.Add((startPoint, currPoint), new MoveInfo
+                        {
+                            KillPoint = currPoint,
+                            ChangePositions = new[]
+                            {
+                                new ChangePosition(startPoint,currPoint)
+                            }
+                        });
+                    }
+                    else if (EnPassant(startPoint,currPoint,board) is {ChangePositions:{}} moveInfoEnPassant)
+                    {
+                        moveInfos.Add((startPoint, currPoint), moveInfoEnPassant);
+                    }
+                }
+
             }
 
-            return null;
+            return moveInfos;
         }
-        
 
     }
 }

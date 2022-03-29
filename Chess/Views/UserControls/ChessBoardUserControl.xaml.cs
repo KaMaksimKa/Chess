@@ -344,11 +344,11 @@ namespace Chess.Views.UserControls
 
                     if ((i + j) % 2 == 0)
                     {
-                        rect.Fill = ((new BrushConverter()).ConvertFrom("#779556") as Brush);
+                        rect.Fill = ((new BrushConverter()).ConvertFrom("#ebecd0") as Brush);
                     }
                     else
                     {
-                        rect.Fill = ((new BrushConverter()).ConvertFrom("#ebecd0") as Brush);
+                        rect.Fill = ((new BrushConverter()).ConvertFrom("#779556") as Brush);
                     }
                     CanvasBack.Children.Add(rect);
                 }

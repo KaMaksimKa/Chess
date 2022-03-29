@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace Chess.Models
+﻿namespace Chess.Models.Players.Base
 {
     internal abstract class Player
     {
