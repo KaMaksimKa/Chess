@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
 using Chess.Models.Boards;
+using Chess.Models.Boards.Base;
 using Chess.Models.Players;
 using Chess.Models.Players.Base;
 using Chess.ViewModels.Base;

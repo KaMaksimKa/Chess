@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Threading.Tasks;
+using Chess.Models.Boards.Base;
 using Chess.Models.Players.Base;
 
 namespace Chess.Models.Players

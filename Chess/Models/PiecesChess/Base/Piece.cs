@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using Chess.Models.Boards.Base;
 
 namespace Chess.Models.PiecesChess.Base
 {

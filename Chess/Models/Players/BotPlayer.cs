@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Chess.Models.Boards.Base;
 using Chess.Models.PiecesChess;
 using Chess.Models.PiecesChess.Base;
 using Chess.Models.Players.Base;

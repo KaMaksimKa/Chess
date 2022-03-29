@@ -6,7 +6,7 @@ using Chess.Models.PiecesChess;
 using Chess.Models.PiecesChess.Base;
 using Chess.Models.PiecesChess.DifferentPiece;
 
-namespace Chess.Models
+namespace Chess.Models.Boards.Base
 {
     internal class ChessBoard:Board
     {

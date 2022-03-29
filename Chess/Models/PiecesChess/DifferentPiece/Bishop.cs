@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Documents;
+using Chess.Models.Boards.Base;
 using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece

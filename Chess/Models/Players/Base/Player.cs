@@ -1,4 +1,6 @@
-﻿namespace Chess.Models.Players.Base
+﻿using Chess.Models.Boards.Base;
+
+namespace Chess.Models.Players.Base
 {
     internal abstract class Player
     {

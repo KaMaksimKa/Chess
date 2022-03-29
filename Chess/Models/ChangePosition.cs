@@ -4,15 +4,11 @@ using System.Drawing;
 
 namespace Chess.Models
 {
-    public class ChangePosition
+    public struct ChangePosition
     {
         public Point StartPoint { get; set; }
         public Point EndPoint { get; set; }
 
-        public ChangePosition()
-        {
-            
-        }
 
         public ChangePosition(Point startPoint,Point endPoint)
         {
