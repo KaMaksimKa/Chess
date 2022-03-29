@@ -26,47 +26,28 @@ namespace Chess.Models.PiecesChess.DifferentPiece
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
-            if (Direction == PawnDirection.Up)
+            int direction = Direction == PawnDirection.Up ? 1 : -1;
+
+            if (xChange == direction && Math.Abs(yChange) == 1 &&
+                board[startPoint.X,startPoint.Y+yChange] is Pawn &&
+                board.LastMoveInfo.ChangePositions is {} changePositions)
             {
-                if (xChange == 1 && Math.Abs(yChange) == 1 &&
-                    board.LastMoveInfo.ChangePositions is {} changePositions)
+                foreach (var (startP,endP) in changePositions)
                 {
-                    foreach (var (startP,endP) in changePositions)
+                    if (startP.X == endP.X+2*direction && startP.Y == endPoint.Y &&
+                        endP.X == startPoint.X && endP.Y == endPoint.Y)
                     {
-                        if (startP.X == endP.X+2 && startP.Y == endPoint.Y &&
-                            endP.X == startPoint.X && endP.Y == endPoint.Y)
+                        moveInfo.ChangePositions = new List<ChangePosition>
                         {
-                            moveInfo.ChangePositions = new List<ChangePosition>
-                            {
-                                new ChangePosition(startPoint, endPoint)
-                            };
-                            moveInfo.KillPoint = new Point(startPoint.X,endPoint.Y);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (xChange == -1 && Math.Abs(yChange) == 1 &&
-                    board.LastMoveInfo.ChangePositions is { } changePositions)
-                {
-                    foreach (var (startP, endP) in changePositions)
-                    {
-                        if (startP.X == endP.X - 2 && startP.Y == endPoint.Y &&
-                            endP.X == startPoint.X && endP.Y == endPoint.Y)
-                        {
-                            moveInfo.ChangePositions = new List<ChangePosition>
-                            {
-                                new ChangePosition(startPoint, endPoint)
-                            };
-                            moveInfo.KillPoint = new Point(startPoint.X, endPoint.Y);
-                        }
+                            new ChangePosition(startPoint, endPoint)
+                        };
+                        moveInfo.KillPoint = new Point(startPoint.X,endPoint.Y);
                     }
                 }
             }
 
             return moveInfo;
-        }
+    }
 
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {

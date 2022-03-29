@@ -169,7 +169,7 @@ namespace Chess.ViewModels
 
 
             _playerWhite = new SelfPlayer(TeamEnum.WhiteTeam, ChessBoard);
-            _playerBlack = new BotPlayer(TeamEnum.BlackTeam, ChessBoard);
+            _playerBlack = new SelfPlayer(TeamEnum.BlackTeam, ChessBoard);
             _currentPlayer = _playerWhite;
 
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
