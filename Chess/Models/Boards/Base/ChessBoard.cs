@@ -93,14 +93,14 @@ namespace Chess.Models.Boards.Base
 
     class Board:ICloneable
     {
-        
+        public int Price { get; set; }
         public Piece? this[int i, int j]
         {
             get => ArrayBoard[i,j];
             protected set => ArrayBoard[i,j] = value;
         }
 
-        public AllPieceMoved AllPieceMoved { get; set; } = new AllPieceMoved();
+        public FactoryPiece AllPieceMoved { get; set; } = new FactoryPiece();
 
         protected readonly Piece?[,] ArrayBoard;
 
@@ -226,6 +226,17 @@ namespace Chess.Models.Boards.Base
             {
                 if (moveInfo.KillPoint is { } killPoint)
                 {
+                    if (board[killPoint.X, killPoint.Y] is { } piece)
+                    {
+                        if (piece.Team == TeamEnum.WhiteTeam)
+                        {
+                            board.Price -= piece.Price;
+                        }
+                        else
+                        {
+                            board.Price += piece.Price;
+                        }
+                    }
                     board[killPoint.X, killPoint.Y] = null;
                 }
 

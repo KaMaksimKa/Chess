@@ -8,7 +8,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class Bishop:Piece
     {
-        protected Bishop(string icon, TeamEnum team) : base(icon, team)
+        protected Bishop(string icon, TeamEnum team) : base(icon, team,30)
         {
         }
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)

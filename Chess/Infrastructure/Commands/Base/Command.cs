@@ -10,9 +10,7 @@ namespace Chess.Infrastructure.Commands.Base
             add => CommandManager.RequerySuggested += value;
             remove => CommandManager.RequerySuggested -= value;
         }
-
         public abstract bool CanExecute(object? parameter);
-
         public abstract void Execute(object? parameter);
 
     }

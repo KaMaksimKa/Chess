@@ -8,7 +8,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class Queen:Piece
     {
-        protected Queen(string icon, TeamEnum team) : base(icon, team)
+        protected Queen(string icon, TeamEnum team) : base(icon, team,90)
         {
         }
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)

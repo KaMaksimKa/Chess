@@ -5,7 +5,7 @@ using Chess.Models.PiecesChess.DifferentPiece;
 
 namespace Chess.Models.Boards.Base
 {
-    internal class AllPieceMoved
+    internal class FactoryPiece
     {
         private readonly BlackBishop _blackBishop  = new() {IsFirstMove = false};
         private readonly BlackKing _blackKing  = new() { IsFirstMove = false };
@@ -44,5 +44,6 @@ namespace Chess.Models.Boards.Base
             };
         }
 
+        
     }
 }

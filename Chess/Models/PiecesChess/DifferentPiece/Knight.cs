@@ -8,7 +8,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class Knight:Piece
     {
-        protected Knight(string icon, TeamEnum team) : base(icon, team)
+        protected Knight(string icon, TeamEnum team) : base(icon, team,30)
         {
         }
 

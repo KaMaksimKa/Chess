@@ -84,6 +84,7 @@ namespace Chess.Models.Boards
             set.Remove(posQueen);
 
             #endregion
+
             return board;
 
         }

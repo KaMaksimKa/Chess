@@ -165,8 +165,8 @@ namespace Chess.ViewModels
             PrevStateStateChessBoardCommand = new LambdaCommand(OnPrevStateStateChessBoardCommandExecuted,
                                                                 CanPrevStateStateChessBoardCommandExecute);
             #endregion
-
-            ChessBoard = new Chess960Board();
+            
+            ChessBoard = new ChessBoard();
             ChessBoard.ChessBoardMovedEvent += MovedAsync;
 
 

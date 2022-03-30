@@ -15,94 +15,56 @@ namespace Chess.Models.Players
         public BotPlayer(TeamEnum team,ChessBoard chessBoard) : base(team,chessBoard)
         {
         }
-        public int  GetPriceStateBoard(ChessBoard chessBoard,int deep)
+        public static int GetPricePiece(Piece? piece)
         {
-            if (deep == 0)
+            if (piece is { } p)
             {
-                int price = 0;
-                for (byte i = 0; i < 8; i++)
+                if (piece?.Team == TeamEnum.WhiteTeam)
                 {
-                    for (byte j = 0; j < 8; j++)
-                    {
-                        price += GetPricePiece(chessBoard[i, j]);
-                    }
+                    return p.Price;
                 }
-
-                return price;
+                else
+                {
+                    return -p.Price;
+                }
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        public int  GetPriceStateBoard(ChessBoard chessBoard,int depth)
+        {
+            if (depth == 0)
+            {
+                return chessBoard.Price;
             }
             else
             {
                 var allMoves = new List<int>();
-                if (chessBoard.WhoseMove != Team && deep > 1)
+                for (byte i = 0; i < 8; i++)
                 {
-                    var moves = new List<(MoveInfo, int)>();
-                    for (byte i = 0; i < 8; i++)
+                    for (byte j = 0; j < 8; j++)
                     {
-                        for (byte j = 0; j < 8; j++)
+                        if (chessBoard[i, j] is { } piece && piece.Team == chessBoard.WhoseMove)
                         {
-                            if (chessBoard[i, j] is { } piece && piece.Team == chessBoard.WhoseMove)
+                            var movesForPiece = chessBoard[i, j]?.GetMoves(new Point(i, j), chessBoard);
+                            if (movesForPiece != null)
                             {
-                                var movesForPiece = chessBoard[i, j]?.GetMoves(new Point(i, j), chessBoard);
-                                if (movesForPiece != null)
+                                foreach (var (_, moveInfo) in movesForPiece)
                                 {
-                                    foreach (var (_, moveInfo) in movesForPiece)
+                                    if (chessBoard.Clone() is ChessBoard board)
                                     {
-                                        if (chessBoard.Clone() is ChessBoard board)
-                                        {
-                                            Board.Move(moveInfo, board);
-                                            board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-                                            moves.Add((moveInfo, GetPriceStateBoard(board, 0)));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (chessBoard.WhoseMove == TeamEnum.WhiteTeam)
-                    {
-                        moves = moves.Where(i => i.Item2 == moves.Max(j => j.Item2)).ToList();
-                    }
-                    else
-                    {
-                        moves = moves.Where(i => i.Item2 == moves.Min(j => j.Item2)).ToList();
-
-                    }
-                    foreach (var (moveInfo, _) in moves)
-                    {
-                        if (chessBoard.Clone() is ChessBoard board)
-                        {
-                            Board.Move(moveInfo, board);
-                            board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-                            allMoves.Add(GetPriceStateBoard(board, deep - 1));
-                        }
-                    }
-                }
-                else
-                {
-                    for (byte i = 0; i < 8; i++)
-                    {
-                        for (byte j = 0; j < 8; j++)
-                        {
-                            if (chessBoard[i, j] is { } piece && piece.Team == chessBoard.WhoseMove)
-                            {
-                                var movesForPiece = chessBoard[i, j]?.GetMoves(new Point(i, j), chessBoard);
-                                if (movesForPiece != null)
-                                {
-                                    foreach (var (_, moveInfo) in movesForPiece)
-                                    {
-                                        if (chessBoard.Clone() is ChessBoard board)
-                                        {
-                                            Board.Move(moveInfo, board);
-                                            board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-                                            allMoves.Add(GetPriceStateBoard(board, deep - 1));
-                                        }
+                                        Board.Move(moveInfo, board);
+                                        board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+                                        allMoves.Add(GetPriceStateBoard(board, depth - 1));
                                     }
                                 }
                             }
                         }
                     }
                 }
+               
 
                 if (chessBoard.WhoseMove is TeamEnum.WhiteTeam)
                 {
@@ -122,43 +84,41 @@ namespace Chess.Models.Players
                 }
             }
         }
-        public (Point,Point) GetBestMove()
-        {
-        var allMoves = new List<(ChangePosition, int)>();
 
-        for (byte i = 0; i < 8; i++)
+        public MoveInfo[] GetBestMoves(ChessBoard chessBoard,TeamEnum team, int depth,out int price)
         {
-            for (byte j = 0; j < 8; j++)
+            var allMoves = new List<(MoveInfo, int)>();
+
+            for (byte i = 0; i < 8; i++)
             {
-                if (ChessBoard[i, j] is { } piece && piece.Team == Team)
+                for (byte j = 0; j < 8; j++)
                 {
-                    var movesForPiece = ChessBoard[i, j]?.GetMoves(new Point(i, j), ChessBoard);
-                    if (movesForPiece != null)
+                    if (chessBoard[i, j] is { } piece && piece.Team == team)
                     {
-                        foreach (var ((startPoint, endPoint), moveInfo) in movesForPiece)
+                        var movesForPiece = chessBoard[i, j]?.GetMoves(new Point(i, j), ChessBoard);
+                        if (movesForPiece != null)
                         {
-                            if (ChessBoard.Clone() is ChessBoard board)
+                            foreach (var (_, moveInfo) in movesForPiece)
                             {
-                                Board.Move(moveInfo, board);
-                                board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-
-
-                                allMoves.Add((new ChangePosition
+                                if (chessBoard.Clone() is ChessBoard board)
                                 {
-                                    StartPoint = startPoint,
-                                    EndPoint = endPoint
-                                }, GetPriceStateBoard(board, 3)));
+                                    Board.Move(moveInfo, board);
+                                    board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam
+                                        ? TeamEnum.BlackTeam
+                                        : TeamEnum.WhiteTeam;
+
+
+                                    allMoves.Add((moveInfo, GetPriceStateBoard(board, depth - 1)));
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        if (allMoves.Count != 0)
-        {
+
             int bestPrice;
-            if (Team is TeamEnum.BlackTeam)
+            if (team is TeamEnum.BlackTeam)
             {
                 bestPrice = allMoves.Min(moveInfo => moveInfo.Item2);
             }
@@ -168,36 +128,25 @@ namespace Chess.Models.Players
             }
 
             var bestMoves = allMoves.Where(m => m.Item2 == bestPrice).Select(m => m.Item1).ToArray();
-            var (startPoint, endPoint) = bestMoves[(new Random()).Next(0, bestMoves.Length - 1)];
-            return (startPoint, endPoint);
+            price = bestPrice;
+            return bestMoves;
         }
 
-        return (new Point(), new Point());
 
-        }
-        public static int GetPricePiece(Piece? piece)
-        {
-            return piece switch
-            {
-                WhiteKing => 900,
-                WhiteQueen => 90,
-                WhiteRook => 50,
-                WhiteBishop => 30,
-                WhiteKnight => 30,
-                WhitePawn => 10,
-                BlackKing => -900,
-                BlackQueen => -90,
-                BlackRook => -50,
-                BlackBishop => -30,
-                BlackKnight => -30,
-                BlackPawn => -10,
-                _ => 0
-            };
-        }
         public override void Move()
         {
-            var (startPoint, endPoint) = GetBestMove();
-            ChessBoard.Move(startPoint, endPoint);
+            var bestMoves = GetBestMoves(ChessBoard,Team,4,out var _);
+            if (bestMoves.Length > 0 &&
+                bestMoves[(new Random()).Next(0, bestMoves.Length - 1)].ChangePositions?.First() is {} changePosition)
+            {
+                var (startPoint, endPoint) = changePosition;
+                ChessBoard.Move(startPoint, endPoint);
+            }
+            else
+            {
+                ChessBoard.Move(new Point(0,0), new Point(0,0));
+            }
+            
         }
     }
 }
