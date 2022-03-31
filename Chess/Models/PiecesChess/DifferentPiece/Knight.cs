@@ -8,7 +8,17 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class Knight:Piece
     {
-        protected Knight(string icon, TeamEnum team) : base(icon, team,30)
+        protected Knight(string icon, TeamEnum team) : base(icon, team,30,
+            new double[8, 8]{
+                {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0},
+                {-4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0},
+                {-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0},
+                {-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0},
+                {-3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0},
+                {-3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0},
+                {-4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0},
+                { -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}
+            })
         {
         }
 

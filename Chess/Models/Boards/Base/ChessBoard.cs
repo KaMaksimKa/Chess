@@ -85,7 +85,6 @@ namespace Chess.Models.Boards.Base
                 WhoseMove = WhoseMove,
                 LastMoveInfo = LastMoveInfo,
                 ChessBoardMovedEvent = ChessBoardMovedEvent,
-                AllPieceMoved = AllPieceMoved,
                 Price = Price
             };
         }
@@ -94,14 +93,13 @@ namespace Chess.Models.Boards.Base
 
     class Board:ICloneable
     {
-        public int Price { get; set; }
+        public double Price { get; set; }
         public Piece? this[int i, int j]
         {
             get => ArrayBoard[i,j];
             protected set => ArrayBoard[i,j] = value;
         }
 
-        public FactoryPiece AllPieceMoved { get; set; } = new FactoryPiece();
 
         protected readonly Piece?[,] ArrayBoard;
 
@@ -119,40 +117,68 @@ namespace Chess.Models.Boards.Base
         private static Piece?[,] GetNewClassicBoard()
         {
             Piece?[,] board = new Piece?[8,8];
-            
+
             #region Создание белой команды
+
+            /*for (int i = 0; i < 8; i++)
+            {
+                board[1, i] = new WhitePawn(PawnDirection.Up);
+            }
+
+            board[0, 0] = new WhiteRook();
+            board[0, 7] = new WhiteRook();
+            board[0, 1] = new WhiteKnight();
+            board[0, 6] = new WhiteKnight();
+            board[0, 2] = new WhiteBishop();
+            board[0, 5] = new WhiteBishop();
+            board[0, 3] = new WhiteKing();
+            board[0, 4] = new WhiteQueen();*/
 
             for (int i = 0; i < 8; i++)
             {
                 board[6, i] = new WhitePawn(PawnDirection.Down);
             }
 
-            board[7,0] = new WhiteRook();
-            board[7,7] = new WhiteRook();
-            board[7,1] = new WhiteKnight();
-            board[7,6] = new WhiteKnight();
-            board[7,2] = new WhiteBishop();
-            board[7,5] = new WhiteBishop();
-            board[7,4] = new WhiteKing();
-            board[7,3] = new WhiteQueen();
+            board[7, 0] = new WhiteRook();
+            board[7, 7] = new WhiteRook();
+            board[7, 1] = new WhiteKnight();
+            board[7, 6] = new WhiteKnight();
+            board[7, 2] = new WhiteBishop();
+            board[7, 5] = new WhiteBishop();
+            board[7, 4] = new WhiteKing();
+            board[7, 3] = new WhiteQueen();
 
             #endregion
 
             #region Создание черной команды
+
+            /* for (int i = 0; i < 8; i++)
+             {
+                 board[6, i] = new BlackPawn(PawnDirection.Down);
+             }
+
+             board[7, 0] = new BlackRook();
+             board[7, 7] = new BlackRook();
+             board[7, 1] = new BlackKnight();
+             board[7, 6] = new BlackKnight();
+             board[7, 2] = new BlackBishop();
+             board[7, 5] = new BlackBishop();
+             board[7, 4] = new BlackQueen();
+             board[7, 3] = new BlackKing();*/
 
             for (int i = 0; i < 8; i++)
             {
                 board[1, i] = new BlackPawn(PawnDirection.Up);
             }
 
-            board[0,0] = new BlackRook();
+            board[0, 0] = new BlackRook();
             board[0, 7] = new BlackRook();
             board[0, 1] = new BlackKnight();
             board[0, 6] = new BlackKnight();
             board[0, 2] = new BlackBishop();
             board[0, 5] = new BlackBishop();
             board[0, 3] = new BlackQueen();
-            board[0,4] = new BlackKing();
+            board[0, 4] = new BlackKing();
 
             #endregion
 
@@ -227,17 +253,17 @@ namespace Chess.Models.Boards.Base
             {
                 if (moveInfo.KillPoint is { } killPoint)
                 {
-                    if (board[killPoint.X, killPoint.Y] is { } piece)
+                    #region Пересчет цены доски при убийстве
+
+                    if (board[killPoint.X, killPoint.Y] is { } pieceKill)
                     {
-                        if (piece.Team == TeamEnum.WhiteTeam)
-                        {
-                            board.Price -= piece.Price;
-                        }
-                        else
-                        {
-                            board.Price += piece.Price;
-                        }
+                        board.Price -= pieceKill.Price;
+                        board.Price -= pieceKill.PieceEval[killPoint.X, killPoint.Y];
                     }
+
+                    #endregion
+
+
                     board[killPoint.X, killPoint.Y] = null;
                 }
 
@@ -245,12 +271,23 @@ namespace Chess.Models.Boards.Base
                 {
                     foreach (var (startP, endP) in changePositions)
                     {
+
+                        #region Пересчет цены доски при перемещении
+
+                        if (board[startP.X, startP.Y] is { } pieceMove)
+                        {
+                            board.Price -= pieceMove.PieceEval[startP.X, startP.Y];
+                            board.Price += pieceMove.PieceEval[endP.X, endP.Y];
+                        }
+
+                        #endregion
+
                         board[endP.X, endP.Y] = board[startP.X, startP.Y];
                         board[startP.X, startP.Y] = null;
                         
                         if (board[endP.X, endP.Y] is {IsFirstMove:true } piece)
                         {
-                            board[endP.X, endP.Y] = board.AllPieceMoved.GetMovedPiece(piece);
+                            board[endP.X, endP.Y] = FactoryPiece.GetMovedPiece(piece);
                         }
 
                         board.LastMoveInfo = moveInfo;
@@ -260,7 +297,7 @@ namespace Chess.Models.Boards.Base
         }
         public virtual object Clone()
         {
-            return new Board((Piece?[,])ArrayBoard.Clone()){LastMoveInfo = LastMoveInfo,AllPieceMoved = AllPieceMoved,Price = Price};
+            return new Board((Piece?[,])ArrayBoard.Clone()){LastMoveInfo = LastMoveInfo,Price = Price};
         }
 
     }

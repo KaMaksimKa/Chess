@@ -154,6 +154,25 @@ namespace Chess.ViewModels
 
         #endregion
 
+        #region Команда StartGameCommand 
+
+        public ICommand StartGameCommand { get; }
+
+        private bool CanStartGameCommandExecute(object p) => true;
+
+        private void OnPrevStartGameCommandExecuted(object p)
+        {
+            if (_listChessBoards.Count > 0)
+            {
+                ChessBoard = _listChessBoards[0];
+            }
+            
+            _currentPlayer.Move();
+        }
+        
+
+        #endregion
+
         #endregion
 
         public GameViewModel()
@@ -164,6 +183,9 @@ namespace Chess.ViewModels
 
             PrevStateStateChessBoardCommand = new LambdaCommand(OnPrevStateStateChessBoardCommandExecuted,
                                                                 CanPrevStateStateChessBoardCommandExecute);
+
+            StartGameCommand = new LambdaCommand(OnPrevStartGameCommandExecuted,
+                CanStartGameCommandExecute);
             #endregion
             
             ChessBoard = new ChessBoard();

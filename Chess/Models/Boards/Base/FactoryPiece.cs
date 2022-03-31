@@ -5,41 +5,41 @@ using Chess.Models.PiecesChess.DifferentPiece;
 
 namespace Chess.Models.Boards.Base
 {
-    internal class FactoryPiece
+    internal static class FactoryPiece
     {
-        private readonly BlackBishop _blackBishop  = new() {IsFirstMove = false};
-        private readonly BlackKing _blackKing  = new() { IsFirstMove = false };
-        private readonly BlackKnight _blackKnight   = new() { IsFirstMove = false };
-        private readonly BlackPawn _blackPawnUp  = new(PawnDirection.Up) { IsFirstMove = false };
-        private readonly BlackPawn _blackPawnDown  = new(PawnDirection.Down) { IsFirstMove = false };
-        private readonly BlackQueen _blackQueen  = new() { IsFirstMove = false };
-        private readonly BlackRook _blackRook  = new() { IsFirstMove = false };
-        private readonly WhiteBishop _whiteBishop= new() { IsFirstMove = false };
-        private readonly WhiteKing _whiteKing  = new() { IsFirstMove = false };
-        private readonly WhiteKnight _whiteKnight  = new() { IsFirstMove = false };
-        private readonly WhitePawn _whitePawnUp  = new(PawnDirection.Up) { IsFirstMove = false };
-        private readonly WhitePawn _whitePawnDown  = new(PawnDirection.Down) { IsFirstMove = false };
-        private readonly WhiteQueen _whiteQueen  = new() { IsFirstMove = false };
-        private readonly WhiteRook _whiteRook  = new() { IsFirstMove = false };
+        private static readonly BlackBishop BlackBishop  = new() {IsFirstMove = false};
+        private static readonly BlackKing BlackKing  = new() { IsFirstMove = false };
+        private static readonly BlackKnight BlackKnight   = new() { IsFirstMove = false };
+        private static readonly BlackPawn BlackPawnUp  = new(PawnDirection.Up) { IsFirstMove = false };
+        private static readonly BlackPawn BlackPawnDown  = new(PawnDirection.Down) { IsFirstMove = false };
+        private static readonly BlackQueen BlackQueen  = new() { IsFirstMove = false };
+        private static readonly BlackRook BlackRook  = new() { IsFirstMove = false };
+        private static readonly WhiteBishop WhiteBishop= new() { IsFirstMove = false };
+        private static readonly WhiteKing WhiteKing  = new() { IsFirstMove = false };
+        private static readonly WhiteKnight WhiteKnight  = new() { IsFirstMove = false };
+        private static readonly WhitePawn WhitePawnUp  = new(PawnDirection.Up) { IsFirstMove = false };
+        private static readonly WhitePawn WhitePawnDown  = new(PawnDirection.Down) { IsFirstMove = false };
+        private static readonly WhiteQueen WhiteQueen  = new() { IsFirstMove = false };
+        private static readonly WhiteRook WhiteRook  = new() { IsFirstMove = false };
 
-        public Piece? GetMovedPiece(Piece piece)
+        public static Piece? GetMovedPiece(Piece piece)
         {
             return piece switch
             {
-                WhiteKing => _whiteKing,
-                WhiteQueen => _whiteQueen,
-                WhiteRook => _whiteRook,
-                WhiteBishop => _whiteBishop,
-                WhiteKnight => _whiteKnight,
-                WhitePawn {Direction:PawnDirection.Up} => _whitePawnUp,
-                WhitePawn {Direction:PawnDirection.Down} => _whitePawnDown,
-                BlackKing => _blackKing,
-                BlackQueen => _blackQueen,
-                BlackRook => _blackRook,
-                BlackBishop => _blackBishop,
-                BlackKnight => _blackKnight,
-                BlackPawn { Direction: PawnDirection.Up } => _blackPawnUp,
-                BlackPawn { Direction: PawnDirection.Down } => _blackPawnDown,
+                PiecesChess.WhiteKing => WhiteKing,
+                PiecesChess.WhiteQueen => WhiteQueen,
+                PiecesChess.WhiteRook => WhiteRook,
+                PiecesChess.WhiteBishop => WhiteBishop,
+                PiecesChess.WhiteKnight => WhiteKnight,
+                WhitePawn {Direction:PawnDirection.Up} => WhitePawnUp,
+                WhitePawn {Direction:PawnDirection.Down} => WhitePawnDown,
+                PiecesChess.BlackKing => BlackKing,
+                PiecesChess.BlackQueen => BlackQueen,
+                PiecesChess.BlackRook => BlackRook,
+                PiecesChess.BlackBishop => BlackBishop,
+                PiecesChess.BlackKnight => BlackKnight,
+                BlackPawn { Direction: PawnDirection.Up } => BlackPawnUp,
+                BlackPawn { Direction: PawnDirection.Down } => BlackPawnDown,
                 _ => null
             };
         }

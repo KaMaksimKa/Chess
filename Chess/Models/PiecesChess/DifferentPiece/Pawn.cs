@@ -15,7 +15,17 @@ namespace Chess.Models.PiecesChess.DifferentPiece
     {
         public readonly PawnDirection Direction;
 
-        protected Pawn(string icon, TeamEnum team, PawnDirection direction) : base(icon, team,10)
+        protected Pawn(string icon, TeamEnum team, PawnDirection direction) : base(icon, team,10,
+            new double[8,8]{
+                                        { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                                        {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0},
+                                        {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0},
+                                        {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5 },
+                                        {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0},
+                                        {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5},
+                                        {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5},
+                                        {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+                                    })
         {
             Direction = direction;
         }

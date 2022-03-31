@@ -7,7 +7,17 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class Rook:Piece
     {
-        protected Rook(string icon, TeamEnum team) : base(icon, team,50)
+        protected Rook(string icon, TeamEnum team) : base(icon, team,50,
+            new double[8, 8]{
+                {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                {0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5},
+                {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+                {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+                {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+                {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+                {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+                { 0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0}
+            })
         {
         }
 

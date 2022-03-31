@@ -25,6 +25,7 @@
             <Button VerticalAlignment="Bottom"  Width="100" Content="Назад" Command="{Binding PrevStateStateChessBoardCommand}" ></Button>
             <Button VerticalAlignment="Bottom"  Width="100" Content="Вперед" Command="{Binding NextStateStateChessBoardCommand}"></Button>
         </StackPanel>
+        <Button Content="Новая игра" Width="150" Margin="20" HorizontalAlignment="Right" Command="{Binding StartGameCommand}"></Button>
         
         
 

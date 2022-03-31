@@ -8,7 +8,17 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class King:Piece
     {
-        protected King(string icon, TeamEnum team) : base(icon, team,900)
+        protected King(string icon, TeamEnum team) : base(icon, team,900,
+            new double[8, 8]{
+                { -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+                {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+                {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+                {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+                {-2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0},
+                {-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0},
+                {2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0},
+                {2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0}
+            })
         {
         }
 
@@ -38,8 +48,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         ChangePositions = new List<ChangePosition>
                         {
-                            new ChangePosition(startPoint, new Point(startPoint.X,2)),
-                            new ChangePosition(new Point(startPoint.X, 0),new Point(startPoint.X,3))
+                            new ChangePosition(startPoint, new Point(startPoint.X,startPoint.Y-2)),
+                            new ChangePosition(new Point(startPoint.X, 0),new Point(startPoint.X,startPoint.Y-1))
                         }
                     };
                 }
@@ -74,8 +84,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         ChangePositions = new List<ChangePosition>
                         {
-                            new ChangePosition(startPoint, new Point(startPoint.X,6)),
-                            new ChangePosition(new Point(startPoint.X, 7),new Point(startPoint.X,5))
+                            new ChangePosition(startPoint, new Point(startPoint.X,startPoint.Y+2)),
+                            new ChangePosition(new Point(startPoint.X, 7),new Point(startPoint.X,startPoint.Y+1))
                         }
                     };
                 }
@@ -116,17 +126,17 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         moveInfo.KillPoint = currPoint;
                     }
-                    moveInfos.Add((startPoint, currPoint), moveInfo);
+                    moveInfos.TryAdd((startPoint, currPoint), moveInfo);
                 }
             }
 
             if (IsCastlingLeft(startPoint, board) is { } moveInfoLeft)
             {
-                moveInfos.Add((startPoint,new Point(startPoint.X,2)),moveInfoLeft);
+                moveInfos.TryAdd((startPoint, new Point(startPoint.X, startPoint.Y-2)), moveInfoLeft);
             }
             if (IsCastlingRight(startPoint, board) is { } moveInfoRight)
             {
-                moveInfos.Add((startPoint, new Point(startPoint.X, 6)), moveInfoRight);
+                moveInfos.TryAdd((startPoint, new Point(startPoint.X, startPoint.Y +2)), moveInfoRight);
             }
             return moveInfos;
         }

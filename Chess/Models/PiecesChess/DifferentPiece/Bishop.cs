@@ -8,7 +8,17 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 {
     internal abstract class Bishop:Piece
     {
-        protected Bishop(string icon, TeamEnum team) : base(icon, team,30)
+        protected Bishop(string icon, TeamEnum team) : base(icon, team,30,
+            new double[8, 8]{
+                                        {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0 },
+                                        {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
+                                        {-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},
+                                        {-1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0},
+                                        {-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0},
+                                        {-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0},
+                                        {-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0},
+                                        {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0}
+                                    })
         {
         }
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
