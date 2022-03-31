@@ -85,7 +85,8 @@ namespace Chess.Models.Boards.Base
                 WhoseMove = WhoseMove,
                 LastMoveInfo = LastMoveInfo,
                 ChessBoardMovedEvent = ChessBoardMovedEvent,
-                AllPieceMoved = AllPieceMoved
+                AllPieceMoved = AllPieceMoved,
+                Price = Price
             };
         }
     }
@@ -259,7 +260,7 @@ namespace Chess.Models.Boards.Base
         }
         public virtual object Clone()
         {
-            return new Board((Piece?[,])ArrayBoard.Clone()){LastMoveInfo = LastMoveInfo,AllPieceMoved = AllPieceMoved};
+            return new Board((Piece?[,])ArrayBoard.Clone()){LastMoveInfo = LastMoveInfo,AllPieceMoved = AllPieceMoved,Price = Price};
         }
 
     }
