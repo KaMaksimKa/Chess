@@ -14,7 +14,7 @@
     </Window.DataContext>
     
     <Grid>
-        <uc:ChessBoardUserControl SizeBoard="300"  
+        <uc:ChessBoardUserControl 
                                   MoveInfo="{Binding MoveInfo,Mode=OneWay}"
                                   StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
                                   EndPoint="{Binding EndPoint,Mode=OneWayToSource}"

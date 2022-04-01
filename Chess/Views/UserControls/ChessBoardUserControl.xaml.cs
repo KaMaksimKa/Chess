@@ -24,8 +24,6 @@ namespace Chess.Views.UserControls
             set
             {
                 _sizeCell = (int)value / 8;
-                Height = value;
-                Width = value;
                 DrawBoard();
             }
         }
@@ -261,30 +259,40 @@ namespace Chess.Views.UserControls
             control.StartPoint = null;
             control.EndPoint = null;
 
+            control.DrawStateDraw((BoardForDraw)e.NewValue);
+           
+        }
+
+        private void DrawStateDraw(BoardForDraw boardForDraw)
+        {
+            if (_sizeCell == 0)
+            {
+                return;
+            }
             #region Нарисовать фигуры
-            canvasPieces.Children.Clear();
+            CanvasPieces.Children.Clear();
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    if (icons[i, j]?.Icon is { } icon)
+                    if (boardForDraw.Icons[i, j]?.Icon is { } icon)
                     {
                         var img = new Image()
                         {
-                            Width = sizeCell,
-                            Height = sizeCell,
-                            Source = (new ImageSourceConverter()).ConvertFrom("../"+icon) as ImageSource
+                            Width = _sizeCell,
+                            Height = _sizeCell,
+                            Source = (new ImageSourceConverter()).ConvertFrom("../" + icon) as ImageSource
                         };
-                        Canvas.SetLeft(img, j * sizeCell);
-                        Canvas.SetTop(img, i * sizeCell);
+                        Canvas.SetLeft(img, j * _sizeCell);
+                        Canvas.SetTop(img, i * _sizeCell);
 
-                        img.MouseDown += control.Piece_OnMouseDown;
-                        img.MouseMove += control.Piece_OnMouseMove;
-                        img.MouseUp += control.Piece_OnMouseUp;
+                        img.MouseDown += Piece_OnMouseDown;
+                        img.MouseMove += Piece_OnMouseMove;
+                        img.MouseUp += Piece_OnMouseUp;
 
-                        canvasPieces.Children.Add(img);
-                         
-                        control._images[i, j] = img;
+                        CanvasPieces.Children.Add(img);
+
+                        _images[i, j] = img;
 
                     }
                 }
@@ -294,12 +302,12 @@ namespace Chess.Views.UserControls
 
             #region Нарисовать последний ход
 
-            if (((BoardForDraw) e.NewValue).LastMoveInfo?.ChangePositions is { } changePositions)
+            if (boardForDraw.LastMoveInfo?.ChangePositions is { } changePositions)
             {
-                foreach (var (startP,endP) in changePositions)
+                foreach (var (startP, endP) in changePositions)
                 {
-                    control.DrawChoiceCell(startP);
-                    control.DrawChoiceCell(endP);
+                    DrawChoiceCell(startP);
+                    DrawChoiceCell(endP);
                 }
             }
 
@@ -310,6 +318,13 @@ namespace Chess.Views.UserControls
         public ChessBoardUserControl()
         {
            InitializeComponent();
+        }
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            SizeBoard = Math.Min(constraint.Height, constraint.Width);
+            DrawStateDraw(BoardForDraw);
+            return base.MeasureOverride(constraint);
         }
 
         private void DrawChoiceCell(System.Drawing.Point point)
@@ -329,7 +344,7 @@ namespace Chess.Views.UserControls
         private void DrawBoard()
         {
             #region Нарисовать поле
-
+            CanvasBack.Children.Clear();
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)

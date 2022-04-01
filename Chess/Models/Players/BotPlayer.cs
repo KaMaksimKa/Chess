@@ -43,7 +43,7 @@ namespace Chess.Models.Players
             else
             {
                 var allMoves = new List<double>();
-                if (chessBoard.WhoseMove != Team && depth > 1)
+                if (chessBoard.WhoseMove != Team && depth > 1 && false)
                 {
                     var moves = GetBestMoves(chessBoard, chessBoard.WhoseMove, depth>4?4:2);
                     foreach (var moveInfo in moves)
@@ -174,7 +174,7 @@ namespace Chess.Models.Players
 
         public override void Move()
         {
-            var bestMoves = GetBestMoves(ChessBoard,Team,6);
+            var bestMoves = GetBestMoves(ChessBoard,Team,4);
             if (bestMoves.Count > 0 &&
                 bestMoves[(new Random()).Next(0, bestMoves.Count - 1)].ChangePositions?.First() is {} changePosition)
             {
