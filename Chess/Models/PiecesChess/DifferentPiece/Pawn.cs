@@ -32,7 +32,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
         private MoveInfo EnPassant(Point startPoint, Point endPoint, Board board)
         {
-            MoveInfo moveInfo = new MoveInfo();
+            MoveInfo moveInfo = new MoveInfo() { Move = new ChangePosition(startPoint, endPoint), };
 
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
@@ -85,10 +85,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     moveInfos.Add((startPoint, currPoint), new MoveInfo
                     {
-                        ChangePositions = new[]
-                        {
-                            new ChangePosition(startPoint,currPoint)
-                        }
+                        Move = new ChangePosition(startPoint, currPoint),
+                        ChangePositions = new[]{new ChangePosition(startPoint,currPoint)}
                     });
                 }
                 else if ((xVector, yVector) == (2*direction, 0) && board[currPoint.X,currPoint.Y] == null &&
@@ -96,10 +94,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     moveInfos.Add((startPoint, currPoint), new MoveInfo
                     {
-                        ChangePositions = new[]
-                        {
-                            new ChangePosition(startPoint,currPoint)
-                        }
+                        Move = new ChangePosition(startPoint, currPoint),
+                        ChangePositions = new[] {new ChangePosition(startPoint,currPoint)}
                     });
                 }
                 else if ((xVector, yVector) == (direction, 1) || (xVector, yVector) == (direction, -1))
@@ -108,11 +104,9 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         moveInfos.Add((startPoint, currPoint), new MoveInfo
                         {
+                            Move = new ChangePosition(startPoint, currPoint),
                             KillPoint = currPoint,
-                            ChangePositions = new[]
-                            {
-                                new ChangePosition(startPoint,currPoint)
-                            }
+                            ChangePositions = new[] {new ChangePosition(startPoint,currPoint)}
                         });
                     }
                     else if (EnPassant(startPoint,currPoint,board) is {ChangePositions:{}} moveInfoEnPassant)

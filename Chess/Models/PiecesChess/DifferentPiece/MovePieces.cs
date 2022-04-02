@@ -25,7 +25,9 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     }
                     if (board[currentPoint.X, currentPoint.Y]?.Team != team)
                     {
-                        var moveInfo = new MoveInfo {ChangePositions = new[]{new ChangePosition
+                        var moveInfo = new MoveInfo {
+                            Move = new ChangePosition(startPoint, currentPoint),
+                            ChangePositions = new[]{new ChangePosition
                             {
                                 StartPoint = startPoint,
                                 EndPoint = currentPoint

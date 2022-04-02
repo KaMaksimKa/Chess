@@ -46,6 +46,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
                     return new MoveInfo
                     {
+                        Move = new ChangePosition(startPoint, new Point(startPoint.X, startPoint.Y - 2)),
                         ChangePositions = new List<ChangePosition>
                         {
                             new ChangePosition(startPoint, new Point(startPoint.X,startPoint.Y-2)),
@@ -82,6 +83,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
                     return new MoveInfo
                     {
+                        Move = new ChangePosition(startPoint, new Point(startPoint.X, startPoint.Y + 2)),
                         ChangePositions = new List<ChangePosition>
                         {
                             new ChangePosition(startPoint, new Point(startPoint.X,startPoint.Y+2)),
@@ -116,11 +118,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     var moveInfo = new MoveInfo
                     {
-                        ChangePositions = new[]{new ChangePosition
-                        {
-                            StartPoint = startPoint,
-                            EndPoint = currPoint
-                        }}
+                        Move = new ChangePosition(startPoint, currPoint),
+                        ChangePositions = new[]{ new ChangePosition(startPoint,currPoint)}
                     };
                     if (board[currPoint.X, currPoint.Y] is { })
                     {

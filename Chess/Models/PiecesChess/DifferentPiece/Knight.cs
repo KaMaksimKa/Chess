@@ -45,11 +45,8 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     var moveInfo = new MoveInfo
                     {
-                        ChangePositions = new[]{new ChangePosition
-                        {
-                            StartPoint = startPoint,
-                            EndPoint = currentPoint
-                        }}
+                        Move = new ChangePosition(startPoint, currentPoint),
+                        ChangePositions = new[]{ new ChangePosition(startPoint,currentPoint) }
                     };
                     if (board[currentPoint.X, currentPoint.Y] is { })
                     {

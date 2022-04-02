@@ -18,8 +18,7 @@
             <Button DockPanel.Dock="Left" VerticalAlignment="Top"
                     Content="Новая игра" Width="120" Margin="20" HorizontalAlignment="Right" Command="{Binding StartGameCommand}"></Button>
             <StackPanel>
-                <uc:ChessBoardUserControl Height="350"
-                    MoveInfo="{Binding MoveInfo,Mode=OneWay}"
+                <uc:ChessBoardUserControl Height="350" MoveInfoQueue="{Binding MoveInfoQueue,Mode=OneWay}"
                     StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
                     EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
                     Hints="{Binding Hints}"

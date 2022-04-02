@@ -47,12 +47,12 @@ namespace Chess.ViewModels
 
         #endregion
 
-        #region Свойство MoveInfo
-        private MoveInfo _moveInfo = new MoveInfo();
-        public MoveInfo MoveInfo
+        #region Свойство MoveInfoQueue
+        private Queue<MoveInfo> _moveInfoQueue = new Queue<MoveInfo>();
+        public Queue<MoveInfo> MoveInfoQueue
         {
-            get => _moveInfo;
-            set => Set(ref _moveInfo, value);
+            get => _moveInfoQueue;
+            set => Set(ref _moveInfoQueue, value);
         }
         #endregion
 
@@ -227,7 +227,10 @@ namespace Chess.ViewModels
                     
                 }
                 SaveStateChessBoard();
-                MoveInfo = moveInfo;
+
+                var queue = new Queue<MoveInfo>();
+                queue.Enqueue(moveInfo);
+                MoveInfoQueue = queue;
 
                 if (IsMate())
                 {
@@ -247,7 +250,9 @@ namespace Chess.ViewModels
             }
             else
             {
-                MoveInfo = new MoveInfo();
+                var queue = new Queue<MoveInfo>();
+                queue.Enqueue(new MoveInfo());
+                MoveInfoQueue = queue;
             }
         }
         public bool IsMate()
@@ -266,29 +271,6 @@ namespace Chess.ViewModels
 
             return true;
         }
-        public HintsChess GetHintsChess(Point? startPoint)
-        {
-            List<Point> hintsForMove = new List<Point>();
-            List<Point> hintsForKill = new List<Point>();
-            
-            var moves = ChessBoard.GetMovesForPiece(startPoint);
-            if (moves != null)
-            {
-                foreach (var ((_,endP),moveInfo) in moves)
-                {
-                    if (moveInfo.KillPoint != null)
-                    {
-                        hintsForKill.Add(endP);
-                    }
-                    else if (moveInfo.ChangePositions != null)
-                    {
-                        hintsForMove.Add(endP);
-                    }
-                }
-            }
-            
-            return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
-        }
         public void SaveStateChessBoard()
         {
             if (_currentBoardId + 1 != _listChessBoards.Count)
@@ -303,7 +285,29 @@ namespace Chess.ViewModels
                 _currentBoardId += 1;
             }
         }
-        
+        public HintsChess GetHintsChess(Point? startPoint)
+        {
+            List<Point> hintsForMove = new List<Point>();
+            List<Point> hintsForKill = new List<Point>();
+
+            var moves = ChessBoard.GetMovesForPiece(startPoint);
+            if (moves != null)
+            {
+                foreach (var ((_, _), moveInfo) in moves)
+                {
+                    if (moveInfo.KillPoint != null)
+                    {
+                        hintsForKill.Add(moveInfo.Move.EndPoint);
+                    }
+                    else if (moveInfo.ChangePositions != null)
+                    {
+                        hintsForMove.Add(moveInfo.Move.EndPoint);
+                    }
+                }
+            }
+
+            return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
+        }
         private void SetNewHintsChessAsync(Point? startPoint)
         {
 

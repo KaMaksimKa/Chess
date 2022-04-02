@@ -57,19 +57,17 @@ namespace Chess.Models.Boards.Base
             return null;
         }
 
-        public MoveInfo? Move(Point startPoint, Point endPoint)
+        public void Move(Point startPoint, Point endPoint)
         {
             if (IsMove(startPoint,endPoint) is {} moveInfo)
             {
                 Board.Move(moveInfo,this);
-
                 ChessBoardMovedEvent?.Invoke(moveInfo);
-                
-                return moveInfo;
             }
-            ChessBoardMovedEvent?.Invoke(null);
-            return null;
-            
+            else
+            {
+                ChessBoardMovedEvent?.Invoke(null);
+            }
         }
         public IHaveIcon?[,] GetIcons()
         {
@@ -283,7 +281,6 @@ namespace Chess.Models.Boards.Base
                     }
                 }
                 board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-
             }
         }
         public virtual object Clone()

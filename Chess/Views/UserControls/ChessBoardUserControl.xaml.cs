@@ -33,13 +33,13 @@ namespace Chess.Views.UserControls
         #endregion
 
         #region Свойство MoveInfo
-        public MoveInfo MoveInfo
+        public Queue<MoveInfo> MoveInfoQueue
         {
-            get => (MoveInfo)GetValue(ChangePosProperty);
-            set => SetValue(ChangePosProperty, value);
+            get => (Queue<MoveInfo>)GetValue(MoveInfoQueueProperty);
+            set => SetValue(MoveInfoQueueProperty, value);
         }
-        public static readonly DependencyProperty ChangePosProperty =
-            DependencyProperty.Register("MoveInfo", typeof(MoveInfo),
+        public static readonly DependencyProperty MoveInfoQueueProperty =
+            DependencyProperty.Register("MoveInfoQueue", typeof(Queue<MoveInfo>),
                 typeof(ChessBoardUserControl),new PropertyMetadata(AddMoveInfo));
 
 
@@ -47,8 +47,12 @@ namespace Chess.Views.UserControls
         {
             var control = (ChessBoardUserControl)o;
 
-            control._moveInfosQueue.Enqueue((MoveInfo)e.NewValue);
-
+            var queue = (Queue<MoveInfo>)e.NewValue;
+            for (int i = 0; i < queue.Count; i++)
+            {
+                control._moveInfosQueue.Enqueue(queue.Dequeue());
+            }
+            
             if (!control._isAnimGo)
             {
                 await control.ChangePos();
@@ -104,7 +108,7 @@ namespace Chess.Views.UserControls
                 if (img != null)
                 {
                     timeAnimsSec.Add(ChangePosImgOnCanvas(img, startP, _sizeCell, 4000));
-                   /* img.ReleaseMouseCapture();*/
+                    img.ReleaseMouseCapture();
                 }
 
             }
@@ -115,7 +119,6 @@ namespace Chess.Views.UserControls
                 {
                     StartPoint = new System.Drawing.Point(endP.X, endP.Y);
                     EndPoint = null;
-                    var a = this;
                 }
                 else
                 {
