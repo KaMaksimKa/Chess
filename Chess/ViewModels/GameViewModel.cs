@@ -18,9 +18,8 @@ namespace Chess.ViewModels
         private List<ChessBoard> _listChessBoards = new List<ChessBoard>();
         private int _currentBoardId;
 
-        private readonly Player _playerWhite;
-        private readonly Player _playerBlack;
-        private Player _currentPlayer;
+        private readonly Player _firstPlayer;
+        private readonly Player _secondPlayer;
 
         #region Свойство ChessBoard
 
@@ -67,7 +66,8 @@ namespace Chess.ViewModels
             {
                 Set(ref _startPoint, value);
 
-                if (_currentPlayer is SelfPlayer selfPlayer)
+                var currentPlayer = _firstPlayer.Team == ChessBoard.WhoseMove ? _firstPlayer : _secondPlayer;
+                if (currentPlayer is SelfPlayer selfPlayer)
                 {
                     selfPlayer.StartPoint = value;
                     SetNewHintsChessAsync(value);
@@ -85,14 +85,11 @@ namespace Chess.ViewModels
             set
             {
                 Set(ref _endPoint, value);
-
-                if (_currentPlayer is SelfPlayer selfPlayer)
+                var currentPlayer = _firstPlayer.Team == ChessBoard.WhoseMove ? _firstPlayer : _secondPlayer;
+                if (currentPlayer is SelfPlayer selfPlayer)
                 {
                     selfPlayer.EndPoint = value;
-                    if (selfPlayer.StartPoint is { } && selfPlayer.EndPoint is { })
-                    {
-                        selfPlayer.Move();
-                    }
+                    MoveAsync();
                 }
                 if (StartPoint == null)
                 {
@@ -128,8 +125,9 @@ namespace Chess.ViewModels
             {
                 _currentBoardId += 1;
                 ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
-                _playerWhite.ChessBoard = ChessBoard;
-                _playerBlack.ChessBoard = ChessBoard;
+                _firstPlayer.ChessBoard = ChessBoard;
+                _secondPlayer.ChessBoard = ChessBoard;
+                MoveAsync();
             }
         }
 
@@ -147,8 +145,9 @@ namespace Chess.ViewModels
             {
                 _currentBoardId -= 1;
                 ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
-                _playerWhite.ChessBoard = ChessBoard;
-                _playerBlack.ChessBoard = ChessBoard;
+                _firstPlayer.ChessBoard = ChessBoard;
+                _secondPlayer.ChessBoard = ChessBoard;
+                MoveAsync();
             }
         }
 
@@ -160,14 +159,16 @@ namespace Chess.ViewModels
 
         private bool CanStartGameCommandExecute(object p) => true;
 
-        private void OnPrevStartGameCommandExecuted(object p)
+        private void OnStartGameCommandExecuted(object p)
         {
             if (_listChessBoards.Count > 0)
             {
-                ChessBoard = _listChessBoards[0];
+                ChessBoard = (ChessBoard)_listChessBoards[0].Clone();
+                _firstPlayer.ChessBoard = ChessBoard;
+                _secondPlayer.ChessBoard = ChessBoard;
             }
+            MoveAsync();
             
-            _currentPlayer.Move();
         }
         
 
@@ -184,21 +185,72 @@ namespace Chess.ViewModels
             PrevStateStateChessBoardCommand = new LambdaCommand(OnPrevStateStateChessBoardCommandExecuted,
                                                                 CanPrevStateStateChessBoardCommandExecute);
 
-            StartGameCommand = new LambdaCommand(OnPrevStartGameCommandExecuted,
+            StartGameCommand = new LambdaCommand(OnStartGameCommandExecuted,
                 CanStartGameCommandExecute);
             #endregion
             
             ChessBoard = new ChessBoard();
-            ChessBoard.ChessBoardMovedEvent += MovedAsync;
+            ChessBoard.ChessBoardMovedEvent += Moved;
 
 
-            _playerWhite = new SelfPlayer(TeamEnum.WhiteTeam, ChessBoard);
-            _playerBlack = new BotPlayer(TeamEnum.BlackTeam, ChessBoard);
-            _currentPlayer = _playerWhite;
+            _firstPlayer = new SelfPlayer(TeamEnum.WhiteTeam, ChessBoard);
+            _secondPlayer = new BotPlayer(TeamEnum.BlackTeam, ChessBoard);
 
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
 
+        }
+
+        private async void MoveAsync()
+        {
+            await Task.Run(() =>
+            {
+                var currentPlayer = _firstPlayer.Team == ChessBoard.WhoseMove ? _firstPlayer : _secondPlayer;
+
+                var changePos = currentPlayer.Move();
+                if (changePos is { } pos)
+                {
+                    var (startPoint, endPoint) = pos;
+                    ChessBoard.Move(startPoint, endPoint);
+                }
+            });
+        }
+        public void Moved(MoveInfo? moveInfo)
+        {
+
+            if (moveInfo is { })
+            {
+                var currentPlayer = _firstPlayer.Team == ChessBoard.WhoseMove ? _firstPlayer : _secondPlayer;
+
+                if (currentPlayer is SelfPlayer selfPlayer)
+                {
+                    selfPlayer.StartPoint = null;
+                    selfPlayer.EndPoint = null;
+                    
+                }
+                SaveStateChessBoard();
+                MoveInfo = moveInfo;
+
+                if (IsMate())
+                {
+                    if (ChessBoard.IsCheck(null))
+                    {
+                        MessageBox.Show("Шах и мат ");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Ничья ");
+                    }
+                }
+                else
+                {
+                    MoveAsync();
+                }
+            }
+            else
+            {
+                MoveInfo = new MoveInfo();
+            }
         }
         public bool IsMate()
         {
@@ -253,50 +305,7 @@ namespace Chess.ViewModels
                 _currentBoardId += 1;
             }
         }
-        public async void MovedAsync(MoveInfo? moveInfo)
-        {
-            
-            if (moveInfo is { })
-            {
-                if (_currentPlayer is SelfPlayer selfPlayer)
-                {
-                    selfPlayer.StartPoint = null;
-                    selfPlayer.EndPoint = null;
-                }
-                _currentPlayer = ChessBoard.WhoseMove == TeamEnum.WhiteTeam ? _playerWhite : _playerBlack;
-                
-                if (IsMate())
-                {
-                    if (ChessBoard.IsCheck(null))
-                    {
-                        MessageBox.Show("Шах и мат ");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ничья ");
-                    }
-                }
-                MoveInfo = moveInfo;
-            }
-            else
-            {
-                MoveInfo = new MoveInfo();
-            }
-
-            
-            if (_currentPlayer is BotPlayer botChess)
-            {
-                await Task.Run(() => botChess.Move());
-                
-                SaveStateChessBoard();
-            }
-
-            if (_playerBlack is SelfPlayer && _playerWhite is SelfPlayer && moveInfo is {})
-            {
-                SaveStateChessBoard();
-            }
-
-        }
+        
         private void SetNewHintsChessAsync(Point? startPoint)
         {
 

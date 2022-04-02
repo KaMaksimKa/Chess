@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using Chess.Models.Boards.Base;
 using Chess.Models.PiecesChess.Base;
 using Chess.Models.Players.Base;
@@ -172,18 +173,21 @@ namespace Chess.Models.Players
         }
 
 
-        public override void Move()
+        public override (Point,Point)? Move()
         {
+            Thread.Sleep(200);
             var bestMoves = GetBestMoves(ChessBoard,Team,4);
             if (bestMoves.Count > 0 &&
                 bestMoves[(new Random()).Next(0, bestMoves.Count - 1)].ChangePositions?.First() is {} changePosition)
             {
                 var (startPoint, endPoint) = changePosition;
-                ChessBoard.Move(startPoint, endPoint);
+                /*ChessBoard.Move(startPoint, endPoint);*/
+                return (startPoint, endPoint);
             }
             else
             {
                 ChessBoard.Move(new Point(0,0), new Point(0,0));
+                return null;
             }
             
         }

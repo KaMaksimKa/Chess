@@ -38,8 +38,8 @@ namespace Chess.Models.Boards.Base
         }
         public Dictionary<(Point, Point), MoveInfo>? GetMovesForPiece(Point? startPoint)
         {
-            if (startPoint is { } startP && ArrayBoard[startP.X, startP.Y] is { } piece &&
-                piece.Team == WhoseMove)
+            if (startPoint is {X: <=7 and >=0,Y: <= 7 and >= 0 } startP &&
+                ArrayBoard[startP.X, startP.Y] is { } piece && piece.Team == WhoseMove)
             {
                 var moves = piece.GetMoves(startP, this);
                 return moves.Where(i => !IsCheck(i.Value))

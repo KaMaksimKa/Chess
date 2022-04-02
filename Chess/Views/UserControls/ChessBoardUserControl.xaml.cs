@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -14,20 +17,19 @@ namespace Chess.Views.UserControls
     {
         private Point? _currentMovePoint;
         private readonly Image?[,] _images = new Image?[8, 8];
-
+        private int _sizeCell;
+        private readonly Queue<MoveInfo> _moveInfosQueue = new Queue<MoveInfo>();
+        private bool _isAnimGo;
         #region Свойство SizeBoard
 
-        private int _sizeCell;
         public double SizeBoard
         {
-            get => Height;
-            set
-            {
-                _sizeCell = (int)value / 8;
-                DrawBoard();
-            }
+            get => (double)GetValue(SizeBoardProperty);
+            set => SetValue(SizeBoardProperty, value);
         }
-
+        public static readonly DependencyProperty SizeBoardProperty =
+            DependencyProperty.Register("SizeBoard", typeof(double),
+                typeof(ChessBoardUserControl));
         #endregion
 
         #region Свойство MoveInfo
@@ -38,80 +40,111 @@ namespace Chess.Views.UserControls
         }
         public static readonly DependencyProperty ChangePosProperty =
             DependencyProperty.Register("MoveInfo", typeof(MoveInfo),
-                typeof(ChessBoardUserControl),new PropertyMetadata(PosChanged));
+                typeof(ChessBoardUserControl),new PropertyMetadata(AddMoveInfo));
 
-        static void PosChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+
+        static async void AddMoveInfo(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             var control = (ChessBoardUserControl)o;
-            var moveInfo = control.MoveInfo;
+
+            control._moveInfosQueue.Enqueue((MoveInfo)e.NewValue);
+
+            if (!control._isAnimGo)
+            {
+                await control.ChangePos();
+            }
             
+        }
+        private async Task ChangePos()
+        {
+            if (_moveInfosQueue.Count == 0)
+            {
+                _isAnimGo = false;
+                return;
+            }
+            _isAnimGo = true;
+
+            var moveInfo = _moveInfosQueue.Dequeue();
+
+
+
+            List<double> timeAnimsSec = new List<double>{0};
+
             if (moveInfo.KillPoint is { } killPoint)
             {
-                if (control._images[killPoint.X, killPoint.Y] is { } img)
+                if (_images[killPoint.X, killPoint.Y] is { } img)
                 {
-                    control.CanvasPieces.Children.Remove(img);
-                    control._images[killPoint.X, killPoint.Y] = null;
+                    CanvasPieces.Children.Remove(img);
+                    _images[killPoint.X, killPoint.Y] = null;
                 }
             }
-
             if (moveInfo.ChangePositions is { } changePositions)
             {
-                control.CanvasHints.Children.Clear();
-                control.CanvasCell.Children.Clear();
-                foreach (var (startPoint,endPoint) in changePositions)
-                {
-                    if (control._images[startPoint.X, startPoint.Y] is { } img)
-                    {
-                        control._images[endPoint.X, endPoint.Y] = img;
-                        control._images[startPoint.X, startPoint.Y] = null;
-                        control.ChangePosImgOnCanvas(img,endPoint,control._sizeCell,400);
-                        
-                        control.DrawChoiceCell(startPoint);
-                        control.DrawChoiceCell(endPoint);
-                    }
-                }
-
-            }
-            
-            else
-            {
-                if (control.StartPoint is { } startPoint)
-                {
-                    var img = control._images[startPoint.X, startPoint.Y];
-                    if (img != null)
-                    {
-                        control.ChangePosImgOnCanvas(img, startPoint, control._sizeCell, 4000);
-                    }
-                }
+                CanvasHints.Children.Clear();
+                CanvasCell.Children.Clear();
                 
-            }
+                
+                foreach (var (startPoint, endPoint) in changePositions)
+                {
+                    if (_images[startPoint.X, startPoint.Y] is { } img)
+                    {
+                        _images[endPoint.X, endPoint.Y] = img;
+                        _images[startPoint.X, startPoint.Y] = null;
 
+                        timeAnimsSec.Add(ChangePosImgOnCanvas(img, endPoint, _sizeCell, 400));
+
+                        DrawChoiceCell(startPoint);
+                        DrawChoiceCell(endPoint);
+                    }
+                }
+
+            }
+            if (StartPoint is { } startP)
+            {
+                var img = _images[startP.X, startP.Y];
+                if (img != null)
+                {
+                    timeAnimsSec.Add(ChangePosImgOnCanvas(img, startP, _sizeCell, 4000));
+                   /* img.ReleaseMouseCapture();*/
+                }
+
+            }
             if (moveInfo.KillPoint == null && moveInfo.ChangePositions == null)
             {
-                if (control.EndPoint is { } endP &&
-                    endP.X is <=7 and >= 0 &&
-                    endP.Y is <= 7 and >= 0&&
-                    control._images[endP.X, endP.Y] is { })
+                if (EndPoint is { X: <= 7 and >= 0, Y: <= 7 and >= 0 } endP &&
+                    _images[endP.X, endP.Y] is { })
                 {
-                    control.StartPoint = new System.Drawing.Point(endP.X, endP.Y);
-                    control.EndPoint = null;
-                   
+                    StartPoint = new System.Drawing.Point(endP.X, endP.Y);
+                    EndPoint = null;
+                    var a = this;
                 }
                 else
                 {
-                    control.EndPoint = null;
-                    control._currentMovePoint = null;
+                    EndPoint = null;
+                    _currentMovePoint = null;
                 }
             }
             else
             {
-                control.StartPoint = null;
-                control.EndPoint = null;
-                control._currentMovePoint = null;
+                StartPoint = null;
+                EndPoint = null;
+                _currentMovePoint = null;
             }
+
+            
+
+
+            await Task.Run(() =>
+            {
+                Thread.Sleep((int) (timeAnimsSec.Max() * 1000));
+            });
+            await ChangePos();
+
+
+
         }
 
-        private void ChangePosImgOnCanvas(Image img, System.Drawing.Point endPoint,int sizeSell,int speed)
+        private double ChangePosImgOnCanvas(Image img, System.Drawing.Point endPoint, int sizeSell, int speed)
         {
             var imgLeftPos = Canvas.GetLeft(img);
             var imgTopPos = Canvas.GetTop(img);
@@ -119,8 +152,8 @@ namespace Chess.Views.UserControls
             var endLeftPos = endPoint.Y * sizeSell;
             var endTopPos = endPoint.X * sizeSell;
 
-            var duration = new Duration(TimeSpan.FromSeconds(
-                Math.Sqrt(Math.Pow(endTopPos - imgTopPos, 2) + Math.Pow(endLeftPos - imgLeftPos, 2)) / speed));
+            double durationSeconds = Math.Sqrt(Math.Pow(endTopPos - imgTopPos, 2) + Math.Pow(endLeftPos - imgLeftPos, 2)) / speed;
+            var duration = new Duration(TimeSpan.FromSeconds(durationSeconds));
 
             img.BeginAnimation(Canvas.TopProperty, new DoubleAnimation
             {
@@ -135,7 +168,10 @@ namespace Chess.Views.UserControls
                 To = endLeftPos,
                 Duration = duration
             });
+            return durationSeconds;
         }
+
+
         #endregion
 
         #region Свойство StartPoint
@@ -247,15 +283,6 @@ namespace Chess.Views.UserControls
         private static void DrawChessBoard(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             ChessBoardUserControl control = (ChessBoardUserControl)o;
-
-            control.StartPoint = null;
-            control.EndPoint = null;
-
-            var icons = ((BoardForDraw)e.NewValue).Icons;
-            var sizeCell = control._sizeCell;
-            var canvasPieces = control.CanvasPieces;
-            control.CanvasCell.Children.Clear();
-
             control.StartPoint = null;
             control.EndPoint = null;
 
@@ -269,6 +296,7 @@ namespace Chess.Views.UserControls
             {
                 return;
             }
+            CanvasCell.Children.Clear();
             #region Нарисовать фигуры
             CanvasPieces.Children.Clear();
             for (int i = 0; i < 8; i++)
@@ -319,14 +347,18 @@ namespace Chess.Views.UserControls
         {
            InitializeComponent();
         }
-
         protected override Size MeasureOverride(Size constraint)
         {
-            SizeBoard = Math.Min(constraint.Height, constraint.Width);
+            var sizeBoard = constraint.Height > constraint.Width ? constraint.Width : constraint.Height;
+            
+            SizeBoard = sizeBoard;
+            _sizeCell = (int)sizeBoard / 8;
+            
+            DrawBoard();
             DrawStateDraw(BoardForDraw);
-            return base.MeasureOverride(constraint);
-        }
 
+            return constraint;
+        }
         private void DrawChoiceCell(System.Drawing.Point point)
         {
             var rectangle = new Rectangle
@@ -340,7 +372,6 @@ namespace Chess.Views.UserControls
             Canvas.SetTop(rectangle, point.X * _sizeCell);
             CanvasCell.Children.Add(rectangle);
         }
-
         private void DrawBoard()
         {
             #region Нарисовать поле
@@ -398,17 +429,15 @@ namespace Chess.Views.UserControls
             #endregion
         }
 
+        #region Анимация перемечения фигур
         private void EmptyCells_Down(object sender, MouseButtonEventArgs e)
         {
             if (StartPoint != null && EndPoint == null)
             {
-                Point p = e.GetPosition(this) - (Vector)e.GetPosition((Rectangle)sender);
+                Point p = e.GetPosition(CanvasPieces) - (Vector)e.GetPosition((Rectangle)sender);
                 EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
             }
         }
-
-        #region Анимация перемечения фигур
-
         private void ReplaceImg(Image img,Point p)
         {
             
@@ -432,7 +461,7 @@ namespace Chess.Views.UserControls
             Image img = (Image)sender;
             _currentMovePoint = e.GetPosition(img);
             
-            Point p = e.GetPosition(this) - (Vector)e.GetPosition(img);
+            Point p = e.GetPosition(CanvasPieces) - (Vector)e.GetPosition(img);
 
             System.Drawing.Point point = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
             if (StartPoint == null || StartPoint == point)
@@ -453,7 +482,7 @@ namespace Chess.Views.UserControls
             if (_currentMovePoint == null)
                 return;
             Image img = (Image)sender;
-            Point p = e.GetPosition(this) - (Vector)_currentMovePoint.Value;
+            Point p = e.GetPosition(CanvasPieces) - (Vector)_currentMovePoint.Value;
             EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
             _currentMovePoint = null;
             img.ReleaseMouseCapture();
@@ -462,21 +491,16 @@ namespace Chess.Views.UserControls
         private void Piece_OnMouseMove(object sender, MouseEventArgs e)
         {
             Image img = (Image)sender;
+            if (StartPoint is { X: 6, Y: 6 })
+            {
+                var a = this;
+            }
             if (_currentMovePoint == null || StartPoint == null)
                 return;
             
-            Point p = e.GetPosition(this) - (Vector)_currentMovePoint.Value;
+            Point p = e.GetPosition(CanvasPieces) - (Vector)_currentMovePoint.Value;
             Canvas.SetLeft(img, p.X);
             Canvas.SetTop(img, p.Y);
-            /*if ((int)Math.Round(p.X / _sizeCell) == 3 && (int)Math.Round(p.Y / _sizeCell) == 3 )
-            {
-                Canvas.SetLeft(img, p.X);
-                Canvas.SetTop(img, p.Y);
-                var l = Canvas.GetLeft(img);
-                var t = Canvas.GetTop(img);
-
-            }*/
-
         }
 
         #endregion

@@ -14,19 +14,27 @@
     </Window.DataContext>
     
     <Grid>
-        <uc:ChessBoardUserControl 
-                                  MoveInfo="{Binding MoveInfo,Mode=OneWay}"
-                                  StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
-                                  EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
-                                  Hints="{Binding Hints}"
-                                  BoardForDraw="{Binding BoardForDraw,Mode=OneWay}"></uc:ChessBoardUserControl>
+        <DockPanel>
+            <Button DockPanel.Dock="Left" VerticalAlignment="Top"
+                    Content="Новая игра" Width="120" Margin="20" HorizontalAlignment="Right" Command="{Binding StartGameCommand}"></Button>
+            <StackPanel>
+                <uc:ChessBoardUserControl Height="350"
+                    MoveInfo="{Binding MoveInfo,Mode=OneWay}"
+                    StartPoint="{Binding StartPoint,Mode=OneWayToSource}"
+                    EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
+                    Hints="{Binding Hints}"
+                    BoardForDraw="{Binding BoardForDraw,Mode=OneWay}"></uc:ChessBoardUserControl>
+                <StackPanel
+                            Orientation="Horizontal" HorizontalAlignment="Center" Margin="20" Height="30" VerticalAlignment="Bottom" >
+                    <Button VerticalAlignment="Bottom"  Width="100" Content="Назад" Command="{Binding PrevStateStateChessBoardCommand}" ></Button>
+                    <Button VerticalAlignment="Bottom"  Width="100" Content="Вперед" Command="{Binding NextStateStateChessBoardCommand}"></Button>
+                </StackPanel>
+            </StackPanel>
+            
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20" Height="30" VerticalAlignment="Bottom" >
-            <Button VerticalAlignment="Bottom"  Width="100" Content="Назад" Command="{Binding PrevStateStateChessBoardCommand}" ></Button>
-            <Button VerticalAlignment="Bottom"  Width="100" Content="Вперед" Command="{Binding NextStateStateChessBoardCommand}"></Button>
-        </StackPanel>
-        <Button Content="Новая игра" Width="150" Margin="20" HorizontalAlignment="Right" Command="{Binding StartGameCommand}"></Button>
+</DockPanel>
         
+       
         
 
 </Grid>

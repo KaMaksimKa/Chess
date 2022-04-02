@@ -13,17 +13,15 @@ namespace Chess.Models.Players
         {
         }
 
-        public override async void Move()
+        public override  (Point,Point)? Move()
         {
-            await Task.Run(() =>
+            if (StartPoint is { } startPoint && EndPoint is { } endPoint)
             {
-                if (StartPoint is { } startPoint && EndPoint is { } endPoint)
-                {
-                    ChessBoard.Move(startPoint, endPoint);
-                }
-            });
-            
-           
+                /*ChessBoard.Move(startPoint, endPoint);*/
+                return (startPoint, endPoint);
+            }
+
+            return null;
         }
     }
 }

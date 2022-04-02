@@ -6,8 +6,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
              x:Name="UserC">
-    <Grid >
-        <Canvas x:Name="CanvasBack"></Canvas>
+    <Grid DataContext="{Binding ElementName=UserC}"
+          Height="{Binding SizeBoard}" Width="{Binding SizeBoard}">
+        <Canvas x:Name="CanvasBack" ></Canvas>
         <Canvas x:Name="CanvasCell"></Canvas>
         <Canvas x:Name="CanvasHints"></Canvas>
         <Canvas x:Name="CanvasEmptyCells"></Canvas>

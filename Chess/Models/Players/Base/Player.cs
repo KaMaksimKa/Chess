@@ -1,4 +1,5 @@
-﻿using Chess.Models.Boards.Base;
+﻿using System.Drawing;
+using Chess.Models.Boards.Base;
 
 namespace Chess.Models.Players.Base
 {
@@ -13,6 +14,6 @@ namespace Chess.Models.Players.Base
             ChessBoard = chessBoard;
         }
 
-        public abstract void Move();
+        public abstract (Point,Point)? Move();
     }
 }
