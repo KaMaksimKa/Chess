@@ -11,7 +11,6 @@ namespace Chess.Models.Boards.Base
     internal class ChessBoard:Board
     {
         public event Action<MoveInfo?>? ChessBoardMovedEvent;
-        public TeamEnum WhoseMove { get; set; } = TeamEnum.WhiteTeam;
         public ChessBoard()
         {
             
@@ -64,8 +63,6 @@ namespace Chess.Models.Boards.Base
             {
                 Board.Move(moveInfo,this);
 
-                WhoseMove = WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-
                 ChessBoardMovedEvent?.Invoke(moveInfo);
                 
                 return moveInfo;
@@ -93,27 +90,23 @@ namespace Chess.Models.Boards.Base
 
     class Board:ICloneable
     {
+        protected readonly Piece?[,] ArrayBoard;
         public double Price { get; set; }
         public Piece? this[int i, int j]
         {
             get => ArrayBoard[i,j];
             protected set => ArrayBoard[i,j] = value;
         }
-
-
-        protected readonly Piece?[,] ArrayBoard;
-
+        public TeamEnum WhoseMove { get;protected set; } = TeamEnum.WhiteTeam;
         public MoveInfo LastMoveInfo { get; set; } = new MoveInfo();
         public Board()
         {
             ArrayBoard = GetNewClassicBoard();
         }
-
         public Board(Piece?[,] arrayBoard)
         {
             ArrayBoard = arrayBoard;
         }
-        
         private static Piece?[,] GetNewClassicBoard()
         {
             Piece?[,] board = new Piece?[8,8];
@@ -184,7 +177,6 @@ namespace Chess.Models.Boards.Base
 
             return board;
         }
-
         public bool CheckIsEmptySells(IEnumerable<Point>? points)
         {
             if (points is { })
@@ -205,7 +197,6 @@ namespace Chess.Models.Boards.Base
             }
 
         }
-
         public bool IsCellForKill(MoveInfo? moveInfo,Point checkPoint,TeamEnum team)
         {
             if (this.Clone() is Board board)
@@ -246,7 +237,6 @@ namespace Chess.Models.Boards.Base
 
             return false;
         }
-
         public static void Move(MoveInfo? moveInfo, Board board)
         {
             if (moveInfo is { })
@@ -262,7 +252,6 @@ namespace Chess.Models.Boards.Base
                     }
 
                     #endregion
-
 
                     board[killPoint.X, killPoint.Y] = null;
                 }
@@ -293,6 +282,8 @@ namespace Chess.Models.Boards.Base
                         board.LastMoveInfo = moveInfo;
                     }
                 }
+                board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+
             }
         }
         public virtual object Clone()

@@ -52,7 +52,6 @@ namespace Chess.Models.Players
                         if (chessBoard.Clone() is ChessBoard board)
                         {
                             Board.Move(moveInfo, board);
-                            board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
                             allMoves.Add(GetPriceStateBoard(board, depth - 1));
                         }
 
@@ -80,7 +79,6 @@ namespace Chess.Models.Players
                                         if (chessBoard.Clone() is ChessBoard board)
                                         {
                                             Board.Move(moveInfo, board);
-                                            board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
                                             allMoves.Add(GetPriceStateBoard(board, depth - 1));
                                         }
                                     }
@@ -127,11 +125,6 @@ namespace Chess.Models.Players
                                 if (chessBoard.Clone() is ChessBoard board)
                                 {
                                     Board.Move(moveInfo, board);
-                                    board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam
-                                        ? TeamEnum.BlackTeam
-                                        : TeamEnum.WhiteTeam;
-
-
                                     allMoves.Add((moveInfo, GetPriceStateBoard(board, depth - 1)));
                                 }
                             }
@@ -139,8 +132,6 @@ namespace Chess.Models.Players
                     }
                 }
             }
-
-           
 
             double bestPrice;
             if (team is TeamEnum.BlackTeam)

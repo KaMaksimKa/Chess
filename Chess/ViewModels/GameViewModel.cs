@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
-using Chess.Models.Boards;
 using Chess.Models.Boards.Base;
 using Chess.Models.Players;
 using Chess.Models.Players.Base;
@@ -200,7 +199,6 @@ namespace Chess.ViewModels
             _currentBoardId = 0;
 
         }
-
         private async void MoveAsync()
         {
             await Task.Run(() =>

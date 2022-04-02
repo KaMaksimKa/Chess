@@ -53,7 +53,6 @@ namespace Chess.Views.UserControls
             {
                 await control.ChangePos();
             }
-            
         }
         private async Task ChangePos()
         {
@@ -143,7 +142,6 @@ namespace Chess.Views.UserControls
 
 
         }
-
         private double ChangePosImgOnCanvas(Image img, System.Drawing.Point endPoint, int sizeSell, int speed)
         {
             var imgLeftPos = Canvas.GetLeft(img);
@@ -170,7 +168,6 @@ namespace Chess.Views.UserControls
             });
             return durationSeconds;
         }
-
 
         #endregion
 
