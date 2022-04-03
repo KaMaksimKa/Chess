@@ -81,39 +81,6 @@ namespace Chess.ViewModels
         }
         #endregion
 
-        /*#region Свойство StartPoint
-        private Point? _startPoint;
-        public Point? StartPoint
-        {
-            get => _startPoint;
-            set
-            {
-                Set(ref _startPoint, value);
-                if (GetCurrentPlayer() is SelfPlayer selfPlayer)
-                {
-                    selfPlayer.StartPoint = value;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Свойство EndPoint
-        private Point? _endPoint;
-        public Point? EndPoint
-        {
-            get => _endPoint;
-            set
-            {
-                Set(ref _endPoint, value);
-                if (GetCurrentPlayer() is SelfPlayer selfPlayer)
-                {
-                    selfPlayer.EndPoint = value;
-                }
-            }
-        }
-        #endregion*/
-
         #region Свойство Hints
 
         private HintsChess _hints = new HintsChess();
