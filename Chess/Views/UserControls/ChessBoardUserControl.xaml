@@ -13,5 +13,6 @@
         <Canvas x:Name="CanvasHints"></Canvas>
         <Canvas x:Name="CanvasEmptyCells"></Canvas>
         <Canvas x:Name="CanvasPieces"></Canvas>
+        <Canvas x:Name="CanvasChoicePiece"></Canvas>
     </Grid>
 </UserControl>

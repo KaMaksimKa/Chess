@@ -6,7 +6,7 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal abstract class Knight:Piece
+    internal class Knight:Piece
     {
         protected Knight(string icon, TeamEnum team) : base(icon, team,30,
             new double[8, 8]{
@@ -46,6 +46,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     var moveInfo = new MoveInfo
                     {
                         Move = new ChangePosition(startPoint, currentPoint),
+                        IsMoved = true,
                         ChangePositions = new[]{ new ChangePosition(startPoint,currentPoint) }
                     };
                     if (board[currentPoint.X, currentPoint.Y] is { })

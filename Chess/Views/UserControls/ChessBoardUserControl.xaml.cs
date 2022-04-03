@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Chess.Models;
+using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Views.UserControls
 {
@@ -69,39 +70,46 @@ namespace Chess.Views.UserControls
 
             var moveInfo = _moveInfosQueue.Dequeue();
 
-
-
             List<double> timeAnimsSec = new List<double>{0};
 
-            if (moveInfo.KillPoint is { } killPoint)
+            #region Изменение поля в ответ на moveInfo
+
+            if (moveInfo.IsMoved)
             {
-                if (_images[killPoint.X, killPoint.Y] is { } img)
+                if (moveInfo.KillPoint is { } killPoint)
                 {
-                    CanvasPieces.Children.Remove(img);
-                    _images[killPoint.X, killPoint.Y] = null;
-                }
-            }
-            if (moveInfo.ChangePositions is { } changePositions)
-            {
-                CanvasHints.Children.Clear();
-                CanvasCell.Children.Clear();
-                
-                
-                foreach (var (startPoint, endPoint) in changePositions)
-                {
-                    if (_images[startPoint.X, startPoint.Y] is { } img)
+                    if (_images[killPoint.X, killPoint.Y] is { } img)
                     {
-                        _images[endPoint.X, endPoint.Y] = img;
-                        _images[startPoint.X, startPoint.Y] = null;
-
-                        timeAnimsSec.Add(ChangePosImgOnCanvas(img, endPoint, _sizeCell, 400));
-
-                        DrawChoiceCell(startPoint);
-                        DrawChoiceCell(endPoint);
+                        CanvasPieces.Children.Remove(img);
+                        _images[killPoint.X, killPoint.Y] = null;
                     }
                 }
 
+                if (moveInfo.ChangePositions is { } changePositions)
+                {
+                    CanvasHints.Children.Clear();
+                    CanvasCell.Children.Clear();
+                    foreach (var (startPoint, endPoint) in changePositions)
+                    {
+                        if (_images[startPoint.X, startPoint.Y] is { } img)
+                        {
+                            _images[endPoint.X, endPoint.Y] = img;
+                            _images[startPoint.X, startPoint.Y] = null;
+
+                            timeAnimsSec.Add(ChangePosImgOnCanvas(img, endPoint, _sizeCell, 400));
+
+                            DrawChoiceCell(startPoint);
+                            DrawChoiceCell(endPoint);
+                        }
+                    }
+
+                }
             }
+
+            #endregion
+
+            #region Приведение поля к нормальному виду
+
             if (StartPoint is { } startP)
             {
                 var img = _images[startP.X, startP.Y];
@@ -110,14 +118,19 @@ namespace Chess.Views.UserControls
                     timeAnimsSec.Add(ChangePosImgOnCanvas(img, startP, _sizeCell, 4000));
                     img.ReleaseMouseCapture();
                 }
-
             }
-            if (moveInfo.KillPoint == null && moveInfo.ChangePositions == null)
+            if (moveInfo.IsMoved)
+            {
+                StartPoint = null;
+                EndPoint = null;
+                _currentMovePoint = null;
+            }
+            else
             {
                 if (EndPoint is { X: <= 7 and >= 0, Y: <= 7 and >= 0 } endP &&
                     _images[endP.X, endP.Y] is { })
                 {
-                    StartPoint = new System.Drawing.Point(endP.X, endP.Y);
+                    StartPoint = endP;
                     EndPoint = null;
                 }
                 else
@@ -126,20 +139,34 @@ namespace Chess.Views.UserControls
                     _currentMovePoint = null;
                 }
             }
-            else
-            {
-                StartPoint = null;
-                EndPoint = null;
-                _currentMovePoint = null;
-            }
-
-            
+            #endregion
 
 
             await Task.Run(() =>
             {
                 Thread.Sleep((int) (timeAnimsSec.Max() * 1000));
             });
+
+            if (moveInfo.ReplaceImg is {} replaceImg &&
+                _images[replaceImg.Item1.X, replaceImg.Item1.Y] is {} oldImg)
+            {
+
+                Image newImg = new Image
+                {
+                    Width = _sizeCell,
+                    Height = _sizeCell,
+                    Source = (new ImageSourceConverter()).ConvertFrom("../" + replaceImg.Item2.Icon) as ImageSource
+                };
+                CanvasPieces.Children.Remove(oldImg);
+                newImg.MouseDown += Piece_OnMouseDown;
+                newImg.MouseMove += Piece_OnMouseMove;
+                newImg.MouseUp += Piece_OnMouseUp;
+                Canvas.SetLeft(newImg, replaceImg.Item1.Y*_sizeCell);
+                Canvas.SetTop(newImg, replaceImg.Item1.X * _sizeCell);
+                CanvasPieces.Children.Add(newImg);
+                _images[replaceImg.Item1.X, replaceImg.Item1.Y] = newImg;
+            }
+
             await ChangePos();
 
 
@@ -343,6 +370,87 @@ namespace Chess.Views.UserControls
         }
 
         #endregion
+
+        #region Свойство ChoicePieces
+        public ChoicePiece ChoicePiece
+        {
+            get => (ChoicePiece)GetValue(ChoicePieceProperty);
+            set
+            {
+                if (value.IndexReplacementPiece != null)
+                {
+                    CanvasChoicePiece.Children.Clear();
+                }
+                SetValue(ChoicePieceProperty, value);
+            }
+        }
+
+        public static readonly DependencyProperty ChoicePieceProperty =
+            DependencyProperty.Register("ChoicePiece", typeof(ChoicePiece),
+                typeof(ChessBoardUserControl), new PropertyMetadata(GetChoicePiece));
+
+        private static void GetChoicePiece(DependencyObject o, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (ChessBoardUserControl) o;
+            var choicePiece = (ChoicePiece) e.NewValue;
+            if (choicePiece is {IconsList: { } listPieces, WhereReplace: { } point,IndexReplacementPiece:null})
+            {
+                StackPanel panel = new StackPanel()
+                {
+                    Width = control._sizeCell,
+                    
+                    Background = Brushes.LightSlateGray
+                };
+
+                foreach (var piece in listPieces)
+                {
+                    var img = new Image()
+                    {
+                        Width = control._sizeCell - 6,
+                        Height = control._sizeCell - 6,
+                        Margin = new Thickness(3, 3, 3, 3),
+                        Source = (new ImageSourceConverter()).ConvertFrom("../" + piece.Icon) as ImageSource
+                    };
+
+                    img.MouseLeftButtonDown += control.ChoicePiece_LeftDown;
+
+
+                    panel.Children.Add(img);
+                }
+                var cross = new Image()
+                {
+                    Width = 25,
+                    Height = 25,
+                    Margin = new Thickness(0,0,0,5),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    Source = (new ImageSourceConverter()).ConvertFrom("../../../Data/Img/Cross.png") as ImageSource
+                    
+                };
+                cross.MouseLeftButtonDown += control.NotChoicePiece_LeftDown;
+                panel.Children.Add(cross);
+
+                Canvas.SetLeft(panel, point.Y*control._sizeCell);
+                Canvas.SetTop(panel, point.X * control._sizeCell);
+                control.CanvasChoicePiece.Children.Add(panel);
+            }
+        }
+
+        private void ChoicePiece_LeftDown(object sender, MouseButtonEventArgs e)
+        {
+            var img = (Image) sender;
+            var panel = (StackPanel)img.Parent;
+            int indexImg = panel.Children.IndexOf(img);
+            ChoicePiece = new ChoicePiece
+            {
+                IconsList = ChoicePiece.IconsList,
+                WhereReplace = ChoicePiece.WhereReplace,
+                IndexReplacementPiece = indexImg
+            };
+        }
+
+
+        #endregion
         public ChessBoardUserControl()
         {
            InitializeComponent();
@@ -450,11 +558,7 @@ namespace Chess.Views.UserControls
             Canvas.SetTop(newImg, p.Y);
             CanvasPieces.Children.Add(newImg);
             _images[(int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell)] = newImg;
-
-
             newImg.CaptureMouse();
-            
-            
         }
         private void Piece_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -491,10 +595,6 @@ namespace Chess.Views.UserControls
         private void Piece_OnMouseMove(object sender, MouseEventArgs e)
         {
             Image img = (Image)sender;
-            if (StartPoint is { X: 6, Y: 6 })
-            {
-                var a = this;
-            }
             if (_currentMovePoint == null || StartPoint == null)
                 return;
             
@@ -505,5 +605,17 @@ namespace Chess.Views.UserControls
 
         #endregion
 
+        private void NotChoicePiece_LeftDown(object sender, MouseButtonEventArgs e)
+        {
+            if (ChoicePiece is { IconsList: { }, WhereReplace: { }, IndexReplacementPiece: null })
+            {
+                ChoicePiece = new ChoicePiece
+                {
+                    IconsList = ChoicePiece.IconsList,
+                    WhereReplace = ChoicePiece.WhereReplace,
+                    IndexReplacementPiece = -1
+                };
+            }
+        }
     }
 }

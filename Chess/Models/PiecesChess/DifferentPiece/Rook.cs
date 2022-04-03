@@ -5,7 +5,7 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal abstract class Rook:Piece
+    internal class Rook:Piece
     {
         protected Rook(string icon, TeamEnum team) : base(icon, team,50,
             new double[8, 8]{

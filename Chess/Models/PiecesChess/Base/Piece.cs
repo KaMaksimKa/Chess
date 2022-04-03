@@ -4,13 +4,13 @@ using Chess.Models.Boards.Base;
 
 namespace Chess.Models.PiecesChess.Base
 {
-    internal abstract class Piece:IHaveIcon
+    public abstract class Piece:IHaveIcon
     {
         public string Icon { get; set; }
         public TeamEnum Team { get; set; }
         public int Price { get; set; }
         public bool IsFirstMove { get; set; } = true;
-
+        public virtual List<Piece> ReplacementPieces { get; set; }= new List<Piece>();
         public double[,] PieceEval { get; set; }
         protected Piece(string icon, TeamEnum team,int price, double[,] pieceEval)
         {

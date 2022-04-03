@@ -10,28 +10,11 @@ using Chess.Models.Players.Base;
 
 namespace Chess.Models.Players
 {
-    internal class BotPlayer:Player
+    internal class BotPlayer:IPlayer
     {
-        public BotPlayer(TeamEnum team,ChessBoard chessBoard) : base(team,chessBoard)
+        public BotPlayer(TeamEnum team)
         {
-        }
-        public static int GetPricePiece(Piece? piece)
-        {
-            if (piece is { } p)
-            {
-                if (piece.Team == TeamEnum.WhiteTeam)
-                {
-                    return p.Price;
-                }
-                else
-                {
-                    return -p.Price;
-                }
-            }
-            else
-            {
-                return 0;
-            }
+            Team = team;
         }
         public double  GetPriceStateBoard(ChessBoard chessBoard,int depth)
         {
@@ -51,6 +34,22 @@ namespace Chess.Models.Players
                     {
                         if (chessBoard.Clone() is ChessBoard board)
                         {
+                            if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1:{} point, Item2: null } replaceImg &&
+                                board[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is { } pieceRep)
+                            {
+                                if (board.WhoseMove is TeamEnum.BlackTeam)
+                                {
+                                    moveInfo.ReplaceImg = (point,
+                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                            .OrderBy(i => i.Price).First()));
+                                }
+                                else
+                                {
+                                    moveInfo.ReplaceImg = (point,
+                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                            .OrderBy(i => i.Price).Last()));
+                                }
+                            }
                             Board.Move(moveInfo, board);
                             allMoves.Add(GetPriceStateBoard(board, depth - 1));
                         }
@@ -78,6 +77,22 @@ namespace Chess.Models.Players
                                     {
                                         if (chessBoard.Clone() is ChessBoard board)
                                         {
+                                            if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1:{} point, Item2: null } replaceImg &&
+                                                board[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is { } pieceRep)
+                                            {
+                                                if (board.WhoseMove is TeamEnum.BlackTeam)
+                                                {
+                                                    moveInfo.ReplaceImg = (point,
+                                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                                            .OrderBy(i => i.Price).First()));
+                                                }
+                                                else
+                                                {
+                                                    moveInfo.ReplaceImg = (point,
+                                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                                            .OrderBy(i => i.Price).Last()));
+                                                }
+                                            }
                                             Board.Move(moveInfo, board);
                                             allMoves.Add(GetPriceStateBoard(board, depth - 1));
                                         }
@@ -124,6 +139,22 @@ namespace Chess.Models.Players
                             {
                                 if (chessBoard.Clone() is ChessBoard board)
                                 {
+                                    if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1: {} point , Item2: null }  &&
+                                        board[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is {} pieceRep)
+                                    {
+                                        if (team is TeamEnum.BlackTeam)
+                                        {
+                                            moveInfo.ReplaceImg = (point,
+                                                FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                                    .OrderBy(i => i.Price).First()));
+                                        }
+                                        else
+                                        {
+                                            moveInfo.ReplaceImg = (point,
+                                                FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                                    .OrderBy(i => i.Price).Last()));
+                                        }
+                                    }
                                     Board.Move(moveInfo, board);
                                     allMoves.Add((moveInfo, GetPriceStateBoard(board, depth - 1)));
                                 }
@@ -164,10 +195,18 @@ namespace Chess.Models.Players
         }
 
 
-        public override (Point,Point)? Move()
+        public event Action<Point, Point>? MovedEvent;
+        public TeamEnum Team { get; set; }
+
+        public void CanMovePlayer()
+        {
+            
+        }
+
+        public  (Point,Point)? Move(ChessBoard chessBoard)
         {
             Thread.Sleep(200);
-            var bestMoves = GetBestMoves(ChessBoard,Team,4);
+            var bestMoves = GetBestMoves(chessBoard, Team,4);
             if (bestMoves.Count > 0 &&
                 bestMoves[(new Random()).Next(0, bestMoves.Count - 1)].ChangePositions?.First() is {} changePosition)
             {
@@ -177,7 +216,7 @@ namespace Chess.Models.Players
             }
             else
             {
-                ChessBoard.Move(new Point(0,0), new Point(0,0));
+                /*ChessBoard.Move(new Point(0,0), new Point(0,0));*/
                 return null;
             }
             

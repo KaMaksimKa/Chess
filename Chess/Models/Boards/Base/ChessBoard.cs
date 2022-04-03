@@ -10,7 +10,9 @@ namespace Chess.Models.Boards.Base
 {
     internal class ChessBoard:Board
     {
-        public event Action<MoveInfo?>? ChessBoardMovedEvent;
+        public event Action<MoveInfo>? ChessBoardMovedEvent;
+        public event Action<List<Piece>,Point>? ChoiceReplacementPieceEvent;
+        private MoveInfo? _moveInfoForReplacePiece;
         public ChessBoard()
         {
             
@@ -20,7 +22,8 @@ namespace Chess.Models.Boards.Base
             
         }
 
-        public bool IsCheck(MoveInfo? moveInfo)
+
+        public bool IsCheck(MoveInfo moveInfo)
         {
             for (int i = 0; i < 8; i++)
             {
@@ -35,7 +38,7 @@ namespace Chess.Models.Boards.Base
 
             return false;
         }
-        public Dictionary<(Point, Point), MoveInfo>? GetMovesForPiece(Point? startPoint)
+        public Dictionary<(Point, Point), MoveInfo> GetMovesForPiece(Point? startPoint)
         {
             if (startPoint is {X: <=7 and >=0,Y: <= 7 and >= 0 } startP &&
                 ArrayBoard[startP.X, startP.Y] is { } piece && piece.Team == WhoseMove)
@@ -45,29 +48,65 @@ namespace Chess.Models.Boards.Base
                     .ToDictionary(i => i.Key, i => i.Value);
             }
 
-            return null;
+            return new Dictionary<(Point, Point), MoveInfo>();
         }
-        public MoveInfo? IsMove(Point startPoint, Point endPoint)
+        public MoveInfo GetMoveInfo(Point startPoint, Point endPoint)
         {
             var movesForPiece = GetMovesForPiece(startPoint);
-            if (movesForPiece is { } && movesForPiece.ContainsKey((startPoint, endPoint)))
+            if (movesForPiece.ContainsKey((startPoint, endPoint)))
             {
                 return movesForPiece[(startPoint, endPoint)];
             }
-            return null;
+            return new MoveInfo
+            {
+                IsMoved = false,
+                Move = new ChangePosition(startPoint, endPoint)
+            };
+        }
+
+        public void SetReplasementPiece(Piece? piece)
+        {
+            if (_moveInfoForReplacePiece is { ReplaceImg: { } replaceImg } moveInfo)
+            {
+                if (piece is { })
+                {
+                    _moveInfoForReplacePiece = null;
+                    moveInfo.ReplaceImg = (replaceImg.Item1, piece);
+                    Board.Move(moveInfo, this);
+                    ChessBoardMovedEvent?.Invoke(moveInfo);
+                }
+                else
+                {
+                    _moveInfoForReplacePiece = null;
+                    var nullMoveInfo = new MoveInfo
+                    {
+                        IsMoved = false,
+                        Move = moveInfo.Move,
+                    };
+                    Board.Move(nullMoveInfo, this);
+                    ChessBoardMovedEvent?.Invoke(nullMoveInfo);
+                }
+            }
+           
+            
         }
 
         public void Move(Point startPoint, Point endPoint)
         {
-            if (IsMove(startPoint,endPoint) is {} moveInfo)
+            var moveInfo = GetMoveInfo(startPoint, endPoint);
+            if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is {Item2:null} replaceImg &&
+                ArrayBoard[startPoint.X, startPoint.Y] is {} piece)
             {
-                Board.Move(moveInfo,this);
-                ChessBoardMovedEvent?.Invoke(moveInfo);
+                ChoiceReplacementPieceEvent?.Invoke(piece.ReplacementPieces, replaceImg.Item1);
+                _moveInfoForReplacePiece = moveInfo;
             }
             else
             {
-                ChessBoardMovedEvent?.Invoke(null);
+                Board.Move(moveInfo, this);
+                ChessBoardMovedEvent?.Invoke(moveInfo);
             }
+           
+            
         }
         public IHaveIcon?[,] GetIcons()
         {
@@ -80,13 +119,14 @@ namespace Chess.Models.Boards.Base
                 WhoseMove = WhoseMove,
                 LastMoveInfo = LastMoveInfo,
                 ChessBoardMovedEvent = ChessBoardMovedEvent,
-                Price = Price
+                Price = Price,
+                ChoiceReplacementPieceEvent = ChoiceReplacementPieceEvent
             };
         }
     }
 
 
-    class Board:ICloneable
+    public class Board:ICloneable
     {
         protected readonly Piece?[,] ArrayBoard;
         public double Price { get; set; }
@@ -129,15 +169,15 @@ namespace Chess.Models.Boards.Base
             {
                 board[6, i] = new WhitePawn(PawnDirection.Down);
             }
-
+/*
             board[7, 0] = new WhiteRook();
             board[7, 7] = new WhiteRook();
             board[7, 1] = new WhiteKnight();
             board[7, 6] = new WhiteKnight();
             board[7, 2] = new WhiteBishop();
-            board[7, 5] = new WhiteBishop();
+            board[7, 5] = new WhiteBishop();*/
             board[7, 4] = new WhiteKing();
-            board[7, 3] = new WhiteQueen();
+            /*board[7, 3] = new WhiteQueen();*/
 
             #endregion
 
@@ -162,13 +202,13 @@ namespace Chess.Models.Boards.Base
                 board[1, i] = new BlackPawn(PawnDirection.Up);
             }
 
-            board[0, 0] = new BlackRook();
+           /* board[0, 0] = new BlackRook();
             board[0, 7] = new BlackRook();
             board[0, 1] = new BlackKnight();
             board[0, 6] = new BlackKnight();
             board[0, 2] = new BlackBishop();
             board[0, 5] = new BlackBishop();
-            board[0, 3] = new BlackQueen();
+            board[0, 3] = new BlackQueen();*/
             board[0, 4] = new BlackKing();
 
             #endregion
@@ -195,12 +235,12 @@ namespace Chess.Models.Boards.Base
             }
 
         }
-        public bool IsCellForKill(MoveInfo? moveInfo,Point checkPoint,TeamEnum team)
+        public bool IsCellForKill(MoveInfo moveInfo,Point checkPoint,TeamEnum team)
         {
             if (this.Clone() is Board board)
             {
                 Board.Move(moveInfo,board);
-                if (moveInfo?.ChangePositions is { } changePositions)
+                if (moveInfo.ChangePositions is { } changePositions)
                 {
                     foreach (var (startPoint,endPoint) in changePositions)
                     {
@@ -235,9 +275,9 @@ namespace Chess.Models.Boards.Base
 
             return false;
         }
-        public static void Move(MoveInfo? moveInfo, Board board)
+        public static void Move(MoveInfo moveInfo, Board board)
         {
-            if (moveInfo is { })
+            if (moveInfo.IsMoved)
             {
                 if (moveInfo.KillPoint is { } killPoint)
                 {
@@ -279,6 +319,23 @@ namespace Chess.Models.Boards.Base
 
                         board.LastMoveInfo = moveInfo;
                     }
+                }
+
+                if (moveInfo.ReplaceImg is { Item2:{}} replaceImg)
+                {
+                    #region Пересчет цены доски при замене
+
+                    if (board[replaceImg.Item1.X, replaceImg.Item1.Y] is { } piece)
+                    {
+                        board.Price -= piece.Price;
+                        board.Price -= piece.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        board.Price += replaceImg.Item2.Price;
+                        board.Price += replaceImg.Item2.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                    }
+
+                    #endregion
+
+                    board[replaceImg.Item1.X, replaceImg.Item1.Y] = FactoryPiece.GetMovedPiece(replaceImg.Item2) ;
                 }
                 board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
             }

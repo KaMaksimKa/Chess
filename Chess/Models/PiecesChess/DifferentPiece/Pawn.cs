@@ -11,7 +11,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
         Up,
         Down
     }
-    internal abstract class Pawn:Piece
+    internal class Pawn:Piece
     {
         public readonly PawnDirection Direction;
 
@@ -28,11 +28,29 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                                     })
         {
             Direction = direction;
+            if (team == TeamEnum.WhiteTeam)
+            {
+                ReplacementPieces = new List<Piece>
+                {
+                    new WhiteQueen(),new WhiteKnight(),new WhiteBishop(),
+                    new WhiteRook()
+                };
+            }
+            else
+            {
+                ReplacementPieces = new List<Piece>
+                {
+                    new BlackQueen(),new BlackKnight(),new BlackBishop(),
+                    new BlackRook()
+
+                };
+            }
+            
         }
 
-        private MoveInfo EnPassant(Point startPoint, Point endPoint, Board board)
+        private MoveInfo? EnPassant(Point startPoint, Point endPoint, Board board)
         {
-            MoveInfo moveInfo = new MoveInfo() { Move = new ChangePosition(startPoint, endPoint), };
+            
 
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
@@ -48,16 +66,21 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     if (startP.X == endP.X+2*direction && startP.Y == endPoint.Y &&
                         endP.X == startPoint.X && endP.Y == endPoint.Y)
                     {
-                        moveInfo.ChangePositions = new List<ChangePosition>
+                        return new MoveInfo()
                         {
-                            new ChangePosition(startPoint, endPoint)
+                            Move = new ChangePosition(startPoint, endPoint),
+                            IsMoved = true,
+                            KillPoint = new Point(startPoint.X, endPoint.Y),
+                            ChangePositions = new List<ChangePosition>
+                            {
+                                new ChangePosition(startPoint, endPoint)
+                            }
                         };
-                        moveInfo.KillPoint = new Point(startPoint.X,endPoint.Y);
                     }
                 }
             }
 
-            return moveInfo;
+            return null;
     }
 
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
@@ -83,11 +106,18 @@ namespace Chess.Models.PiecesChess.DifferentPiece
 
                 if ((xVector, yVector) == (direction, 0) && board[currPoint.X,currPoint.Y] == null)
                 {
-                    moveInfos.Add((startPoint, currPoint), new MoveInfo
+                    var moveInfo = new MoveInfo
                     {
                         Move = new ChangePosition(startPoint, currPoint),
-                        ChangePositions = new[]{new ChangePosition(startPoint,currPoint)}
-                    });
+                        IsMoved = true,
+                        ChangePositions = new[] {new ChangePosition(startPoint, currPoint)},
+                    };
+                    if (currPoint.X is 0 or 7)
+                    {
+                        moveInfo.IsReplacePiece = true;
+                        moveInfo.ReplaceImg = (currPoint, null);
+                    }
+                    moveInfos.Add((startPoint, currPoint), moveInfo);
                 }
                 else if ((xVector, yVector) == (2*direction, 0) && board[currPoint.X,currPoint.Y] == null &&
                          board[currPoint.X-direction, currPoint.Y] == null && IsFirstMove)
@@ -95,6 +125,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     moveInfos.Add((startPoint, currPoint), new MoveInfo
                     {
                         Move = new ChangePosition(startPoint, currPoint),
+                        IsMoved = true,
                         ChangePositions = new[] {new ChangePosition(startPoint,currPoint)}
                     });
                 }
@@ -102,14 +133,21 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                 {
                     if (board[currPoint.X, currPoint.Y] is { } piece && piece.Team!=Team)
                     {
-                        moveInfos.Add((startPoint, currPoint), new MoveInfo
+                        var moveInfo = new MoveInfo
                         {
                             Move = new ChangePosition(startPoint, currPoint),
+                            IsMoved = true,
                             KillPoint = currPoint,
-                            ChangePositions = new[] {new ChangePosition(startPoint,currPoint)}
-                        });
+                            ChangePositions = new[] { new ChangePosition(startPoint, currPoint) }
+                        };
+                        if (currPoint.X is 0 or 7)
+                        {
+                            moveInfo.IsReplacePiece = true;
+                            moveInfo.ReplaceImg = (currPoint, null);
+                        }
+                        moveInfos.Add((startPoint, currPoint), moveInfo);
                     }
-                    else if (EnPassant(startPoint,currPoint,board) is {ChangePositions:{}} moveInfoEnPassant)
+                    else if (EnPassant(startPoint,currPoint,board) is {} moveInfoEnPassant)
                     {
                         moveInfos.Add((startPoint, currPoint), moveInfoEnPassant);
                     }

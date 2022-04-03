@@ -6,7 +6,7 @@ using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Models.PiecesChess.DifferentPiece
 {
-    internal abstract class Bishop:Piece
+    internal class Bishop:Piece
     {
         protected Bishop(string icon, TeamEnum team) : base(icon, team,30,
             new double[8, 8]{

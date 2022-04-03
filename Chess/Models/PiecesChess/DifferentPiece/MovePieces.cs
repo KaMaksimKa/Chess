@@ -27,6 +27,7 @@ namespace Chess.Models.PiecesChess.DifferentPiece
                     {
                         var moveInfo = new MoveInfo {
                             Move = new ChangePosition(startPoint, currentPoint),
+                            IsMoved = true,
                             ChangePositions = new[]{new ChangePosition
                             {
                                 StartPoint = startPoint,

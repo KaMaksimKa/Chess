@@ -1,6 +1,6 @@
 ﻿namespace Chess.Models
 {
-    enum TeamEnum
+    public enum TeamEnum
     {
         WhiteTeam,
         BlackTeam
