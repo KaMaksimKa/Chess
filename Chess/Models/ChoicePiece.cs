@@ -10,13 +10,13 @@ namespace Chess.Models
 {
     public class ChoicePiece
     {
-        public List<IHaveIcon>? IconsList { get; set; }
+        public List<Piece>? PiecesList { get; set; }
         public Point? WhereReplace { get; set; }
         public int? IndexReplacementPiece { get; set; } = null;
 
-        public ChoicePiece(List<IHaveIcon> iconsList, Point whereReplace)
+        public ChoicePiece(List<Piece> piecesList, Point whereReplace)
         {
-            IconsList = iconsList;
+            PiecesList = piecesList;
             WhereReplace = whereReplace;
         }
 

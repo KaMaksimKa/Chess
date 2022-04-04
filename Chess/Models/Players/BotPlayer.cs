@@ -12,32 +12,32 @@ namespace Chess.Models.Players
 {
     internal class BotPlayer:IPlayer
     {
+        public event Action<Point, Point>? MovedEvent;
+        public event Action<Piece?>? SetSelectedPieceEvent;
         public BotPlayer(TeamEnum team)
         {
             Team = team;
         }
-        public double  GetPriceStateBoard(ChessBoard chessBoard,int depth)
+        public double  GetPriceStateBoard(Board board,int depth)
         {
             if (depth == 0)
             {
-               
-
-                return chessBoard.Price;
+                return board.Price;
             }
             else
             {
                 var allMoves = new List<double>();
-                if (chessBoard.WhoseMove != Team && depth > 1 && false)
+                /*if (board.WhoseMove != Team && depth > 1)
                 {
-                    var moves = GetBestMoves(chessBoard, chessBoard.WhoseMove, depth>4?4:2);
+                    var moves = GetBestMoves(board, board.WhoseMove, depth>4?4:2);
                     foreach (var moveInfo in moves)
                     {
-                        if (chessBoard.Clone() is ChessBoard board)
+                        if (board.Clone() is Board copyBoard)
                         {
                             if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1:{} point, Item2: null } replaceImg &&
-                                board[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is { } pieceRep)
+                                copyBoard[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is { } pieceRep)
                             {
-                                if (board.WhoseMove is TeamEnum.BlackTeam)
+                                if (copyBoard.WhoseMove is TeamEnum.BlackTeam)
                                 {
                                     moveInfo.ReplaceImg = (point,
                                         FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
@@ -50,79 +50,64 @@ namespace Chess.Models.Players
                                             .OrderBy(i => i.Price).Last()));
                                 }
                             }
-                            Board.Move(moveInfo, board);
-                            allMoves.Add(GetPriceStateBoard(board, depth - 1));
-                        }
-
-                        if (moves[0].KillPoint is { })
-                        {
-
+                            Board.Move(moveInfo, copyBoard);
+                            allMoves.Add(GetPriceStateBoard(copyBoard, depth - 1));
                         }
                     }
                     
-
                 }
                 else
+                {*/
+                for (byte i = 0; i < 8; i++)
                 {
-                    for (byte i = 0; i < 8; i++)
+                    for (byte j = 0; j < 8; j++)
                     {
-                        for (byte j = 0; j < 8; j++)
+                        if (board[i, j] is { } piece && piece.Team == board.WhoseMove)
                         {
-                            if (chessBoard[i, j] is { } piece && piece.Team == chessBoard.WhoseMove)
+                            var movesForPiece = board[i, j]?.GetMoves(new Point(i, j), board);
+                            if (movesForPiece != null)
                             {
-                                var movesForPiece = chessBoard[i, j]?.GetMoves(new Point(i, j), chessBoard);
-                                if (movesForPiece != null)
+                                foreach (var (_, moveInfo) in movesForPiece)
                                 {
-                                    foreach (var (_, moveInfo) in movesForPiece)
+                                    if (board.Clone() is Board copyBoard)
                                     {
-                                        if (chessBoard.Clone() is ChessBoard board)
+                                        if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1: var point, Item2: null } &&
+                                            copyBoard[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is { } pieceRep)
                                         {
-                                            if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1:{} point, Item2: null } replaceImg &&
-                                                board[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is { } pieceRep)
+                                            if (copyBoard.WhoseMove is TeamEnum.BlackTeam)
                                             {
-                                                if (board.WhoseMove is TeamEnum.BlackTeam)
-                                                {
-                                                    moveInfo.ReplaceImg = (point,
-                                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                                            .OrderBy(i => i.Price).First()));
-                                                }
-                                                else
-                                                {
-                                                    moveInfo.ReplaceImg = (point,
-                                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                                            .OrderBy(i => i.Price).Last()));
-                                                }
+                                                moveInfo.ReplaceImg = (point,
+                                                    FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                                        .OrderBy(pieceItem => pieceItem.Price).First()));
                                             }
-                                            Board.Move(moveInfo, board);
-                                            allMoves.Add(GetPriceStateBoard(board, depth - 1));
+                                            else
+                                            {
+                                                moveInfo.ReplaceImg = (point,
+                                                    FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
+                                                        .OrderBy(pieceItem => pieceItem.Price).Last()));
+                                            }
                                         }
+                                        Board.Move(moveInfo, copyBoard);
+                                        allMoves.Add(GetPriceStateBoard(copyBoard, depth - 1));
                                     }
                                 }
                             }
                         }
                     }
                 }
+                /*}*/
 
-                if (chessBoard.WhoseMove is TeamEnum.WhiteTeam)
+                if (board.WhoseMove is TeamEnum.WhiteTeam)
                 {
-                    if (allMoves.Count == 0)
-                    {
-                        return -900;
-                    }
                     return allMoves.Max();
                 }
                 else
                 {
-                    if (allMoves.Count == 0)
-                    {
-                        return 900;
-                    }
                     return allMoves.Min();
                 }
             }
         }
-
-        public List<MoveInfo> GetBestMoves(ChessBoard chessBoard,TeamEnum team, int depth)
+        public List<MoveInfo> GetBestMoves(Board board, TeamEnum team, int depth)
         {
             var allMoves = new List<(MoveInfo, double)>();
 
@@ -130,33 +115,33 @@ namespace Chess.Models.Players
             {
                 for (byte j = 0; j < 8; j++)
                 {
-                    if (chessBoard[i, j] is { } piece && piece.Team == team)
+                    if (board[i, j] is { } piece && piece.Team == team)
                     {
-                        var movesForPiece = chessBoard[i, j]?.GetMoves(new Point(i, j), chessBoard);
+                        var movesForPiece = board[i, j]?.GetMoves(new Point(i, j), board);
                         if (movesForPiece != null)
                         {
                             foreach (var (_, moveInfo) in movesForPiece)
                             {
-                                if (chessBoard.Clone() is ChessBoard board)
+                                if (board.Clone() is Board copyBoard)
                                 {
                                     if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is { Item1: {} point , Item2: null }  &&
-                                        board[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is {} pieceRep)
+                                        copyBoard[moveInfo.Move.StartPoint.X, moveInfo.Move.StartPoint.Y] is {} pieceRep)
                                     {
                                         if (team is TeamEnum.BlackTeam)
                                         {
                                             moveInfo.ReplaceImg = (point,
                                                 FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                                    .OrderBy(i => i.Price).First()));
+                                                    .OrderBy(pieceItem => pieceItem.Price).First()));
                                         }
                                         else
                                         {
                                             moveInfo.ReplaceImg = (point,
                                                 FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                                    .OrderBy(i => i.Price).Last()));
+                                                    .OrderBy(pieceItem => pieceItem.Price).Last()));
                                         }
                                     }
-                                    Board.Move(moveInfo, board);
-                                    allMoves.Add((moveInfo, GetPriceStateBoard(board, depth - 1)));
+                                    Board.Move(moveInfo, copyBoard);
+                                    allMoves.Add((moveInfo, GetPriceStateBoard(copyBoard, depth - 1)));
                                 }
                             }
                         }
@@ -189,37 +174,30 @@ namespace Chess.Models.Players
 
             }
 
-            var bestMoves = allMoves.Where(m => Math.Abs(m.Item2 - bestPrice) < 0.1).Select(m => m.Item1).ToList();
+            var bestMoves = allMoves.Where(m => Math.Abs(m.Item2 - bestPrice) < 1).Select(m => m.Item1).ToList();
             
             return bestMoves;
         }
-
-
-        public event Action<Point, Point>? MovedEvent;
         public TeamEnum Team { get; set; }
-
-        public void CanMovePlayer()
-        {
-            
-        }
-
-        public  (Point,Point)? Move(ChessBoard chessBoard)
+        public void CanMovePlayer(Board board)
         {
             Thread.Sleep(200);
-            var bestMoves = GetBestMoves(chessBoard, Team,4);
-            if (bestMoves.Count > 0 &&
-                bestMoves[(new Random()).Next(0, bestMoves.Count - 1)].ChangePositions?.First() is {} changePosition)
+            var bestMoves = GetBestMoves(board, Team, 4);
+            var (startPoint, endPoint) = bestMoves[(new Random()).Next(0, bestMoves.Count - 1)].Move;
+            MovedEvent?.Invoke(startPoint,endPoint);
+        }
+        public void SelectPiece(ChoicePiece choicePiece)
+        {
+            if (Team == TeamEnum.WhiteTeam)
             {
-                var (startPoint, endPoint) = changePosition;
-                /*ChessBoard.Move(startPoint, endPoint);*/
-                return (startPoint, endPoint);
+                SetSelectedPieceEvent?.Invoke(choicePiece.PiecesList?.OrderBy(piece=>piece.Price).Last());
             }
             else
             {
-                /*ChessBoard.Move(new Point(0,0), new Point(0,0));*/
-                return null;
+                SetSelectedPieceEvent?.Invoke(choicePiece.PiecesList?.OrderBy(piece => piece.Price).First());
+
             }
-            
         }
+
     }
 }

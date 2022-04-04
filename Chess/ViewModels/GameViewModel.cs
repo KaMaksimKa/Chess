@@ -5,7 +5,6 @@ using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
 using Chess.Models.Boards.Base;
-using Chess.Models.PiecesChess.Base;
 using Chess.Models.Players;
 using Chess.Models.Players.Base;
 using Chess.ViewModels.Base;
@@ -15,15 +14,16 @@ namespace Chess.ViewModels
 {
     internal class GameViewModel:ViewModel
     {
+        private bool _isGameGoing;
+
         private List<ChessBoard> _listChessBoards = new List<ChessBoard>();
         private int _currentBoardId;
 
         private readonly IPlayer _firstPlayer;
         private readonly IPlayer _secondPlayer;
 
-        public SelfPlayer CurrentSelfPlayer { get; set; } = new SelfPlayer(TeamEnum.WhiteTeam);
         private ChessBoard _chessBoard = new ChessBoard();
-        public ChessBoard ChessBoard
+        private ChessBoard ChessBoard
         {
             get => _chessBoard;
             set
@@ -33,31 +33,84 @@ namespace Chess.ViewModels
             }
         }
 
-        #region ChoicePieces
-
-        private ChoicePiece _choicePiece = new ChoicePiece();
-
-        public ChoicePiece ChoicePiece
+        #region Свойство StartPoint
+        private Point? _startPoint;
+        public Point? StartPoint
         {
-            get => _choicePiece;
+            get => _startPoint;
             set
             {
-                Set(ref _choicePiece, value);
-                if (value.IndexReplacementPiece is {} index && value.IconsList!=null)
+                Set(ref _startPoint, value);
+                if (_isGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer)
                 {
-                    if (index != -1)
-                    {
-                        ChessBoard.SetReplasementPiece((Piece)value.IconsList[index]);
-                    }
-                    else
-                    {
-                        ChessBoard.SetReplasementPiece(null);
-                    }
-                    
+                    selfPlayer.StartPoint = value;
                 }
             }
         }
 
+        #endregion
+
+        #region Свойство EndPoint
+        private Point? _endPoint;
+        public Point? EndPoint
+        {
+            get => _endPoint;
+            set
+            {
+                Set(ref _endPoint, value);
+                if (_isGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer )
+                {
+                    selfPlayer.EndPoint = value;
+                }
+                else
+                {
+                    if (StartPoint is { } startPoint && EndPoint is { } endPoint)
+                    {
+                        Task.Run(() => SetEmptyMoveInfoQueue(startPoint,endPoint));
+                    }
+                   
+                }
+            }
+        }
+        #endregion
+
+        # region Свойство SelectedPiece
+
+        private ChoicePiece _selectedPiece = new ChoicePiece();
+
+        public ChoicePiece SelectedPiece
+        {
+            get => _selectedPiece;
+            set
+            {
+                Set(ref _selectedPiece, value);
+                if (_isGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer)
+                {
+                    Task.Run(() => selfPlayer.SetSelectPiece(value));
+                }
+            }
+        }
+
+        #endregion
+
+        #region Свойство MoveInfoQueue
+        private Queue<MoveInfo> _moveInfoQueue = new Queue<MoveInfo>();
+        public Queue<MoveInfo> MoveInfoQueue
+        {
+            get => _moveInfoQueue;
+            set => Set(ref _moveInfoQueue, value);
+        }
+
+        private void SetEmptyMoveInfoQueue(Point startPoint, Point endPoint)
+        {
+            var queue = new Queue<MoveInfo>();
+            queue.Enqueue(new MoveInfo
+            {
+                IsMoved = false,
+                Move = new ChangePosition(startPoint, endPoint)
+            });
+            MoveInfoQueue = queue;
+        }
         #endregion
 
         #region Свойство BoardForDraw
@@ -70,15 +123,6 @@ namespace Chess.ViewModels
             set => Set(ref _boardForDraw, value);
         }
 
-        #endregion
-
-        #region Свойство MoveInfoQueue
-        private Queue<MoveInfo> _moveInfoQueue = new Queue<MoveInfo>();
-        public Queue<MoveInfo> MoveInfoQueue
-        {
-            get => _moveInfoQueue;
-            set => Set(ref _moveInfoQueue, value);
-        }
         #endregion
 
         #region Свойство Hints
@@ -106,7 +150,7 @@ namespace Chess.ViewModels
             {
                 _currentBoardId += 1;
                 ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
-                MoveAsync();
+                Move();
             }
         }
 
@@ -124,13 +168,13 @@ namespace Chess.ViewModels
             {
                 _currentBoardId -= 1;
                 ChessBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
-                MoveAsync();
+                Move();
             }
         }
 
         #endregion
 
-        #region Команда StartGameCommand 
+        #region Команда StartNewGameCommand 
 
         public ICommand StartGameCommand { get; }
 
@@ -138,11 +182,13 @@ namespace Chess.ViewModels
 
         private void OnStartGameCommandExecuted(object p)
         {
-            if (_listChessBoards.Count > 0)
-            {
-                ChessBoard = (ChessBoard)_listChessBoards[0].Clone();
-            }
-            MoveAsync();
+            ChessBoard = (ChessBoard)_listChessBoards[0].Clone();
+
+            _listChessBoards = _listChessBoards.GetRange(0, 1);
+            _currentBoardId = 0;
+
+            _isGameGoing = true;
+            Move();
             
         }
         
@@ -163,125 +209,18 @@ namespace Chess.ViewModels
             StartGameCommand = new LambdaCommand(OnStartGameCommandExecuted,
                 CanStartGameCommandExecute);
             #endregion
-            
-            ChessBoard = new ChessBoard();
-            ChessBoard.ChessBoardMovedEvent += MovedBoard;
-            ChessBoard.ChoiceReplacementPieceEvent += GetChoiceReplacementPiece;
 
-            var firstPlayer = new SelfPlayer(TeamEnum.WhiteTeam);
-            firstPlayer.MovedEvent += MovedPlayer;
-            firstPlayer.SetHintsForMoveEvent += SetNewHintsChessAsync;
-
-            _firstPlayer = firstPlayer;
-
-
-            var secondPlayer = new SelfPlayer(TeamEnum.BlackTeam);
-            secondPlayer.MovedEvent += MovedPlayer;
-            secondPlayer.SetHintsForMoveEvent += SetNewHintsChessAsync;
-            _secondPlayer = secondPlayer;
-
-
+            ChessBoard = GetNewChessBoard();
+            _firstPlayer = GetNewSelfPlayer();
+            _secondPlayer = GetNewBotPlayer();
 
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
 
-            if (GetCurrentPlayer() is SelfPlayer selfPlayer)
-            {
-                CurrentSelfPlayer = firstPlayer;
-            }
-         
-
         }
-
         public IPlayer GetCurrentPlayer()
         {
             return _firstPlayer.Team == ChessBoard.WhoseMove ? _firstPlayer : _secondPlayer;
-        }
-        private void GetChoiceReplacementPiece(List<Piece> pieces,Point whereReplace)
-        {
-            var iconsList = new List<IHaveIcon>();
-            foreach (Piece piece in pieces)
-            {
-                iconsList.Add(piece);
-            }
-
-            ChoicePiece = new ChoicePiece(iconsList, whereReplace);
-        }
-        private async void MoveAsync()
-        {
-            await Task.Run(() =>
-            {
-                if (GetCurrentPlayer() is BotPlayer botPlayer)
-                {
-                    var changePos = botPlayer.Move((ChessBoard)ChessBoard.Clone());
-                    if (changePos is { } pos)
-                    {
-                        var (startPoint, endPoint) = pos;
-                        ChessBoard.Move(startPoint, endPoint);
-                    }
-                }
-            });
-        }
-
-        public void MovedPlayer(Point startPoint, Point endPoint)
-        {
-            ChessBoard.Move(startPoint, endPoint);
-        }
-
-        public void MovedBoard(MoveInfo moveInfo)
-        {
-            if (moveInfo.IsMoved)
-            {
-                CurrentSelfPlayer.StartPoint = null;
-                CurrentSelfPlayer.EndPoint = null;
-                if (GetCurrentPlayer() is SelfPlayer selfPlayer)
-                {
-                    CurrentSelfPlayer = selfPlayer;
-                }
-                SaveStateChessBoard();
-
-                var queue = new Queue<MoveInfo>();
-                queue.Enqueue(moveInfo);
-                MoveInfoQueue = queue;
-
-                if (IsMate())
-                {
-                    if (ChessBoard.IsCheck(new MoveInfo()))
-                    {
-                        MessageBox.Show("Шах и мат ");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ничья ");
-                    }
-                }
-                else
-                {
-                    MoveAsync();
-                }
-            }
-            else
-            {
-                var queue = new Queue<MoveInfo>();
-                queue.Enqueue(moveInfo);
-                MoveInfoQueue = queue;
-            }
-        }
-        public bool IsMate()
-        {
-            for (byte i = 0; i < 8; i++)
-            {
-                for (byte j = 0; j < 8; j++)
-                {
-                    var hints = GetHintsChess(new Point(i, j));
-                    if (hints.IsHintsForMove.Count > 0 || hints.IsHintsForKill.Count > 0)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
         public void SaveStateChessBoard()
         {
@@ -297,34 +236,92 @@ namespace Chess.ViewModels
                 _currentBoardId += 1;
             }
         }
-        public HintsChess GetHintsChess(Point? startPoint)
+        private void Move()
         {
-            List<Point> hintsForMove = new List<Point>();
-            List<Point> hintsForKill = new List<Point>();
-
-            var moves = ChessBoard.GetMovesForPiece(startPoint);
-            foreach (var (_, moveInfo) in moves)
+            Task.Run(() => GetCurrentPlayer().CanMovePlayer(ChessBoard));
+        }
+        public void MovedPlayer(Point startPoint, Point endPoint)
+        {
+            if (_isGameGoing)
             {
-                if (moveInfo.KillPoint != null)
+                ChessBoard.Move(startPoint, endPoint);
+            }
+        }
+        public void MovedBoard(MoveInfo moveInfo)
+        {
+            var queue = new Queue<MoveInfo>();
+            queue.Enqueue(moveInfo);
+            if (moveInfo.IsMoved)
+            {
+                SaveStateChessBoard();
+                MoveInfoQueue = queue;
+
+                if (IsMate())
                 {
-                    hintsForKill.Add(moveInfo.Move.EndPoint);
+                    if (ChessBoard.IsCheck(new MoveInfo(),ChessBoard))
+                    {
+                        MessageBox.Show("Шах и мат ");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Ничья ");
+                    }
                 }
-                else if (moveInfo.ChangePositions != null)
+                else
                 {
-                    hintsForMove.Add(moveInfo.Move.EndPoint);
+                    Move();
                 }
             }
-            
-
-            return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
+            else
+            {
+                MoveInfoQueue = queue;
+            }
         }
-        private void SetNewHintsChessAsync(Point? startPoint)
+        public bool IsMate()
         {
-
-            
-                Hints = GetHintsChess(startPoint);
-            
+            for (byte i = 0; i < 8; i++)
+            {
+                for (byte j = 0; j < 8; j++)
+                {
+                    var movesPiece = ChessBoard.GetMovesForPiece(new Point(i,j),ChessBoard);
+                    if (movesPiece.Count>0)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
-
+        
+        private ChessBoard GetNewChessBoard()
+        {
+            var chessBoard = new ChessBoard();
+            chessBoard.ChessBoardMovedEvent += MovedBoard;
+            chessBoard.ChoiceReplacementPieceEvent += (pieces, whereReplace) =>
+            {
+                GetCurrentPlayer().SelectPiece(new ChoicePiece
+                {
+                    PiecesList = pieces, WhereReplace = whereReplace
+                });
+            };
+            return chessBoard;
+        }
+        private SelfPlayer GetNewSelfPlayer()
+        {
+            var selfPlayer = new SelfPlayer(TeamEnum.WhiteTeam);
+            selfPlayer.MovedEvent += MovedPlayer;
+            selfPlayer.SetHintsForMoveEvent += (hintsChess =>Hints= hintsChess);
+            selfPlayer.SetSelectedPieceEvent += piece => ChessBoard.SetReplasementPiece(piece);
+            selfPlayer.GetSelectedPieceEvent += selectedPiece => SelectedPiece = selectedPiece;
+            return selfPlayer;
+        }
+        private BotPlayer GetNewBotPlayer()
+        {
+            var botPlayer = new BotPlayer(TeamEnum.BlackTeam);
+            botPlayer.MovedEvent += MovedPlayer;
+            botPlayer.SetSelectedPieceEvent += piece => ChessBoard.SetReplasementPiece(piece);
+            return botPlayer;
+        }
+        
     }
 }

@@ -18,12 +18,14 @@
             <Button DockPanel.Dock="Left" VerticalAlignment="Top"
                     Content="Новая игра" Width="120" Margin="20" HorizontalAlignment="Right" Command="{Binding StartGameCommand}"></Button>
             <StackPanel>
-                <uc:ChessBoardUserControl Height="350" MoveInfoQueue="{Binding MoveInfoQueue,Mode=OneWay}"
-                    StartPoint="{Binding CurrentSelfPlayer.StartPoint,Mode=OneWayToSource}"
-                    EndPoint="{Binding CurrentSelfPlayer.EndPoint,Mode=OneWayToSource}"
+                <uc:ChessBoardUserControl x:Name="ChessControl" Height="350" MoveInfoQueue="{Binding MoveInfoQueue,Mode=OneWay}"
+                    StartPoint="{Binding StartPoint ,Mode=OneWayToSource}"
+                    EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
                     Hints="{Binding Hints}"
                     BoardForDraw="{Binding BoardForDraw,Mode=OneWay}"
-                    ChoicePiece="{Binding ChoicePiece,Mode=TwoWay}"></uc:ChessBoardUserControl>
+                    SelectedPiece="{Binding SelectedPiece,Mode=TwoWay}">
+                    
+                </uc:ChessBoardUserControl>
                 <StackPanel
                             Orientation="Horizontal" HorizontalAlignment="Center" Margin="20" Height="30" VerticalAlignment="Bottom" >
                     <Button VerticalAlignment="Bottom"  Width="100" Content="Назад" Command="{Binding PrevStateStateChessBoardCommand}" ></Button>

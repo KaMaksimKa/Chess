@@ -10,7 +10,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Chess.Models;
-using Chess.Models.PiecesChess.Base;
 
 namespace Chess.Views.UserControls
 {
@@ -21,6 +20,8 @@ namespace Chess.Views.UserControls
         private int _sizeCell;
         private readonly Queue<MoveInfo> _moveInfosQueue = new Queue<MoveInfo>();
         private bool _isAnimGo;
+
+
         #region Свойство SizeBoard
 
         public double SizeBoard
@@ -33,7 +34,7 @@ namespace Chess.Views.UserControls
                 typeof(ChessBoardUserControl));
         #endregion
 
-        #region Свойство MoveInfo
+        #region Свойство MoveInfoQueue
         public Queue<MoveInfo> MoveInfoQueue
         {
             get => (Queue<MoveInfo>)GetValue(MoveInfoQueueProperty);
@@ -371,29 +372,29 @@ namespace Chess.Views.UserControls
 
         #endregion
 
-        #region Свойство ChoicePieces
-        public ChoicePiece ChoicePiece
+        #region Свойство SelectedPiece
+        public ChoicePiece SelectedPiece
         {
-            get => (ChoicePiece)GetValue(ChoicePieceProperty);
+            get => (ChoicePiece)GetValue(SelectedPieceProperty);
             set
             {
                 if (value.IndexReplacementPiece != null)
                 {
                     CanvasChoicePiece.Children.Clear();
                 }
-                SetValue(ChoicePieceProperty, value);
+                SetValue(SelectedPieceProperty, value);
             }
         }
 
-        public static readonly DependencyProperty ChoicePieceProperty =
-            DependencyProperty.Register("ChoicePiece", typeof(ChoicePiece),
+        public static readonly DependencyProperty SelectedPieceProperty =
+            DependencyProperty.Register("SelectedPiece", typeof(ChoicePiece),
                 typeof(ChessBoardUserControl), new PropertyMetadata(GetChoicePiece));
 
         private static void GetChoicePiece(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             var control = (ChessBoardUserControl) o;
             var choicePiece = (ChoicePiece) e.NewValue;
-            if (choicePiece is {IconsList: { } listPieces, WhereReplace: { } point,IndexReplacementPiece:null})
+            if (choicePiece is {PiecesList: { } listPieces, WhereReplace: { } point,IndexReplacementPiece:null})
             {
                 StackPanel panel = new StackPanel()
                 {
@@ -441,10 +442,10 @@ namespace Chess.Views.UserControls
             var img = (Image) sender;
             var panel = (StackPanel)img.Parent;
             int indexImg = panel.Children.IndexOf(img);
-            ChoicePiece = new ChoicePiece
+            SelectedPiece = new ChoicePiece
             {
-                IconsList = ChoicePiece.IconsList,
-                WhereReplace = ChoicePiece.WhereReplace,
+                PiecesList = SelectedPiece.PiecesList,
+                WhereReplace = SelectedPiece.WhereReplace,
                 IndexReplacementPiece = indexImg
             };
         }
@@ -607,12 +608,12 @@ namespace Chess.Views.UserControls
 
         private void NotChoicePiece_LeftDown(object sender, MouseButtonEventArgs e)
         {
-            if (ChoicePiece is { IconsList: { }, WhereReplace: { }, IndexReplacementPiece: null })
+            if (SelectedPiece is { PiecesList: { }, WhereReplace: { }, IndexReplacementPiece: null })
             {
-                ChoicePiece = new ChoicePiece
+                SelectedPiece = new ChoicePiece
                 {
-                    IconsList = ChoicePiece.IconsList,
-                    WhereReplace = ChoicePiece.WhereReplace,
+                    PiecesList = SelectedPiece.PiecesList,
+                    WhereReplace = SelectedPiece.WhereReplace,
                     IndexReplacementPiece = -1
                 };
             }
