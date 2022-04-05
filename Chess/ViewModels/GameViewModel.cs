@@ -212,8 +212,8 @@ namespace Chess.ViewModels
 
             ChessBoard = GetNewChessBoard();
             _firstPlayer = GetNewSelfPlayer();
-            _secondPlayer = GetNewBotPlayer();
-
+            _secondPlayer = GetNewSelfPlayer();
+            
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
 
@@ -255,22 +255,7 @@ namespace Chess.ViewModels
             {
                 SaveStateChessBoard();
                 MoveInfoQueue = queue;
-
-                if (IsMate())
-                {
-                    if (ChessBoard.IsCheck(new MoveInfo(),ChessBoard))
-                    {
-                        MessageBox.Show("Шах и мат ");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ничья ");
-                    }
-                }
-                else
-                {
-                    Move();
-                }
+                Move();
             }
             else
             {
@@ -292,11 +277,26 @@ namespace Chess.ViewModels
             }
             return true;
         }
-        
+
+        public void EndGame(TeamEnum? teamEnum)
+        {
+            _isGameGoing = false;
+            if (teamEnum is { } team)
+            {
+                MessageBox.Show($"Шах и мат, проиграл {team}");
+            }
+            else
+            {
+                MessageBox.Show("Ничья ");
+            }
+        }
         private ChessBoard GetNewChessBoard()
         {
             var chessBoard = new ChessBoard();
             chessBoard.ChessBoardMovedEvent += MovedBoard;
+            chessBoard.EndGameEvent += EndGame;
+           
+
             chessBoard.ChoiceReplacementPieceEvent += (pieces, whereReplace) =>
             {
                 GetCurrentPlayer().SelectPiece(new ChoicePiece
@@ -304,6 +304,7 @@ namespace Chess.ViewModels
                     PiecesList = pieces, WhereReplace = whereReplace
                 });
             };
+            
             return chessBoard;
         }
         private SelfPlayer GetNewSelfPlayer()
