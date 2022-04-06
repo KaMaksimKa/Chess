@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using Chess.Models.Pieces.Base;
+using Chess.Models.Pieces.PiecesCheckers.DifferentPieces;
 using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
 
@@ -73,7 +74,7 @@ namespace Chess.Models.Boards.Base
                 TypePiece.Queen => new Queen(team) { IsFirstMove = isFirstMove },
                 TypePiece.Rook => new Rook(team) { IsFirstMove = isFirstMove },
                 TypePiece.Pawn => new Pawn(team,direction) { IsFirstMove = isFirstMove },
-                TypePiece.Disc=> new Pawn(team, direction) { IsFirstMove = isFirstMove },
+                TypePiece.Disc=> new Disc(team, direction) { IsFirstMove = isFirstMove },
                 _ =>null
             };
         }

@@ -149,14 +149,15 @@ namespace Chess.Views.UserControls
             });
 
             if (moveInfo.ReplaceImg is {} replaceImg &&
-                _images[replaceImg.Item1.X, replaceImg.Item1.Y] is {} oldImg)
+                _images[replaceImg.Item1.X, replaceImg.Item1.Y] is {} oldImg &&
+                replaceImg.Item2?.Icon is {} icon)
             {
 
                 Image newImg = new Image
                 {
                     Width = _sizeCell,
                     Height = _sizeCell,
-                    Source = (new ImageSourceConverter()).ConvertFrom("../" + replaceImg.Item2.Icon) as ImageSource
+                    Source = (new ImageSourceConverter()).ConvertFrom("../../../" + icon) as ImageSource
                 };
                 CanvasPieces.Children.Remove(oldImg);
                 newImg.MouseDown += Piece_OnMouseDown;
@@ -337,7 +338,7 @@ namespace Chess.Views.UserControls
                         {
                             Width = _sizeCell,
                             Height = _sizeCell,
-                            Source = (new ImageSourceConverter()).ConvertFrom("../" + icon) as ImageSource
+                            Source = (new ImageSourceConverter()).ConvertFrom("../../../" + icon) as ImageSource
                         };
                         Canvas.SetLeft(img, j * _sizeCell);
                         Canvas.SetTop(img, i * _sizeCell);
@@ -410,7 +411,7 @@ namespace Chess.Views.UserControls
                         Width = control._sizeCell - 6,
                         Height = control._sizeCell - 6,
                         Margin = new Thickness(3, 3, 3, 3),
-                        Source = (new ImageSourceConverter()).ConvertFrom("../" + piece.Icon) as ImageSource
+                        Source = (new ImageSourceConverter()).ConvertFrom("../../../" + piece.Icon) as ImageSource
                     };
 
                     img.MouseLeftButtonDown += control.ChoicePiece_LeftDown;

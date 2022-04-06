@@ -14,8 +14,8 @@
     <None Remove="Data\Img\Black\Pawn.png" />
     <None Remove="Data\Img\Black\Queen.png" />
     <None Remove="Data\Img\Black\Rook.png" />
-    <None Remove="Data\Img\Checkers\Black\Disc .png" />
-    <None Remove="Data\Img\Checkers\White\Disc .png" />
+    <None Remove="Data\Img\Checkers\Black\Disc.png" />
+    <None Remove="Data\Img\Checkers\White\Disc.png" />
     <None Remove="Data\Img\cross.png" />
     <None Remove="Data\Img\EmptyCell.png" />
     <None Remove="Data\Img\White\Bishop.png" />
@@ -50,10 +50,10 @@
     <Resource Include="Data\Img\Black\Rook.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Data\Img\Checkers\Black\Disc .png">
+    <Resource Include="Data\Img\Checkers\Black\Disc.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Data\Img\Checkers\White\Disc .png">
+    <Resource Include="Data\Img\Checkers\White\Disc.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Data\Img\Cross.png">

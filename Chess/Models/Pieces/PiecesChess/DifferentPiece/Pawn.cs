@@ -58,9 +58,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {
             Dictionary<(Point, Point), MoveInfo> moveInfos = new Dictionary<(Point, Point), MoveInfo>();
-
             int direction = Direction == Direction.Up ? 1 : -1;
-
             List<(int, int)> moveVectors = new List<(int, int)>
             {
                 (direction,0),(2*direction,0),(direction,1),(direction,-1)

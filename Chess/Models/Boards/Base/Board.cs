@@ -63,6 +63,18 @@ namespace Chess.Models.Boards.Base
             }
             return false;
         }
+
+        public virtual Dictionary<(Point, Point), MoveInfo> GetMovesForPiece(Point? startPoint)
+        {
+            var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
+            if (startPoint is { X: <= 7 and >= 0, Y: <= 7 and >= 0 } startP &&
+                this[startP.X, startP.Y] is { } piece && piece.Team == WhoseMove)
+            {
+                 goodMoves = piece.GetMoves(startP, this);
+            }
+
+            return goodMoves;
+        }
         public static void Move(MoveInfo moveInfo, Board board)
         {
             if (moveInfo.IsMoved)
@@ -130,10 +142,7 @@ namespace Chess.Models.Boards.Base
                 board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
             }
         }
-        public IHaveIcon?[,] GetIcons()
-        {
-            return (IHaveIcon?[,])ArrayBoard.Clone();
-        }
+       
         public object Clone()
         {
             return new Board((Piece?[,])ArrayBoard.Clone())

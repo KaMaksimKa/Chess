@@ -89,7 +89,7 @@ namespace Chess.Models.Players
 
             if (_board is { } board)
             {
-                var moves = ChessBoard.GetMovesForPiece(startPoint, board);
+                var moves = board.GetMovesForPiece(startPoint);
                 foreach (var (_, moveInfo) in moves)
                 {
                     if (moveInfo.KillPoint != null)

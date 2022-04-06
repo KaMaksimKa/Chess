@@ -8,11 +8,11 @@ using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
 namespace Chess.Models.Boards
 {
-    internal class ChessBoard:Board
+    internal class ChessBoard: GameBoard
     {
-        public event Action<MoveInfo>? ChessBoardMovedEvent;
+        public override event Action<MoveInfo>? ChessBoardMovedEvent;
         public event Action<List<Piece>,Point>? ChoiceReplacementPieceEvent;
-        public event Action<TeamEnum?>? EndGameEvent; 
+        public override event Action<TeamEnum?>? EndGameEvent; 
 
         private MoveInfo? _moveInfoForReplacePiece;
         public ChessBoard(TeamEnum team) :base(GetNewBoard(team))
@@ -23,25 +23,23 @@ namespace Chess.Models.Boards
         {
             
         }
-        public static Dictionary<(Point, Point), MoveInfo> GetMovesForPiece(Point? startPoint, Board board)
+        public override Dictionary<(Point, Point), MoveInfo> GetMovesForPiece(Point? startPoint)
         {
             var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
-            if (startPoint is { X: <= 7 and >= 0, Y: <= 7 and >= 0 } startP &&
-                board[startP.X, startP.Y] is { } piece && piece.Team == board.WhoseMove)
+            
+            var moves = base.GetMovesForPiece(startPoint);
+            foreach (var move in moves)
             {
-                var moves = piece.GetMoves(startP, board);
-                foreach (var move in moves)
+                if (this.Clone() is Board boardClone)
                 {
-                    if (board.Clone() is Board boardClone)
+                    Board.Move(move.Value,boardClone);
+                    if (!IsCheck(boardClone, WhoseMove))
                     {
-                        Board.Move(move.Value,boardClone);
-                        if (!IsCheck(boardClone,board.WhoseMove))
-                        {
-                            goodMoves.Add(move.Key,move.Value);
-                        }
+                        goodMoves.Add(move.Key,move.Value);
                     }
                 }
             }
+            
 
             return goodMoves;
         }
@@ -66,7 +64,7 @@ namespace Chess.Models.Boards
             {
                 for (byte j = 0; j < 8; j++)
                 {
-                    var movesPiece = ChessBoard.GetMovesForPiece(new Point(i, j), board);
+                    var movesPiece = board.GetMovesForPiece(new Point(i, j));
                     if (movesPiece.Count > 0)
                     {
                         return false;
@@ -91,7 +89,7 @@ namespace Chess.Models.Boards
         }
         public MoveInfo GetMoveInfo(Point startPoint, Point endPoint)
         {
-            var movesForPiece = GetMovesForPiece(startPoint,this);
+            var movesForPiece = GetMovesForPiece(startPoint);
             if (movesForPiece.ContainsKey((startPoint, endPoint)))
             {
                 return movesForPiece[(startPoint, endPoint)];
@@ -132,7 +130,7 @@ namespace Chess.Models.Boards
             }
 
         }
-        public void Move(Point startPoint, Point endPoint)
+        public override void Move(Point startPoint, Point endPoint)
         {
             var moveInfo = GetMoveInfo(startPoint, endPoint);
             if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is {Item2:null} replaceImg &&
@@ -211,7 +209,7 @@ namespace Chess.Models.Boards
 
             return board;
         }
-        public new object Clone()
+        public override object Clone()
         {
             return new ChessBoard((Piece?[,])ArrayBoard.Clone()) 
             {
