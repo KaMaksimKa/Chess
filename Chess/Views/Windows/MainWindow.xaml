@@ -8,7 +8,7 @@
         xmlns:uc="clr-namespace:Chess.Views.UserControls"
         xmlns:vm="clr-namespace:Chess.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="540" Width="960">
     <Window.DataContext>
         <vm:GameViewModel/>
     </Window.DataContext>
@@ -18,7 +18,7 @@
             <Button DockPanel.Dock="Left" VerticalAlignment="Top"
                     Content="Новая игра" Width="120" Margin="20" HorizontalAlignment="Right" Command="{Binding StartGameCommand}"></Button>
             <StackPanel>
-                <uc:ChessBoardUserControl x:Name="ChessControl" Height="350" MoveInfoQueue="{Binding MoveInfoQueue,Mode=OneWay}"
+                <uc:ChessBoardUserControl x:Name="ChessControl" Height="400" MoveInfoQueue="{Binding MoveInfoQueue,Mode=OneWay}"
                     StartPoint="{Binding StartPoint ,Mode=OneWayToSource}"
                     EndPoint="{Binding EndPoint,Mode=OneWayToSource}"
                     Hints="{Binding Hints}"

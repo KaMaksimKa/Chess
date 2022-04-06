@@ -1,7 +1,9 @@
 ﻿
-using Chess.Models.PiecesChess;
-using Chess.Models.PiecesChess.Base;
-using Chess.Models.PiecesChess.DifferentPiece;
+using Chess.Models.Pieces.Base;
+using Chess.Models.Pieces.PiecesChess;
+using Chess.Models.Pieces.PiecesChess.DifferentPiece;
+
+
 
 namespace Chess.Models.Boards.Base
 {
@@ -26,18 +28,18 @@ namespace Chess.Models.Boards.Base
         {
             return piece switch
             {
-                PiecesChess.WhiteKing => WhiteKing,
-                PiecesChess.WhiteQueen => WhiteQueen,
-                PiecesChess.WhiteRook => WhiteRook,
-                PiecesChess.WhiteBishop => WhiteBishop,
-                PiecesChess.WhiteKnight => WhiteKnight,
+                Pieces.PiecesChess.WhiteKing => WhiteKing,
+                Pieces.PiecesChess.WhiteQueen => WhiteQueen,
+                Pieces.PiecesChess.WhiteRook => WhiteRook,
+                Pieces.PiecesChess.WhiteBishop => WhiteBishop,
+                Pieces.PiecesChess.WhiteKnight => WhiteKnight,
                 WhitePawn {Direction:PawnDirection.Up} => WhitePawnUp,
                 WhitePawn {Direction:PawnDirection.Down} => WhitePawnDown,
-                PiecesChess.BlackKing => BlackKing,
-                PiecesChess.BlackQueen => BlackQueen,
-                PiecesChess.BlackRook => BlackRook,
-                PiecesChess.BlackBishop => BlackBishop,
-                PiecesChess.BlackKnight => BlackKnight,
+                Pieces.PiecesChess.BlackKing => BlackKing,
+                Pieces.PiecesChess.BlackQueen => BlackQueen,
+                Pieces.PiecesChess.BlackRook => BlackRook,
+                Pieces.PiecesChess.BlackBishop => BlackBishop,
+                Pieces.PiecesChess.BlackKnight => BlackKnight,
                 BlackPawn { Direction: PawnDirection.Up } => BlackPawnUp,
                 BlackPawn { Direction: PawnDirection.Down } => BlackPawnDown,
                 _ => null

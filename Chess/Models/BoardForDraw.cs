@@ -1,4 +1,4 @@
-﻿using Chess.Models.PiecesChess.Base;
+﻿using Chess.Models.Pieces.Base;
 
 namespace Chess.Models
 {

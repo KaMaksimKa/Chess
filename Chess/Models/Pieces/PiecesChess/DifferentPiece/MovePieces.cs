@@ -4,7 +4,7 @@ using System.Drawing;
 using Chess.Models.Boards.Base;
 
 
-namespace Chess.Models.PiecesChess.DifferentPiece
+namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
     internal static class MovePieces
     {

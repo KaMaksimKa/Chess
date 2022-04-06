@@ -2,7 +2,7 @@
 using System.Drawing;
 using Chess.Models.Boards.Base;
 
-namespace Chess.Models.PiecesChess.Base
+namespace Chess.Models.Pieces.Base
 {
     public abstract class Piece:IHaveIcon
     {

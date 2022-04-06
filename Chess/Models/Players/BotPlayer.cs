@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using Chess.Models.Boards.Base;
-using Chess.Models.PiecesChess.Base;
+using Chess.Models.Pieces.Base;
 using Chess.Models.Players.Base;
 
 
@@ -178,7 +178,7 @@ namespace Chess.Models.Players
             
             return bestMoves;
         }
-        public TeamEnum Team { get; set; }
+        public TeamEnum Team { get; init; }
         public void CanMovePlayer(Board board)
         {
             Thread.Sleep(200);

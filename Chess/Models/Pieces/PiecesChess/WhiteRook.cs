@@ -1,7 +1,8 @@
 ﻿
-using Chess.Models.PiecesChess.DifferentPiece;
+using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
-namespace Chess.Models.PiecesChess
+
+namespace Chess.Models.Pieces.PiecesChess
 {
     internal class WhiteRook:Rook
     {

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
-using Chess.Models.PiecesChess;
-using Chess.Models.PiecesChess.Base;
-using Chess.Models.PiecesChess.DifferentPiece;
+using Chess.Models.Boards.Base;
+using Chess.Models.Pieces.Base;
+using Chess.Models.Pieces.PiecesChess;
+using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
-namespace Chess.Models.Boards.Base
+namespace Chess.Models.Boards
 {
     internal class ChessBoard:Board
     {
@@ -15,9 +16,9 @@ namespace Chess.Models.Boards.Base
         public event Action<TeamEnum?>? EndGameEvent; 
 
         private MoveInfo? _moveInfoForReplacePiece;
-        public ChessBoard()
+        public ChessBoard():base(GetNewBoard())
         {
-            
+
         }
         public ChessBoard(Piece?[,] arrayBoard) :base(arrayBoard)
         {
@@ -53,7 +54,7 @@ namespace Chess.Models.Boards.Base
                 {
                     if (board[i, j] is King king && king.Team == team)
                     {
-                        return IsCellForKill(new Point(i, j), king.Team,board);
+                        return IsCellForKill(new Point(i, j),board);
                     }
                 }
             }
@@ -75,7 +76,6 @@ namespace Chess.Models.Boards.Base
             }
             return true;
         }
-
         public void CheckEndGame()
         {
             if (IsNoMoves(this))
@@ -106,7 +106,7 @@ namespace Chess.Models.Boards.Base
         public void Moved(MoveInfo moveInfo)
         {
             Task.Run(() => ChessBoardMovedEvent?.Invoke(moveInfo));
-            CheckEndGame();
+            Task.Run(CheckEndGame);
         }
         public void SetReplasementPiece(Piece? piece)
         {
@@ -150,45 +150,9 @@ namespace Chess.Models.Boards.Base
            
             
         }
-         
-        public override object Clone()
+        private static Piece?[,] GetNewBoard()
         {
-            return new ChessBoard((Piece?[,])ArrayBoard.Clone()) 
-            {
-                WhoseMove = WhoseMove,
-                LastMoveInfo = LastMoveInfo,
-                ChessBoardMovedEvent = ChessBoardMovedEvent,
-                Price = Price,
-                ChoiceReplacementPieceEvent = ChoiceReplacementPieceEvent,
-                EndGameEvent = EndGameEvent
-                
-            };
-        }
-    }
-
-
-    public class Board:ICloneable
-    {
-        protected readonly Piece?[,] ArrayBoard;
-        public double Price { get; set; }
-        public Piece? this[int i, int j]
-        {
-            get => ArrayBoard[i,j];
-            protected set => ArrayBoard[i,j] = value;
-        }
-        public TeamEnum WhoseMove { get;protected set; } = TeamEnum.WhiteTeam;
-        public MoveInfo LastMoveInfo { get; set; } = new MoveInfo();
-        public Board()
-        {
-            ArrayBoard = GetNewClassicBoard();
-        }
-        public Board(Piece?[,] arrayBoard)
-        {
-            ArrayBoard = arrayBoard;
-        }
-        private static Piece?[,] GetNewClassicBoard()
-        {
-            Piece?[,] board = new Piece?[8,8];
+            Piece?[,] board = new Piece?[8, 8];
 
             #region Создание белой команды
 
@@ -256,125 +220,22 @@ namespace Chess.Models.Boards.Base
 
             return board;
         }
-        public bool CheckIsEmptySells(IEnumerable<Point>? points)
+        public new object Clone()
         {
-            if (points is { })
+            return new ChessBoard((Piece?[,])ArrayBoard.Clone()) 
             {
-                foreach (var point in points)
-                {
-                    if (ArrayBoard[point.X, point.Y] is not null)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
+                WhoseMove = WhoseMove,
+                LastMoveInfo = LastMoveInfo,
+                Price = Price,
+                ChessBoardMovedEvent = ChessBoardMovedEvent,
+                ChoiceReplacementPieceEvent = ChoiceReplacementPieceEvent,
+                EndGameEvent = EndGameEvent
+                
+            };
         }
-        public static bool IsCellForKill(Point checkPoint,TeamEnum team,Board board)
-        {
-            
-                for (int i = 0; i < 8; i++)
-                {
-                    for (int j = 0; j < 8; j++)
-                    {
-                        if (board[i, j] is { } piece && piece.Team !=team)
-                        {
-                            var movesForPiece = board[i, j]?.GetMoves(new Point(i, j), board);
-                            if (movesForPiece != null)
-                            {
-                                foreach (var (_, moveInfoPiece) in movesForPiece)
-                                {
-                                    if (moveInfoPiece.KillPoint is { } killPoint && killPoint == checkPoint)
-                                    {
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                return false;
-        }
-        public static void Move(MoveInfo moveInfo, Board board)
-        {
-            if (moveInfo.IsMoved)
-            {
-                if (moveInfo.KillPoint is { } killPoint)
-                {
-                    #region Пересчет цены доски при убийстве
-
-                    if (board[killPoint.X, killPoint.Y] is { } pieceKill)
-                    {
-                        board.Price -= pieceKill.Price;
-                        board.Price -= pieceKill.PieceEval[killPoint.X, killPoint.Y];
-                    }
-
-                    #endregion
-
-                    board[killPoint.X, killPoint.Y] = null;
-                }
-
-                if (moveInfo.ChangePositions is { } changePositions)
-                {
-                    foreach (var (startP, endP) in changePositions)
-                    {
-
-                        #region Пересчет цены доски при перемещении
-
-                        if (board[startP.X, startP.Y] is { } pieceMove)
-                        {
-                            board.Price -= pieceMove.PieceEval[startP.X, startP.Y];
-                            board.Price += pieceMove.PieceEval[endP.X, endP.Y];
-                        }
-
-                        #endregion
-
-                        board[endP.X, endP.Y] = board[startP.X, startP.Y];
-                        board[startP.X, startP.Y] = null;
-                        
-                        if (board[endP.X, endP.Y] is {IsFirstMove:true } piece)
-                        {
-                            board[endP.X, endP.Y] = FactoryPiece.GetMovedPiece(piece);
-                        }
-
-                        board.LastMoveInfo = moveInfo;
-                    }
-                }
-
-                if (moveInfo.ReplaceImg is { Item2:{}} replaceImg)
-                {
-                    #region Пересчет цены доски при замене
-
-                    if (board[replaceImg.Item1.X, replaceImg.Item1.Y] is { } piece)
-                    {
-                        board.Price -= piece.Price;
-                        board.Price -= piece.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
-                        board.Price += replaceImg.Item2.Price;
-                        board.Price += replaceImg.Item2.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
-                    }
-
-                    #endregion
-
-                    board[replaceImg.Item1.X, replaceImg.Item1.Y] = FactoryPiece.GetMovedPiece(replaceImg.Item2) ;
-                }
-                board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
-            }
-        }
-        public IHaveIcon?[,] GetIcons()
-        {
-            return (IHaveIcon?[,])ArrayBoard.Clone();
-        }
-        public virtual object Clone()
-        {
-            return new Board((Piece?[,])ArrayBoard.Clone()){LastMoveInfo = LastMoveInfo,Price = Price};
-        }
-
     }
+
+
+    
 
 }

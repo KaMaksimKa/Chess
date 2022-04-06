@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Chess.Models.Boards.Base;
-using Chess.Models.PiecesChess;
-using Chess.Models.PiecesChess.Base;
-using Chess.Models.PiecesChess.DifferentPiece;
+using Chess.Models.Pieces.Base;
+using Chess.Models.Pieces.PiecesChess;
+using Chess.Models.Pieces.PiecesChess.DifferentPiece;
+
 
 namespace Chess.Models.Boards
 {
     internal class Chess960Board:ChessBoard
     {
-        public Chess960Board():base(GetNew960Board())
+        public Chess960Board():base(GetNewBoard())
         {
             
         }
-        protected static Piece?[,] GetNew960Board()
+        protected static Piece?[,] GetNewBoard()
         {
             var rand = new Random();
 

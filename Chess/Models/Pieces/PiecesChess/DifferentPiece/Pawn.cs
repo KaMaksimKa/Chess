@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using Chess.Models.Boards.Base;
-using Chess.Models.PiecesChess.Base;
+using Chess.Models.Pieces.Base;
 
-namespace Chess.Models.PiecesChess.DifferentPiece
+
+namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
     enum PawnDirection
     {

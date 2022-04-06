@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using Chess.Infrastructure.Commands;
 using Chess.Models;
-using Chess.Models.Boards.Base;
+using Chess.Models.Boards;
 using Chess.Models.Players;
 using Chess.Models.Players.Base;
 using Chess.ViewModels.Base;
@@ -210,12 +210,14 @@ namespace Chess.ViewModels
                 CanStartGameCommandExecute);
             #endregion
 
+            
             ChessBoard = GetNewChessBoard();
             _firstPlayer = GetNewSelfPlayer();
-            _secondPlayer = GetNewSelfPlayer();
+            _secondPlayer = GetNewBotPlayer();
             
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
+            
 
         }
         public IPlayer GetCurrentPlayer()
@@ -262,22 +264,6 @@ namespace Chess.ViewModels
                 MoveInfoQueue = queue;
             }
         }
-        public bool IsMate()
-        {
-            for (byte i = 0; i < 8; i++)
-            {
-                for (byte j = 0; j < 8; j++)
-                {
-                    var movesPiece = ChessBoard.GetMovesForPiece(new Point(i,j),ChessBoard);
-                    if (movesPiece.Count>0)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
         public void EndGame(TeamEnum? teamEnum)
         {
             _isGameGoing = false;

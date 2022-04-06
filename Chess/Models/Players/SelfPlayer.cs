@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
-using Chess.Models;
+using Chess.Models.Boards;
 using Chess.Models.Boards.Base;
-using Chess.Models.PiecesChess.Base;
+using Chess.Models.Pieces.Base;
 using Chess.Models.Players.Base;
-using Chess.ViewModels.Base;
 
-namespace Chess.ViewModels
+namespace Chess.Models.Players
 {
-    internal class SelfPlayer:ViewModel,IPlayer
+    internal class SelfPlayer:IPlayer
     {
         public event Action<Point, Point>? MovedEvent;
         public event Action<Piece?>? SetSelectedPieceEvent;
@@ -19,7 +18,7 @@ namespace Chess.ViewModels
 
 
         private Board? _board;
-        public TeamEnum Team { get; set; }
+        public TeamEnum Team { get; init; }
 
         #region Свойство StartPoint
         private Point? _startPoint;
@@ -56,7 +55,6 @@ namespace Chess.ViewModels
         }
         #endregion
 
-
         public SelfPlayer(TeamEnum team)
         {
             Team = team;
@@ -69,7 +67,6 @@ namespace Chess.ViewModels
         {
             GetSelectedPieceEvent?.Invoke(choicePiece);
         }
-
         public void SetSelectPiece(ChoicePiece choicePiece)
         {
             if (choicePiece.IndexReplacementPiece is { } index && choicePiece.PiecesList != null)
@@ -85,7 +82,6 @@ namespace Chess.ViewModels
 
             }
         }
-
         private HintsChess GetNewHintsChessAsync(Point? startPoint)
         {
             List<Point> hintsForMove = new List<Point>();

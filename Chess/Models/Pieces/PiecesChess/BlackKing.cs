@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Chess.Models.PiecesChess.DifferentPiece;
+﻿using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
-namespace Chess.Models.PiecesChess
+
+namespace Chess.Models.Pieces.PiecesChess
 {
     internal class BlackKing:King
     {
