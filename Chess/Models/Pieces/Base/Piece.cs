@@ -6,26 +6,24 @@ namespace Chess.Models.Pieces.Base
 {
     public abstract class Piece:IHaveIcon
     {
-        public string Icon { get; set; }
-        public TeamEnum Team { get; set; }
-        public int Price { get; set; }
+        public string Icon { get; init; }
+        public TeamEnum Team { get; init; }
+        public int Price { get; init; }
         public bool IsFirstMove { get; set; } = true;
-        public virtual List<Piece> ReplacementPieces { get; set; }= new List<Piece>();
-        public double[,] PieceEval { get; set; }
-        protected Piece(string icon, TeamEnum team,int price, double[,] pieceEval)
+        public List<Piece> ReplacementPieces { get; init; } = new List<Piece>();
+        public double[,] PieceEval { get; init; }
+        protected Piece(TypePiece typePiece, TeamEnum team,int price, double[,] pieceEval)
         {
-            Icon = icon;
+            Icon = FactoryIcons.GetIcon(typePiece, team);
             Team = team;
             Price = team == TeamEnum.WhiteTeam ? price : -price;
             /*PieceEval = team == TeamEnum.WhiteTeam ? pieceEval : ReverseMatrix(pieceEval);*/
             PieceEval = team == TeamEnum.BlackTeam ? pieceEval : ReverseMatrix(pieceEval);
         }
-
-        protected Piece(string icon, TeamEnum team, int price):this(icon,team,price,new double[8,8])
+        protected Piece(TypePiece typePiece, TeamEnum team, int price):this(typePiece, team,price,new double[8,8])
         {
         }
         public abstract Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board);
-
         private static double[,] ReverseMatrix(double[,] array)
         {
             int rows = array.GetLength(0);
@@ -40,5 +38,12 @@ namespace Chess.Models.Pieces.Base
             }
             return result;
         }
+       
     }
+    enum Direction
+    {
+        Up,
+        Down
+    }
+
 }

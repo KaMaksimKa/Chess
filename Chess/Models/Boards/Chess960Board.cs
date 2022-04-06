@@ -24,7 +24,7 @@ namespace Chess.Models.Boards
 
             for (int i = 0; i < 8; i++)
             {
-                board[6, i] = new WhitePawn(PawnDirection.Down);
+                board[6, i] = new WhitePawn(Direction.Down);
             }
 
             #endregion
@@ -33,7 +33,7 @@ namespace Chess.Models.Boards
 
             for (int i = 0; i < 8; i++)
             {
-                board[1, i] = new BlackPawn(PawnDirection.Up);
+                board[1, i] = new BlackPawn(Direction.Up);
             }
             #endregion
 

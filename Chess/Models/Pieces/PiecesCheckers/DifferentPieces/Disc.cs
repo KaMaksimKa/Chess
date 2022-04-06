@@ -9,7 +9,7 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
 {
     internal class Disc:Piece
     {
-        public Disc(string icon, TeamEnum team, int price) : base(icon, team, price)
+        public Disc(string icon, TeamEnum team, int price) : base(TypePiece.Disc, team, price)
         {
         }
 

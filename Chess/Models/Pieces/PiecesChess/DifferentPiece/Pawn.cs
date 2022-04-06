@@ -7,26 +7,12 @@ using Chess.Models.Pieces.Base;
 
 namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
-    enum PawnDirection
-    {
-        Up,
-        Down
-    }
     internal class Pawn:Piece
     {
-        public readonly PawnDirection Direction;
+        public readonly Direction Direction;
 
-        protected Pawn(string icon, TeamEnum team, PawnDirection direction) : base(icon, team,10,
-            new double[8,8]{
-                                        { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                                        {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0},
-                                        {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0},
-                                        {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5 },
-                                        {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0},
-                                        {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5},
-                                        {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5},
-                                        {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-                                    })
+        protected Pawn(TeamEnum team, Direction direction) : base(TypePiece.Pawn, team,10,
+            new [,] {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0}, {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0}, {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5}, {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0}, {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5}, {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}})
         {
             Direction = direction;
             if (team == TeamEnum.WhiteTeam)
@@ -56,7 +42,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
             var xChange = endPoint.X - startPoint.X;
             var yChange = endPoint.Y - startPoint.Y;
 
-            int direction = Direction == PawnDirection.Up ? 1 : -1;
+            int direction = Direction == Direction.Up ? 1 : -1;
 
             if (xChange == direction && Math.Abs(yChange) == 1 &&
                 board[startPoint.X,startPoint.Y+yChange] is Pawn &&
@@ -84,11 +70,13 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
             return null;
     }
 
+        public new List<Piece> ReplacementPieces { get; init; }
+
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {
             Dictionary<(Point, Point), MoveInfo> moveInfos = new Dictionary<(Point, Point), MoveInfo>();
 
-            int direction = Direction == PawnDirection.Up ? 1 : -1;
+            int direction = Direction == Direction.Up ? 1 : -1;
 
             List<(int, int)> moveVectors = new List<(int, int)>
             {

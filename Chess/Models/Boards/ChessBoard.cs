@@ -158,7 +158,7 @@ namespace Chess.Models.Boards
 
             /*for (int i = 0; i < 8; i++)
             {
-                board[1, i] = new WhitePawn(PawnDirection.Up);
+                board[1, i] = new WhitePawn(Direction.Up);
             }
 
             board[0, 0] = new WhiteRook();
@@ -172,7 +172,7 @@ namespace Chess.Models.Boards
 
             for (int i = 0; i < 8; i++)
             {
-                board[6, i] = new WhitePawn(PawnDirection.Down);
+                board[6, i] = new WhitePawn(Direction.Down);
             }
 
             board[7, 0] = new WhiteRook();
@@ -190,7 +190,7 @@ namespace Chess.Models.Boards
 
             /* for (int i = 0; i < 8; i++)
              {
-                 board[6, i] = new BlackPawn(PawnDirection.Down);
+                 board[6, i] = new BlackPawn(Direction.Down);
              }
 
              board[7, 0] = new BlackRook();
@@ -204,7 +204,7 @@ namespace Chess.Models.Boards
 
             for (int i = 0; i < 8; i++)
             {
-                board[1, i] = new BlackPawn(PawnDirection.Up);
+                board[1, i] = new BlackPawn(Direction.Up);
             }
 
             board[0, 0] = new BlackRook();

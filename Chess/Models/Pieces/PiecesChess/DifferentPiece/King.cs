@@ -9,7 +9,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
     internal class King:Piece
     {
-        protected King(string icon, TeamEnum team) : base(icon, team,900,
+        protected King(TeamEnum team) : base(TypePiece.King, team,900,
             new double[8, 8]{
                 { -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
                 {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},

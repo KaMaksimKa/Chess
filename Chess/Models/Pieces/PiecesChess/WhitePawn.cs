@@ -1,11 +1,12 @@
-﻿using Chess.Models.Pieces.PiecesChess.DifferentPiece;
+﻿using Chess.Models.Pieces.Base;
+using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
 
 namespace Chess.Models.Pieces.PiecesChess
 {
     internal class WhitePawn:Pawn
     {
-        public WhitePawn(PawnDirection direction) : base("../../Data/Img/White/Pawn.png", TeamEnum.WhiteTeam, direction)
+        public WhitePawn(Direction direction) : base("../../Data/Img/White/Pawn.png", TeamEnum.WhiteTeam, direction)
         {
         }
         public override string ToString()
