@@ -9,8 +9,6 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
     internal class Pawn:Piece
     {
-        public readonly Direction Direction;
-
         public Pawn(TeamEnum team, Direction direction) : base(TypePiece.Pawn, team,10,
             new [,] {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0}, {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0}, {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5}, {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0}, {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5}, {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}})
         {
@@ -56,8 +54,6 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 
             return null;
     }
-
-        public new List<Piece> ReplacementPieces { get; init; }
 
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {

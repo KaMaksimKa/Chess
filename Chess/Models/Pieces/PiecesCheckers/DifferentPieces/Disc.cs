@@ -9,8 +9,9 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
 {
     internal class Disc:Piece
     {
-        public Disc(string icon, TeamEnum team, int price) : base(TypePiece.Disc, team, price)
+        public Disc(TeamEnum team,Direction direction) : base(TypePiece.Disc, team, 10)
         {
+            Direction = direction;
         }
 
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)

@@ -10,8 +10,10 @@ namespace Chess.Models.Pieces.Base
         public TeamEnum Team { get; init; }
         public int Price { get; init; }
         public bool IsFirstMove { get; set; } = true;
+        public Direction Direction { get; init; }
         public List<Piece> ReplacementPieces { get; init; } = new List<Piece>();
         public double[,] PieceEval { get; init; }
+        public TypePiece TypePiece { get; init; }
         protected Piece(TypePiece typePiece, TeamEnum team,int price, double[,] pieceEval)
         {
             Icon = FactoryIcons.GetIcon(typePiece, team);
@@ -19,6 +21,7 @@ namespace Chess.Models.Pieces.Base
             Price = team == TeamEnum.WhiteTeam ? price : -price;
             /*PieceEval = team == TeamEnum.WhiteTeam ? pieceEval : ReverseMatrix(pieceEval);*/
             PieceEval = team == TeamEnum.BlackTeam ? pieceEval : ReverseMatrix(pieceEval);
+            TypePiece = typePiece;
         }
         protected Piece(TypePiece typePiece, TeamEnum team, int price):this(typePiece, team,price,new double[8,8])
         {
@@ -40,7 +43,7 @@ namespace Chess.Models.Pieces.Base
         }
        
     }
-    enum Direction
+    public enum Direction
     {
         Up,
         Down

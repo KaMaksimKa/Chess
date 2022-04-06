@@ -15,7 +15,7 @@ namespace Chess.Models.Boards
         public event Action<TeamEnum?>? EndGameEvent; 
 
         private MoveInfo? _moveInfoForReplacePiece;
-        public ChessBoard():base(GetNewBoard())
+        public ChessBoard(TeamEnum team) :base(GetNewBoard(team))
         {
 
         }
@@ -149,48 +149,65 @@ namespace Chess.Models.Boards
            
             
         }
-        private static Piece?[,] GetNewBoard()
+        private static Piece?[,] GetNewBoard(TeamEnum teamDown)
         {
             
             Piece?[,] board = new Piece?[8, 8];
 
-            #region Создание белой команды
+            TeamEnum teamUp = teamDown == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+
+            var factoryDown = FactoryPiece.GetFactory(teamDown, Direction.Down, true);
+            var factoryUp = FactoryPiece.GetFactory(teamUp, Direction.Up, true);
+
+            for (int i = 0; i < 8; i++)
+            {
+                board[6, i] = factoryDown.GetPiece(TypePiece.Pawn);
+            }
+           
+            board[7, 0] = factoryDown.GetPiece(TypePiece.Rook);
+            board[7, 7] = factoryDown.GetPiece(TypePiece.Rook);
+            board[7, 1] = factoryDown.GetPiece(TypePiece.Knight);
+            board[7, 6] = factoryDown.GetPiece(TypePiece.Knight);
+            board[7, 2] = factoryDown.GetPiece(TypePiece.Bishop);
+            board[7, 5] = factoryDown.GetPiece(TypePiece.Bishop);
+            if (factoryDown.Team == TeamEnum.WhiteTeam)
+            {
+                board[7, 4] = factoryDown.GetPiece(TypePiece.King);
+                board[7, 3] = factoryDown.GetPiece(TypePiece.Queen);
+            }
+            else
+            {
+                board[7, 3] = factoryDown.GetPiece(TypePiece.King);
+                board[7, 4] = factoryDown.GetPiece(TypePiece.Queen);
+            }
+            
+
+           
 
 
             for (int i = 0; i < 8; i++)
             {
-                board[6, i] = new Pawn(TeamEnum.WhiteTeam, Direction.Down);
+                board[1, i] = factoryUp.GetPiece(TypePiece.Pawn);
             }
 
-            board[7, 0] = new Rook(TeamEnum.WhiteTeam);
-            board[7, 7] = new Rook(TeamEnum.WhiteTeam);
-            board[7, 1] = new Knight(TeamEnum.WhiteTeam);
-            board[7, 6] = new Knight(TeamEnum.WhiteTeam);
-            board[7, 2] = new Bishop(TeamEnum.WhiteTeam);
-            board[7, 5] = new Bishop(TeamEnum.WhiteTeam);
-            board[7, 4] = new King(TeamEnum.WhiteTeam);
-            board[7, 3] = new Queen(TeamEnum.WhiteTeam);
-
-            #endregion
-
-            #region Создание черной команды
-
-
-            for (int i = 0; i < 8; i++)
+            board[0, 0] = factoryUp.GetPiece(TypePiece.Rook);
+            board[0, 7] = factoryUp.GetPiece(TypePiece.Rook);
+            board[0, 1] = factoryUp.GetPiece(TypePiece.Knight);
+            board[0, 6] = factoryUp.GetPiece(TypePiece.Knight);
+            board[0, 2] = factoryUp.GetPiece(TypePiece.Bishop);
+            board[0, 5] = factoryUp.GetPiece(TypePiece.Bishop);
+            if (factoryUp.Team == TeamEnum.BlackTeam)
             {
-                board[1, i] = new Pawn(TeamEnum.BlackTeam,Direction.Up);
+                board[0, 4] = factoryUp.GetPiece(TypePiece.King);
+                board[0, 3] = factoryUp.GetPiece(TypePiece.Queen);
+            }
+            else
+            {
+                board[0, 3] = factoryUp.GetPiece(TypePiece.King);
+                board[0, 4] = factoryUp.GetPiece(TypePiece.Queen);
             }
 
-            board[0, 0] = new Rook(TeamEnum.BlackTeam);
-            board[0, 7] = new Rook(TeamEnum.BlackTeam);
-            board[0, 1] = new Knight(TeamEnum.BlackTeam);
-            board[0, 6] = new Knight(TeamEnum.BlackTeam);
-            board[0, 2] = new Bishop(TeamEnum.BlackTeam);
-            board[0, 5] = new Bishop(TeamEnum.BlackTeam);
-            board[0, 3] = new Queen(TeamEnum.BlackTeam);
-            board[0, 4] = new King(TeamEnum.BlackTeam);
 
-            #endregion
 
             return board;
         }

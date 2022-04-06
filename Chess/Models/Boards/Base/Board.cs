@@ -102,7 +102,8 @@ namespace Chess.Models.Boards.Base
 
                         if (board[endP.X, endP.Y] is { IsFirstMove: true } piece)
                         {
-                            board[endP.X, endP.Y] = FactoryPiece.GetMovedPiece(piece);
+                            var f = FactoryPiece.GetFactory(piece.Team, piece.Direction, false);
+                            board[endP.X, endP.Y] = FactoryPiece.GetPiece(piece.TypePiece,piece.Team,piece.Direction,false);
                         }
 
                         board.LastMoveInfo = moveInfo;
@@ -122,8 +123,9 @@ namespace Chess.Models.Boards.Base
                     }
 
                     #endregion
-
-                    board[replaceImg.Item1.X, replaceImg.Item1.Y] = FactoryPiece.GetMovedPiece(replaceImg.Item2);
+                    var pieceRepl = replaceImg.Item2;
+                    board[replaceImg.Item1.X, replaceImg.Item1.Y] = FactoryPiece.GetPiece(pieceRepl.TypePiece, pieceRepl.Team, pieceRepl.Direction,false);
+  
                 }
                 board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
             }

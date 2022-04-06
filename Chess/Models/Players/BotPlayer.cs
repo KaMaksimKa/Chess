@@ -39,15 +39,15 @@ namespace Chess.Models.Players
                             {
                                 if (copyBoard.WhoseMove is TeamEnum.BlackTeam)
                                 {
-                                    moveInfo.ReplaceImg = (point,
-                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                            .OrderBy(i => i.Price).First()));
+                                    var selectPiece = pieceRep.ReplacementPieces
+                                        .OrderBy(pieceItem => pieceItem.Price).First();
+                                    moveInfo.ReplaceImg = (point, selectPiece);
                                 }
                                 else
                                 {
-                                    moveInfo.ReplaceImg = (point,
-                                        FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                            .OrderBy(i => i.Price).Last()));
+                                    var selectPiece = pieceRep.ReplacementPieces
+                                        .OrderBy(pieceItem => pieceItem.Price).Last();
+                                    moveInfo.ReplaceImg = (point, selectPiece);
                                 }
                             }
                             Board.Move(moveInfo, copyBoard);
@@ -76,15 +76,15 @@ namespace Chess.Models.Players
                                         {
                                             if (copyBoard.WhoseMove is TeamEnum.BlackTeam)
                                             {
-                                                moveInfo.ReplaceImg = (point,
-                                                    FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                                        .OrderBy(pieceItem => pieceItem.Price).First()));
+                                                var selectPiece = pieceRep.ReplacementPieces
+                                                    .OrderBy(pieceItem => pieceItem.Price).First();
+                                                moveInfo.ReplaceImg = (point, selectPiece);
                                             }
                                             else
                                             {
-                                                moveInfo.ReplaceImg = (point,
-                                                    FactoryPiece.GetMovedPiece(pieceRep.ReplacementPieces
-                                                        .OrderBy(pieceItem => pieceItem.Price).Last()));
+                                                var selectPiece = pieceRep.ReplacementPieces
+                                                    .OrderBy(pieceItem => pieceItem.Price).Last();
+                                                moveInfo.ReplaceImg = (point, selectPiece);
                                             }
                                         }
                                         Board.Move(moveInfo, copyBoard);

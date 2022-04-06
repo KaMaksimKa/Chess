@@ -22,7 +22,7 @@ namespace Chess.ViewModels
         private readonly IPlayer _firstPlayer;
         private readonly IPlayer _secondPlayer;
 
-        private ChessBoard _chessBoard = new ChessBoard();
+        private ChessBoard _chessBoard = new ChessBoard(TeamEnum.WhiteTeam);
         private ChessBoard ChessBoard
         {
             get => _chessBoard;
@@ -211,9 +211,9 @@ namespace Chess.ViewModels
             #endregion
 
             
-            ChessBoard = GetNewChessBoard();
+            ChessBoard = GetNewChessBoard(TeamEnum.WhiteTeam);
             _firstPlayer = GetNewSelfPlayer();
-            _secondPlayer = GetNewBotPlayer();
+            _secondPlayer = GetNewSelfPlayer();
             
             _listChessBoards.Add((ChessBoard)ChessBoard.Clone());
             _currentBoardId = 0;
@@ -276,9 +276,9 @@ namespace Chess.ViewModels
                 MessageBox.Show("Ничья ");
             }
         }
-        private ChessBoard GetNewChessBoard()
+        private ChessBoard GetNewChessBoard(TeamEnum team)
         {
-            var chessBoard = new ChessBoard();
+            var chessBoard = new ChessBoard(team);
             chessBoard.ChessBoardMovedEvent += MovedBoard;
             chessBoard.EndGameEvent += EndGame;
            
