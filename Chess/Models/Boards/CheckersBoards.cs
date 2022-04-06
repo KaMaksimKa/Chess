@@ -68,7 +68,7 @@ namespace Chess.Models.Boards
                 Move = new ChangePosition(startPoint, endPoint)
             };
         }
-        public override void Move(Point startPoint, Point endPoint)
+        public override void MakeMove(Point startPoint, Point endPoint)
         {
             var moveInfo = GetMoveInfo(startPoint, endPoint);
             Board.Move(moveInfo, this);

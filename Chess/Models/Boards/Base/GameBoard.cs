@@ -9,7 +9,7 @@ namespace Chess.Models.Boards.Base
         protected GameBoard(Piece?[,] arrayBoard) : base(arrayBoard) {}
         public abstract event Action<MoveInfo>? ChessBoardMovedEvent;
         public abstract event Action<TeamEnum?>? EndGameEvent;
-        public abstract void Move(Point startPoint, Point endPoint);
+        public abstract void MakeMove(Point startPoint, Point endPoint);
         public IHaveIcon?[,] GetIcons()
         {
             return (IHaveIcon?[,])ArrayBoard.Clone();

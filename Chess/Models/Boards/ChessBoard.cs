@@ -130,7 +130,16 @@ namespace Chess.Models.Boards
             }
 
         }
-        public override void Move(Point startPoint, Point endPoint)
+
+        public void Move(MoveInfo moveInfo)
+        {
+            Board.Move(moveInfo, this);
+            if (moveInfo.IsMoved)
+            {
+                WhoseMove = WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+            }
+        }
+        public override void MakeMove(Point startPoint, Point endPoint)
         {
             var moveInfo = GetMoveInfo(startPoint, endPoint);
             if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is {Item2:null} replaceImg &&

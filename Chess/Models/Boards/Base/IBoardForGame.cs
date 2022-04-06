@@ -8,7 +8,7 @@ namespace Chess.Models.Boards.Base
     {
         public event Action<MoveInfo>? ChessBoardMovedEvent;
         public event Action<TeamEnum?>? EndGameEvent;
-        public void Move(Point startPoint, Point endPoint);
+        public void MakeMove(Point startPoint, Point endPoint);
 
     }
 }

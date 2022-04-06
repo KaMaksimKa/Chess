@@ -73,19 +73,10 @@ namespace Chess.Views.UserControls
 
             List<double> timeAnimsSec = new List<double>{0};
 
-            #region Изменение поля в ответ на moveInfo
+            #region Перемечение фигур
 
             if (moveInfo.IsMoved)
             {
-                if (moveInfo.KillPoint is { } killPoint)
-                {
-                    if (_images[killPoint.X, killPoint.Y] is { } img)
-                    {
-                        CanvasPieces.Children.Remove(img);
-                        _images[killPoint.X, killPoint.Y] = null;
-                    }
-                }
-
                 if (moveInfo.ChangePositions is { } changePositions)
                 {
                     CanvasHints.Children.Clear();
@@ -148,9 +139,28 @@ namespace Chess.Views.UserControls
                 Thread.Sleep((int) (timeAnimsSec.Max() * 1000));
             });
 
-            if (moveInfo.ReplaceImg is {} replaceImg &&
-                _images[replaceImg.Item1.X, replaceImg.Item1.Y] is {} oldImg &&
-                replaceImg.Item2?.Icon is {} icon)
+            #region Удаление фигур
+
+            if (moveInfo.IsMoved)
+            {
+                if (moveInfo.KillPoint is { } killPoint)
+                {
+                    if (_images[killPoint.X, killPoint.Y] is { } img)
+                    {
+                        CanvasPieces.Children.Remove(img);
+                        _images[killPoint.X, killPoint.Y] = null;
+                    }
+                }
+            }
+            
+
+            #endregion
+
+            #region Замена фигуры
+
+            if (moveInfo.ReplaceImg is { } replaceImg &&
+                _images[replaceImg.Item1.X, replaceImg.Item1.Y] is { } oldImg &&
+                replaceImg.Item2?.Icon is { } icon)
             {
 
                 Image newImg = new Image
@@ -163,16 +173,16 @@ namespace Chess.Views.UserControls
                 newImg.MouseDown += Piece_OnMouseDown;
                 newImg.MouseMove += Piece_OnMouseMove;
                 newImg.MouseUp += Piece_OnMouseUp;
-                Canvas.SetLeft(newImg, replaceImg.Item1.Y*_sizeCell);
+                Canvas.SetLeft(newImg, replaceImg.Item1.Y * _sizeCell);
                 Canvas.SetTop(newImg, replaceImg.Item1.X * _sizeCell);
                 CanvasPieces.Children.Add(newImg);
                 _images[replaceImg.Item1.X, replaceImg.Item1.Y] = newImg;
             }
 
+            #endregion
+
+
             await ChangePos();
-
-
-
         }
         private double ChangePosImgOnCanvas(Image img, System.Drawing.Point endPoint, int sizeSell, int speed)
         {

@@ -247,7 +247,7 @@ namespace Chess.ViewModels
         {
             if (_isGameGoing)
             {
-                GameBoard.Move(startPoint, endPoint);
+                GameBoard.MakeMove(startPoint, endPoint);
             }
         }
         public void MovedBoard(MoveInfo moveInfo)
