@@ -8,7 +8,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
     internal class Rook:Piece
     {
-        protected Rook(TeamEnum team) : base(TypePiece.Rook, team,50,
+        public Rook(TeamEnum team) : base(TypePiece.Rook, team,50,
             new double[8, 8]{
                 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
                 {0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5},

@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Chess.Models.Boards.Base;
 using Chess.Models.Pieces.Base;
-using Chess.Models.Pieces.PiecesChess;
 using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
 namespace Chess.Models.Boards
@@ -152,69 +151,44 @@ namespace Chess.Models.Boards
         }
         private static Piece?[,] GetNewBoard()
         {
+            
             Piece?[,] board = new Piece?[8, 8];
 
             #region Создание белой команды
 
-            /*for (int i = 0; i < 8; i++)
-            {
-                board[1, i] = new WhitePawn(Direction.Up);
-            }
-
-            board[0, 0] = new WhiteRook();
-            board[0, 7] = new WhiteRook();
-            board[0, 1] = new WhiteKnight();
-            board[0, 6] = new WhiteKnight();
-            board[0, 2] = new WhiteBishop();
-            board[0, 5] = new WhiteBishop();
-            board[0, 3] = new WhiteKing();
-            board[0, 4] = new WhiteQueen();*/
 
             for (int i = 0; i < 8; i++)
             {
-                board[6, i] = new WhitePawn(Direction.Down);
+                board[6, i] = new Pawn(TeamEnum.WhiteTeam, Direction.Down);
             }
 
-            board[7, 0] = new WhiteRook();
-            board[7, 7] = new WhiteRook();
-            board[7, 1] = new WhiteKnight();
-            board[7, 6] = new WhiteKnight();
-            board[7, 2] = new WhiteBishop();
-            board[7, 5] = new WhiteBishop();
-            board[7, 4] = new WhiteKing();
-            board[7, 3] = new WhiteQueen();
+            board[7, 0] = new Rook(TeamEnum.WhiteTeam);
+            board[7, 7] = new Rook(TeamEnum.WhiteTeam);
+            board[7, 1] = new Knight(TeamEnum.WhiteTeam);
+            board[7, 6] = new Knight(TeamEnum.WhiteTeam);
+            board[7, 2] = new Bishop(TeamEnum.WhiteTeam);
+            board[7, 5] = new Bishop(TeamEnum.WhiteTeam);
+            board[7, 4] = new King(TeamEnum.WhiteTeam);
+            board[7, 3] = new Queen(TeamEnum.WhiteTeam);
 
             #endregion
 
             #region Создание черной команды
 
-            /* for (int i = 0; i < 8; i++)
-             {
-                 board[6, i] = new BlackPawn(Direction.Down);
-             }
-
-             board[7, 0] = new BlackRook();
-             board[7, 7] = new BlackRook();
-             board[7, 1] = new BlackKnight();
-             board[7, 6] = new BlackKnight();
-             board[7, 2] = new BlackBishop();
-             board[7, 5] = new BlackBishop();
-             board[7, 4] = new BlackQueen();
-             board[7, 3] = new BlackKing();*/
 
             for (int i = 0; i < 8; i++)
             {
-                board[1, i] = new BlackPawn(Direction.Up);
+                board[1, i] = new Pawn(TeamEnum.BlackTeam,Direction.Up);
             }
 
-            board[0, 0] = new BlackRook();
-            board[0, 7] = new BlackRook();
-            board[0, 1] = new BlackKnight();
-            board[0, 6] = new BlackKnight();
-            board[0, 2] = new BlackBishop();
-            board[0, 5] = new BlackBishop();
-            board[0, 3] = new BlackQueen();
-            board[0, 4] = new BlackKing();
+            board[0, 0] = new Rook(TeamEnum.BlackTeam);
+            board[0, 7] = new Rook(TeamEnum.BlackTeam);
+            board[0, 1] = new Knight(TeamEnum.BlackTeam);
+            board[0, 6] = new Knight(TeamEnum.BlackTeam);
+            board[0, 2] = new Bishop(TeamEnum.BlackTeam);
+            board[0, 5] = new Bishop(TeamEnum.BlackTeam);
+            board[0, 3] = new Queen(TeamEnum.BlackTeam);
+            board[0, 4] = new King(TeamEnum.BlackTeam);
 
             #endregion
 

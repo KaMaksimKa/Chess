@@ -10,7 +10,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
 {
     internal class Bishop:Piece
     {
-        protected Bishop(TeamEnum team) : base(TypePiece.Bishop, team,30,
+        public Bishop(TeamEnum team) : base(TypePiece.Bishop, team,30,
             new double[8, 8]{
                                         {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0 },
                                         {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},

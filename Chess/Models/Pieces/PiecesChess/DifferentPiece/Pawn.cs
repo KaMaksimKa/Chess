@@ -11,28 +11,15 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
     {
         public readonly Direction Direction;
 
-        protected Pawn(TeamEnum team, Direction direction) : base(TypePiece.Pawn, team,10,
+        public Pawn(TeamEnum team, Direction direction) : base(TypePiece.Pawn, team,10,
             new [,] {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0}, {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0}, {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5}, {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0}, {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5}, {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}})
         {
             Direction = direction;
-            if (team == TeamEnum.WhiteTeam)
+            ReplacementPieces = new List<Piece>
             {
-                ReplacementPieces = new List<Piece>
-                {
-                    new WhiteQueen(),new WhiteKnight(),new WhiteBishop(),
-                    new WhiteRook()
-                };
-            }
-            else
-            {
-                ReplacementPieces = new List<Piece>
-                {
-                    new BlackQueen(),new BlackKnight(),new BlackBishop(),
-                    new BlackRook()
-
-                };
-            }
-            
+                new Queen(team),new Knight(team),new Bishop(team),
+                new Rook(team)
+            };
         }
 
         private MoveInfo? EnPassant(Point startPoint, Point endPoint, Board board)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Chess.Models.Pieces.Base;
-using Chess.Models.Pieces.PiecesChess;
 using Chess.Models.Pieces.PiecesChess.DifferentPiece;
 
 
@@ -24,7 +23,7 @@ namespace Chess.Models.Boards
 
             for (int i = 0; i < 8; i++)
             {
-                board[6, i] = new WhitePawn(Direction.Down);
+                board[6, i] = new Pawn(TeamEnum.WhiteTeam,Direction.Down);
             }
 
             #endregion
@@ -33,7 +32,7 @@ namespace Chess.Models.Boards
 
             for (int i = 0; i < 8; i++)
             {
-                board[1, i] = new BlackPawn(Direction.Up);
+                board[1, i] = new Pawn(TeamEnum.BlackTeam,Direction.Up);
             }
             #endregion
 
@@ -42,45 +41,45 @@ namespace Chess.Models.Boards
             var set = new HashSet<int> {0,1,2,3,4,5,6,7 };
 
             var posKing = rand.Next(1, 7);
-            board[7, posKing] = new WhiteKing();
-            board[0, posKing] = new BlackKing();
+            board[7, posKing] = new King(TeamEnum.WhiteTeam);
+            board[0, posKing] = new King(TeamEnum.BlackTeam);
             set.Remove(posKing);
 
             var posLeftRook = rand.Next(0, posKing);
-            board[7, posLeftRook] = new WhiteRook();
-            board[0, posLeftRook] = new BlackRook();
+            board[7, posLeftRook] = new Rook(TeamEnum.WhiteTeam);
+            board[0, posLeftRook] = new Rook(TeamEnum.BlackTeam);
             set.Remove(posLeftRook);
 
             var posRightRook = rand.Next(posKing+1, 8);
-            board[7, posRightRook] = new WhiteRook();
-            board[0, posRightRook] = new BlackRook();
+            board[7, posRightRook] = new Rook(TeamEnum.WhiteTeam);
+            board[0, posRightRook] = new Rook(TeamEnum.BlackTeam);
             set.Remove(posRightRook);
 
             var evenList = set.ToList().Where(i => i % 2 == 0).ToList();
             var posEvenBishop = evenList[rand.Next(0, evenList.Count)];
-            board[7, posEvenBishop] = new WhiteBishop();
-            board[0, posEvenBishop] = new BlackBishop();
+            board[7, posEvenBishop] = new Bishop(TeamEnum.WhiteTeam);
+            board[0, posEvenBishop] = new Bishop(TeamEnum.BlackTeam);
             set.Remove(posEvenBishop);
 
             var oddList = set.ToList().Where(i => i % 2 == 1).ToList();
             var posOddBishop = oddList[rand.Next(0, oddList.Count)];
-            board[7, posOddBishop] = new WhiteBishop();
-            board[0, posOddBishop] = new BlackBishop();
+            board[7, posOddBishop] = new Bishop(TeamEnum.WhiteTeam);
+            board[0, posOddBishop] = new Bishop(TeamEnum.BlackTeam);
             set.Remove(posOddBishop);
 
             var posKnight1 = set.ToList()[rand.Next(0, set.Count)];
-            board[7, posKnight1] = new WhiteKnight();
-            board[0, posKnight1] = new BlackKnight();
+            board[7, posKnight1] = new Knight(TeamEnum.WhiteTeam);
+            board[0, posKnight1] = new Knight(TeamEnum.BlackTeam);
             set.Remove(posKnight1);
 
             var posKnight2 = set.ToList()[rand.Next(0, set.Count)];
-            board[7, posKnight2] = new WhiteKnight();
-            board[0, posKnight2] = new BlackKnight();
+            board[7, posKnight2] = new Knight(TeamEnum.WhiteTeam);
+            board[0, posKnight2] = new Knight(TeamEnum.BlackTeam);
             set.Remove(posKnight2);
 
             var posQueen = set.ToList()[rand.Next(0, set.Count)];
-            board[7, posQueen] = new WhiteQueen();
-            board[0, posQueen] = new BlackQueen();
+            board[7, posQueen] = new Queen(TeamEnum.WhiteTeam);
+            board[0, posQueen] = new Queen(TeamEnum.BlackTeam);
             set.Remove(posQueen);
 
             #endregion
