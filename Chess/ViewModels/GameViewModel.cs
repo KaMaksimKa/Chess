@@ -17,14 +17,14 @@ namespace Chess.ViewModels
     {
         private bool _isGameGoing;
 
-        private List<GameBoard> _listChessBoards = new List<GameBoard>();
-        private int _currentBoardId;
+        protected List<GameBoard> ListChessBoards = new List<GameBoard>();
+        protected int CurrentBoardId;
 
-        private readonly IPlayer _firstPlayer;
-        private readonly IPlayer _secondPlayer;
+        protected  IPlayer FirstPlayer;
+        protected  IPlayer SecondPlayer;
 
         private GameBoard _gameBoard = new ChessBoard(TeamEnum.WhiteTeam);
-        private GameBoard GameBoard
+        protected GameBoard GameBoard
         {
             get => _gameBoard;
             set
@@ -147,10 +147,10 @@ namespace Chess.ViewModels
 
         private void OnNextStateStateChessBoardCommandExecuted(object p)
         {
-            if (_currentBoardId + 1 < _listChessBoards.Count)
+            if (CurrentBoardId + 1 < ListChessBoards.Count)
             {
-                _currentBoardId += 1;
-                GameBoard = (ChessBoard)_listChessBoards[_currentBoardId].Clone();
+                CurrentBoardId += 1;
+                GameBoard = (GameBoard)ListChessBoards[CurrentBoardId].Clone();
                 Move();
             }
         }
@@ -165,10 +165,10 @@ namespace Chess.ViewModels
 
         private void OnPrevStateStateChessBoardCommandExecuted(object p)
         {
-            if (_currentBoardId - 1 >= 0)
+            if (CurrentBoardId - 1 >= 0)
             {
-                _currentBoardId -= 1;
-                GameBoard = (GameBoard)_listChessBoards[_currentBoardId].Clone();
+                CurrentBoardId -= 1;
+                GameBoard = (GameBoard)ListChessBoards[CurrentBoardId].Clone();
                 Move();
             }
         }
@@ -183,10 +183,10 @@ namespace Chess.ViewModels
 
         private void OnStartGameCommandExecuted(object p)
         {
-            GameBoard = (GameBoard)_listChessBoards[0].Clone();
+            GameBoard = (GameBoard)ListChessBoards[0].Clone();
 
-            _listChessBoards = _listChessBoards.GetRange(0, 1);
-            _currentBoardId = 0;
+            ListChessBoards = ListChessBoards.GetRange(0, 1);
+            CurrentBoardId = 0;
 
             _isGameGoing = true;
             Move();
@@ -213,30 +213,29 @@ namespace Chess.ViewModels
 
             
             GameBoard = GetNewCheckersBoard(TeamEnum.WhiteTeam);
-            _firstPlayer = GetNewSelfPlayer();
-            _secondPlayer = GetNewSelfPlayer();
+            FirstPlayer = GetNewBotPlayer(TeamEnum.WhiteTeam,6);
+            SecondPlayer = GetNewBotPlayer(TeamEnum.BlackTeam,6);
             
-            _listChessBoards.Add((GameBoard)GameBoard.Clone());
-            _currentBoardId = 0;
+            ListChessBoards.Add((GameBoard)GameBoard.Clone());
+            CurrentBoardId = 0;
             
-
         }
         public IPlayer GetCurrentPlayer()
         {
-            return _firstPlayer.Team == GameBoard.WhoseMove ? _firstPlayer : _secondPlayer;
+            return FirstPlayer.Team == GameBoard.WhoseMove ? FirstPlayer : SecondPlayer;
         }
         public void SaveStateChessBoard()
         {
-            if (_currentBoardId + 1 != _listChessBoards.Count)
+            if (CurrentBoardId + 1 != ListChessBoards.Count)
             {
-                _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId + 1);
-                _listChessBoards.Add((GameBoard)GameBoard.Clone());
-                _currentBoardId += 1;
+                ListChessBoards = ListChessBoards.GetRange(0, CurrentBoardId + 1);
+                ListChessBoards.Add((GameBoard)GameBoard.Clone());
+                CurrentBoardId += 1;
             }
             else
             {
-                _listChessBoards.Add((GameBoard)GameBoard.Clone());
-                _currentBoardId += 1;
+                ListChessBoards.Add((GameBoard)GameBoard.Clone());
+                CurrentBoardId += 1;
             }
         }
         private void Move()
@@ -277,7 +276,7 @@ namespace Chess.ViewModels
                 MessageBox.Show("Ничья ");
             }
         }
-        private GameBoard GetNewChessBoard(TeamEnum team)
+        protected GameBoard GetNewChessBoard(TeamEnum team)
         {
             var chessBoard = new ChessBoard(team);
             chessBoard.ChessBoardMovedEvent += MovedBoard;
@@ -294,7 +293,7 @@ namespace Chess.ViewModels
             
             return chessBoard;
         }
-        private GameBoard GetNewCheckersBoard(TeamEnum team)
+        protected GameBoard GetNewCheckersBoard(TeamEnum team)
         {
             var checkersBoard = new CheckersBoards(team);
             checkersBoard.ChessBoardMovedEvent += MovedBoard;
@@ -302,9 +301,9 @@ namespace Chess.ViewModels
 
             return checkersBoard;
         }
-        private SelfPlayer GetNewSelfPlayer()
+        protected SelfPlayer GetNewSelfPlayer(TeamEnum team)
         {
-            var selfPlayer = new SelfPlayer(TeamEnum.WhiteTeam);
+            var selfPlayer = new SelfPlayer(team);
             selfPlayer.MovedEvent += MovedPlayer;
             selfPlayer.SetHintsForMoveEvent += (hintsChess =>Hints= hintsChess);
             selfPlayer.GetSelectedPieceEvent += selectedPiece => SelectedPiece = selectedPiece;
@@ -314,9 +313,19 @@ namespace Chess.ViewModels
             }
             return selfPlayer;
         }
-        private BotPlayer GetNewBotPlayer()
+        protected BotChessPlayer GetNewBotChessPlayer(TeamEnum team,int depth)
         {
-            var botPlayer = new BotPlayer(TeamEnum.BlackTeam);
+            var botChessPlayer = new BotChessPlayer(team, depth);
+            botChessPlayer.MovedEvent += MovedPlayer;
+            if (GameBoard is ChessBoard chessBoard)
+            {
+                botChessPlayer.SetSelectedPieceEvent += piece => chessBoard.SetReplasementPiece(piece);
+            }
+            return botChessPlayer;
+        }
+        protected BotPlayer GetNewBotPlayer(TeamEnum team, int depth)
+        {
+            var botPlayer = new BotPlayer(team, depth);
             botPlayer.MovedEvent += MovedPlayer;
             if (GameBoard is ChessBoard chessBoard)
             {
@@ -324,6 +333,5 @@ namespace Chess.ViewModels
             }
             return botPlayer;
         }
-        
     }
 }

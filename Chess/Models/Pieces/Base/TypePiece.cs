@@ -9,6 +9,7 @@ namespace Chess.Models.Pieces.Base
         Pawn,
         Queen,
         Rook,
-        Disc
+        Disc,
+        KingDisc
     }
 }

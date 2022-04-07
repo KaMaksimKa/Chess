@@ -32,7 +32,7 @@ namespace Chess.Models.Boards
             {
                 if (this.Clone() is Board boardClone)
                 {
-                    Board.Move(move.Value,boardClone);
+                    boardClone.Move(move.Value);
                     if (!IsCheck(boardClone, WhoseMove))
                     {
                         goodMoves.Add(move.Key,move.Value);
@@ -43,6 +43,26 @@ namespace Chess.Models.Boards
 
             return goodMoves;
         }
+
+        public override Dictionary<(Point, Point), MoveInfo> GetMovesForAllPieces()
+        {
+            var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    var movesPiece = GetMovesForPiece(new Point(i, j));
+                    foreach (var move in movesPiece)
+                    {
+                        goodMoves.Add(move.Key,move.Value);
+                    }
+                }
+            }
+
+            
+            return goodMoves;
+        }
+
         public static bool IsCheck(Board board,TeamEnum team)
         {
             for (int i = 0; i < 8; i++)
@@ -57,21 +77,6 @@ namespace Chess.Models.Boards
             }
 
             return false;
-        }
-        public static bool IsNoMoves(Board board)
-        {
-            for (byte i = 0; i < 8; i++)
-            {
-                for (byte j = 0; j < 8; j++)
-                {
-                    var movesPiece = board.GetMovesForPiece(new Point(i, j));
-                    if (movesPiece.Count > 0)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
         }
         public void CheckEndGame()
         {
@@ -113,7 +118,7 @@ namespace Chess.Models.Boards
                 {
                     _moveInfoForReplacePiece = null;
                     moveInfo.ReplaceImg = (replaceImg.Item1, piece);
-                    Board.Move(moveInfo, this);
+                    Move(moveInfo);
                     Moved(moveInfo);
                 }
                 else
@@ -124,16 +129,15 @@ namespace Chess.Models.Boards
                         IsMoved = false,
                         Move = moveInfo.Move,
                     };
-                    Board.Move(nullMoveInfo, this);
+                    Move(nullMoveInfo);
                     Moved(nullMoveInfo);
                 }
             }
 
         }
-
-        public void Move(MoveInfo moveInfo)
+        public override void Move(MoveInfo moveInfo)
         {
-            Board.Move(moveInfo, this);
+            base.Move(moveInfo);
             if (moveInfo.IsMoved)
             {
                 WhoseMove = WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
@@ -150,7 +154,7 @@ namespace Chess.Models.Boards
             }
             else
             {
-                Board.Move(moveInfo, this);
+                Move(moveInfo);
                 Moved(moveInfo);
             }
            

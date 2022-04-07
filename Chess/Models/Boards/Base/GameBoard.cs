@@ -14,6 +14,5 @@ namespace Chess.Models.Boards.Base
         {
             return (IHaveIcon?[,])ArrayBoard.Clone();
         }
-        public new abstract object Clone();
     }
 }

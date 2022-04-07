@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Chess.Models.Boards.Base;
 using Chess.Models.Pieces.Base;
 
@@ -45,16 +46,80 @@ namespace Chess.Models.Boards
 
             return board;
         }
-
-
         public override Dictionary<(Point, Point), MoveInfo> GetMovesForPiece(Point? startPoint)
         {
-            var moves = base.GetMovesForPiece(startPoint);
-
-
-            return moves;
+            var allMoves = GetMovesForAllPieces();
+            return allMoves.Where(move=>move.Key.Item1==startPoint)
+                .ToDictionary(move => move.Key, move => move.Value);
         }
+        public override Dictionary<(Point, Point), MoveInfo> GetMovesForAllPieces()
+        {
+            var moves = base.GetMovesForAllPieces();
+            var movesKill = moves.Where(move => move.Value.KillPoint is { })
+                .ToDictionary(move => move.Key, move => move.Value);
+            if (movesKill.Count > 0)
+            {
+                if (LastMoveInfo.IsMoved &&
+                    this[LastMoveInfo.Move.EndPoint.X, LastMoveInfo.Move.EndPoint.Y] is { } piece &&
+                    piece.Team == WhoseMove)
+                {
+                    var goodMoves = movesKill.Where(move=>move.Key.Item1== LastMoveInfo.Move.EndPoint)
+                        .ToDictionary(move => move.Key, move => move.Value);
+                    return goodMoves;
+                }
+                else
+                {
+                    var goodKillMoves = new Dictionary<(Point, Point), MoveInfo>();
+                    var pointsKill = movesKill.Select(move => (move.Key.Item1, move.Value.KillPoint))
+                        .Distinct().ToList();
 
+                    foreach (var point in pointsKill)
+                    {
+                        var killMovesPoint = movesKill
+                            .Where(move => move.Key.Item1 == point.Item1 &&
+                                           move.Value.KillPoint == point.KillPoint)
+                            .ToDictionary(move => move.Key, move => move.Value);
+                        if (killMovesPoint.Count() > 1)
+                        {
+                            bool flagIsAddAll = true;
+
+                            foreach (var killMovePoint in killMovesPoint)
+                            {
+                                if (this.Clone() is Board board)
+                                {
+                                    board.Move(killMovePoint.Value);
+                                    if (board.WhoseMove == WhoseMove)
+                                    {
+                                        flagIsAddAll = false;
+                                        goodKillMoves.Add(killMovePoint.Key, killMovePoint.Value);
+                                    }
+                                }
+                            }
+
+                            if (flagIsAddAll)
+                            {
+                                foreach (var killMovePoint in killMovesPoint)
+                                {
+                                    goodKillMoves.Add(killMovePoint.Key, killMovePoint.Value);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            goodKillMoves.Add(killMovesPoint.First().Key, killMovesPoint.First().Value);
+                        }
+                    }
+
+                    return goodKillMoves;
+                }
+
+            }
+            else
+            {
+                return moves;
+            }
+
+        }
         public MoveInfo GetMoveInfo(Point startPoint, Point endPoint)
         {
             var movesForPiece = GetMovesForPiece(startPoint);
@@ -68,13 +133,30 @@ namespace Chess.Models.Boards
                 Move = new ChangePosition(startPoint, endPoint)
             };
         }
+        public override void Move(MoveInfo moveInfo)
+        {
+            base.Move(moveInfo);
+            if (moveInfo.IsMoved)
+            {
+                if (moveInfo.KillPoint is {})
+                {
+                    var moves = GetMovesForPiece(moveInfo.Move.EndPoint);
+                    var movesKill = moves.Where(move => move.Value.KillPoint is { })
+                        .ToDictionary(move => move.Key, move => move.Value);
+                    if (movesKill.Count > 0)
+                    {
+                        return;
+                    }
+                }
+                WhoseMove = WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+            }
+        }
         public override void MakeMove(Point startPoint, Point endPoint)
         {
             var moveInfo = GetMoveInfo(startPoint, endPoint);
-            Board.Move(moveInfo, this);
+            Move(moveInfo);
             ChessBoardMovedEvent?.Invoke(moveInfo);
         }
-
         public override object Clone()
         {
             return new CheckersBoards((Piece?[,])ArrayBoard.Clone())

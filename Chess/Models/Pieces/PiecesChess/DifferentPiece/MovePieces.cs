@@ -28,11 +28,8 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
                         var moveInfo = new MoveInfo {
                             Move = new ChangePosition(startPoint, currentPoint),
                             IsMoved = true,
-                            ChangePositions = new[]{new ChangePosition
-                            {
-                                StartPoint = startPoint,
-                                EndPoint = currentPoint
-                            }}};
+                            ChangePositions = new[]{new ChangePosition(startPoint, currentPoint)}
+                        };
                         if (board[currentPoint.X, currentPoint.Y] is { })
                         {
                             moveInfo.KillPoint = currentPoint;

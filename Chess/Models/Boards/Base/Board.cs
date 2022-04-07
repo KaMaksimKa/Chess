@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Chess.Models.Pieces.Base;
 
 
@@ -41,6 +42,21 @@ namespace Chess.Models.Boards.Base
             }
 
         }
+        public static bool IsNoMoves(Board board)
+        {
+            for (byte i = 0; i < 8; i++)
+            {
+                for (byte j = 0; j < 8; j++)
+                {
+                    var movesPiece = board.GetMovesForPiece(new Point(i, j));
+                    if (movesPiece.Count > 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
         public static bool IsCellForKill(Point checkPoint, Board board)
         {
 
@@ -63,7 +79,24 @@ namespace Chess.Models.Boards.Base
             }
             return false;
         }
+        public virtual Dictionary<(Point, Point), MoveInfo> GetMovesForAllPieces()
+        {
+            var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
 
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (this[i, j] is { } piece && piece.Team==WhoseMove)
+                    {
+                        var movesForPiece = piece.GetMoves(new Point(i, j), this);
+                        goodMoves = goodMoves.Concat(movesForPiece).ToDictionary(move => move.Key, move => move.Value);
+                    }
+                }
+            }
+
+            return goodMoves;
+        }
         public virtual Dictionary<(Point, Point), MoveInfo> GetMovesForPiece(Point? startPoint)
         {
             var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
@@ -75,7 +108,7 @@ namespace Chess.Models.Boards.Base
 
             return goodMoves;
         }
-        public static void Move(MoveInfo moveInfo, Board board)
+        public virtual void Move(MoveInfo moveInfo)
         {
             if (moveInfo.IsMoved)
             {
@@ -83,15 +116,15 @@ namespace Chess.Models.Boards.Base
                 {
                     #region Пересчет цены доски при убийстве
 
-                    if (board[killPoint.X, killPoint.Y] is { } pieceKill)
+                    if (this[killPoint.X, killPoint.Y] is { } pieceKill)
                     {
-                        board.Price -= pieceKill.Price;
-                        board.Price -= pieceKill.PieceEval[killPoint.X, killPoint.Y];
+                        Price -= pieceKill.Price;
+                        Price -= pieceKill.PieceEval[killPoint.X, killPoint.Y];
                     }
 
                     #endregion
 
-                    board[killPoint.X, killPoint.Y] = null;
+                    this[killPoint.X, killPoint.Y] = null;
                 }
 
                 if (moveInfo.ChangePositions is { } changePositions)
@@ -101,24 +134,23 @@ namespace Chess.Models.Boards.Base
 
                         #region Пересчет цены доски при перемещении
 
-                        if (board[startP.X, startP.Y] is { } pieceMove)
+                        if (this[startP.X, startP.Y] is { } pieceMove)
                         {
-                            board.Price -= pieceMove.PieceEval[startP.X, startP.Y];
-                            board.Price += pieceMove.PieceEval[endP.X, endP.Y];
+                            Price -= pieceMove.PieceEval[startP.X, startP.Y];
+                            Price += pieceMove.PieceEval[endP.X, endP.Y];
                         }
 
                         #endregion
 
-                        board[endP.X, endP.Y] = board[startP.X, startP.Y];
-                        board[startP.X, startP.Y] = null;
+                        this[endP.X, endP.Y] = this[startP.X, startP.Y];
+                        this[startP.X, startP.Y] = null;
 
-                        if (board[endP.X, endP.Y] is { IsFirstMove: true } piece)
+                        if (this[endP.X, endP.Y] is { IsFirstMove: true } piece)
                         {
-                            var f = FactoryPiece.GetFactory(piece.Team, piece.Direction, false);
-                            board[endP.X, endP.Y] = FactoryPiece.GetPiece(piece.TypePiece,piece.Team,piece.Direction,false);
+                            this[endP.X, endP.Y] = FactoryPiece.GetPiece(piece.TypePiece,piece.Team,piece.Direction,false);
                         }
 
-                        board.LastMoveInfo = moveInfo;
+                        LastMoveInfo = moveInfo;
                     }
                 }
 
@@ -126,24 +158,24 @@ namespace Chess.Models.Boards.Base
                 {
                     #region Пересчет цены доски при замене
 
-                    if (board[replaceImg.Item1.X, replaceImg.Item1.Y] is { } piece)
+                    if (this[replaceImg.Item1.X, replaceImg.Item1.Y] is { } piece)
                     {
-                        board.Price -= piece.Price;
-                        board.Price -= piece.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
-                        board.Price += replaceImg.Item2.Price;
-                        board.Price += replaceImg.Item2.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        Price -= piece.Price;
+                        Price -= piece.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        Price += replaceImg.Item2.Price;
+                        Price += replaceImg.Item2.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
                     }
 
                     #endregion
                     var pieceRepl = replaceImg.Item2;
-                    board[replaceImg.Item1.X, replaceImg.Item1.Y] = FactoryPiece.GetPiece(pieceRepl.TypePiece, pieceRepl.Team, pieceRepl.Direction,false);
+                    this[replaceImg.Item1.X, replaceImg.Item1.Y] = FactoryPiece.GetPiece(pieceRepl.TypePiece, pieceRepl.Team, pieceRepl.Direction,false);
   
                 }
-                board.WhoseMove = board.WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
+               
             }
         }
        
-        public object Clone()
+        public virtual object Clone()
         {
             return new Board((Piece?[,])ArrayBoard.Clone())
             {
@@ -152,6 +184,5 @@ namespace Chess.Models.Boards.Base
                 Price = Price
             };
         }
-
     }
 }

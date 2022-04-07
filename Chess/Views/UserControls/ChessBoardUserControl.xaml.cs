@@ -49,15 +49,17 @@ namespace Chess.Views.UserControls
         {
             var control = (ChessBoardUserControl)o;
 
-            var queue = (Queue<MoveInfo>)e.NewValue;
-            for (int i = 0; i < queue.Count; i++)
+            if (e.NewValue is Queue<MoveInfo> queue)
             {
-                control._moveInfosQueue.Enqueue(queue.Dequeue());
-            }
-            
-            if (!control._isAnimGo)
-            {
-                await control.ChangePos();
+                for (int i = 0; i < queue.Count; i++)
+                {
+                    control._moveInfosQueue.Enqueue(queue.Dequeue());
+                }
+
+                if (!control._isAnimGo)
+                {
+                    await control.ChangePos();
+                }
             }
         }
         private async Task ChangePos()
@@ -73,10 +75,19 @@ namespace Chess.Views.UserControls
 
             List<double> timeAnimsSec = new List<double>{0};
 
-            #region Перемечение фигур
+            #region Перемечение и удаление фигур
 
+            Image? imageRemove = null;
             if (moveInfo.IsMoved)
             {
+                if (moveInfo.KillPoint is { } killPoint)
+                {
+                    if (_images[killPoint.X, killPoint.Y] is { } img)
+                    {
+                        imageRemove = img;
+                        _images[killPoint.X, killPoint.Y] = null;
+                    }
+                }
                 if (moveInfo.ChangePositions is { } changePositions)
                 {
                     CanvasHints.Children.Clear();
@@ -87,8 +98,8 @@ namespace Chess.Views.UserControls
                         {
                             _images[endPoint.X, endPoint.Y] = img;
                             _images[startPoint.X, startPoint.Y] = null;
-
-                            timeAnimsSec.Add(ChangePosImgOnCanvas(img, endPoint, _sizeCell, 400));
+                            
+                            timeAnimsSec.Add(ChangePosImgOnCanvas(img,endPoint, _sizeCell, 400));
 
                             DrawChoiceCell(startPoint);
                             DrawChoiceCell(endPoint);
@@ -107,7 +118,7 @@ namespace Chess.Views.UserControls
                 var img = _images[startP.X, startP.Y];
                 if (img != null)
                 {
-                    timeAnimsSec.Add(ChangePosImgOnCanvas(img, startP, _sizeCell, 4000));
+                    timeAnimsSec.Add(ChangePosImgOnCanvas(img,startP, _sizeCell, 4000));
                     img.ReleaseMouseCapture();
                 }
             }
@@ -139,18 +150,11 @@ namespace Chess.Views.UserControls
                 Thread.Sleep((int) (timeAnimsSec.Max() * 1000));
             });
 
-            #region Удаление фигур
+            #region Удаление фигур с CanvasPieces
 
-            if (moveInfo.IsMoved)
+            if (imageRemove is {} image)
             {
-                if (moveInfo.KillPoint is { } killPoint)
-                {
-                    if (_images[killPoint.X, killPoint.Y] is { } img)
-                    {
-                        CanvasPieces.Children.Remove(img);
-                        _images[killPoint.X, killPoint.Y] = null;
-                    }
-                }
+                CanvasPieces.Children.Remove(image);
             }
             
 
@@ -184,8 +188,10 @@ namespace Chess.Views.UserControls
 
             await ChangePos();
         }
-        private double ChangePosImgOnCanvas(Image img, System.Drawing.Point endPoint, int sizeSell, int speed)
+        private double ChangePosImgOnCanvas(Image image, System.Drawing.Point endPoint, int sizeSell, int speed)
         {
+
+            var img = ReplaceImg(image, endPoint);
             var imgLeftPos = Canvas.GetLeft(img);
             var imgTopPos = Canvas.GetTop(img);
 
@@ -209,6 +215,7 @@ namespace Chess.Views.UserControls
                 Duration = duration
             });
             return durationSeconds;
+            
         }
 
         #endregion
@@ -268,42 +275,45 @@ namespace Chess.Views.UserControls
             var sizeSell = ((ChessBoardUserControl) sender)._sizeCell;
             canvasHints.Children.Clear();
 
-            var hints=(HintsChess)e.NewValue;
-            foreach (var movePoint in hints.IsHintsForMove)
-            {
-                var ellipse = new Ellipse
-                {
-                    Opacity = 0.2,
-                    // ReSharper disable once PossibleLossOfFraction
-                    Width = sizeSell / 3,
-                    // ReSharper disable once PossibleLossOfFraction
-                    Height = sizeSell / 3,
-                    Fill = Brushes.Black
-                };
-                Canvas.SetLeft(ellipse, movePoint.Y * sizeSell + sizeSell / 3);
-                Canvas.SetTop(ellipse, movePoint.X * sizeSell + sizeSell / 3);
 
-                canvasHints.Children.Add(ellipse);
-            }
-            foreach (var killPoint in hints.IsHintsForKill)
+            if (e.NewValue is HintsChess hints)
             {
-                var ellipse = new Ellipse
+                foreach (var movePoint in hints.IsHintsForMove)
                 {
-                    Opacity = 0.2,
-                    Width = sizeSell,
-                    Height = sizeSell,
-                    Fill = Brushes.Black,
-                    OpacityMask = new RadialGradientBrush(new GradientStopCollection(new List<GradientStop>
+                    var ellipse = new Ellipse
                     {
-                        new GradientStop((Color)ColorConverter.ConvertFromString("#FFB94444") ,0.8),
-                        new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFFFF") ,0.79),
-                    }))
-                };
+                        Opacity = 0.2,
+                        // ReSharper disable once PossibleLossOfFraction
+                        Width = sizeSell / 3,
+                        // ReSharper disable once PossibleLossOfFraction
+                        Height = sizeSell / 3,
+                        Fill = Brushes.Black
+                    };
+                    Canvas.SetLeft(ellipse, movePoint.Y * sizeSell + sizeSell / 3);
+                    Canvas.SetTop(ellipse, movePoint.X * sizeSell + sizeSell / 3);
 
-                Canvas.SetLeft(ellipse, killPoint.Y * sizeSell);
-                Canvas.SetTop(ellipse, killPoint.X * sizeSell);
+                    canvasHints.Children.Add(ellipse);
+                }
+                foreach (var killPoint in hints.IsHintsForKill)
+                {
+                    var ellipse = new Ellipse
+                    {
+                        Opacity = 0.2,
+                        Width = sizeSell,
+                        Height = sizeSell,
+                        Fill = Brushes.Black,
+                        OpacityMask = new RadialGradientBrush(new GradientStopCollection(new List<GradientStop>
+                        {
+                            new GradientStop((Color)ColorConverter.ConvertFromString("#FFB94444") ,0.8),
+                            new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFFFF") ,0.79),
+                        }))
+                    };
 
-                canvasHints.Children.Add(ellipse);
+                    Canvas.SetLeft(ellipse, killPoint.Y * sizeSell);
+                    Canvas.SetTop(ellipse, killPoint.X * sizeSell);
+
+                    canvasHints.Children.Add(ellipse);
+                }
             }
         }
 
@@ -342,7 +352,7 @@ namespace Chess.Views.UserControls
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    if (boardForDraw.Icons[i, j]?.Icon is { } icon)
+                    if (boardForDraw?.Icons[i, j]?.Icon is { } icon)
                     {
                         var img = new Image()
                         {
@@ -369,7 +379,7 @@ namespace Chess.Views.UserControls
 
             #region Нарисовать последний ход
 
-            if (boardForDraw.LastMoveInfo?.ChangePositions is { } changePositions)
+            if (boardForDraw?.LastMoveInfo?.ChangePositions is { } changePositions)
             {
                 foreach (var (startP, endP) in changePositions)
                 {
@@ -558,19 +568,18 @@ namespace Chess.Views.UserControls
                 EndPoint = new((int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell));
             }
         }
-        private void ReplaceImg(Image img,Point p)
+        private Image ReplaceImg(Image img,System.Drawing.Point point)
         {
-            
             Image newImg = new Image { Width = img.Width, Height = img.Height, Source = img.Source };
             CanvasPieces.Children.Remove(img);
             newImg.MouseDown += Piece_OnMouseDown;
             newImg.MouseMove += Piece_OnMouseMove;
             newImg.MouseUp += Piece_OnMouseUp;
-            Canvas.SetLeft(newImg, p.X);
-            Canvas.SetTop(newImg, p.Y);
+            Canvas.SetLeft(newImg, Canvas.GetLeft(img));
+            Canvas.SetTop(newImg, Canvas.GetTop(img));
             CanvasPieces.Children.Add(newImg);
-            _images[(int)Math.Round(p.Y / _sizeCell), (int)Math.Round(p.X / _sizeCell)] = newImg;
-            newImg.CaptureMouse();
+            _images[point.X, point.Y] = newImg;
+            return newImg;
         }
         private void Piece_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -589,8 +598,8 @@ namespace Chess.Views.UserControls
                 EndPoint = point;
             }
 
-            ReplaceImg(img, p);
-
+            ReplaceImg(img, point);
+            _images[point.X, point.Y]?.CaptureMouse();
         }
 
         private void Piece_OnMouseUp(object sender, MouseButtonEventArgs e)

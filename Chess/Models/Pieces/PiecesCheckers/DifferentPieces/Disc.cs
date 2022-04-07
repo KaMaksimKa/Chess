@@ -20,7 +20,7 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
             int direction = Direction == Direction.Up ? 1 : -1;
             List<(int, int)> moveVectors = new List<(int, int)>
             {
-                (direction,1),(direction,-1),(2*direction,2),(2*direction,-2)
+                (direction,1),(direction,-1),(2*direction,2),(2*direction,-2),(-2*direction,2),(-2*direction,-2)
             };
 
             var currPoint = new Point();
@@ -43,17 +43,20 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
                             IsMoved = true,
                             ChangePositions = new[] { new ChangePosition(startPoint, currPoint) },
                         };
-                        /*if (currPoint.X is 0 or 7)
+                        if (currPoint.X == 0 && Direction == Direction.Down ||
+                            currPoint.X == 7 && Direction == Direction.Up)
                         {
                             moveInfo.IsReplacePiece = true;
-                            moveInfo.ReplaceImg = (currPoint, null);
-                        }*/
+                            moveInfo.ReplaceImg = (currPoint, new KingDisc(Team));
+                        }
                         moveInfos.Add((startPoint, currPoint), moveInfo);
                     }
                 }
-                else if ((xVector, yVector) == (2*direction, 2) || (xVector, yVector) == (2*direction, -2))
+                else if ((xVector, yVector) == (2*direction, 2) || (xVector, yVector) == (2*direction, -2)||
+                         (xVector, yVector) == (-2 * direction, 2) || (xVector, yVector) == (-2 * direction, -2))
                 {
-                    if (board[currPoint.X-xVector/2, currPoint.Y-yVector/2] is { } piece && piece.Team!=Team) 
+                    if (board[currPoint.X, currPoint.Y]  == null &&
+                        board[currPoint.X-xVector/2, currPoint.Y-yVector/2] is { } piece && piece.Team!=Team) 
                     {
                         var moveInfo = new MoveInfo
                         {
@@ -62,11 +65,12 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
                             KillPoint = new Point(currPoint.X - xVector / 2, currPoint.Y - yVector / 2),
                             ChangePositions = new[] { new ChangePosition(startPoint, currPoint) }
                         };
-                       /* if (currPoint.X is 0 or 7)
+                        if (currPoint.X == 0 && Direction == Direction.Down ||
+                            currPoint.X == 7 && Direction == Direction.Up)
                         {
                             moveInfo.IsReplacePiece = true;
-                            moveInfo.ReplaceImg = (currPoint, null);
-                        }*/
+                            moveInfo.ReplaceImg = (currPoint, new KingDisc(Team));
+                        }
                         moveInfos.Add((startPoint, currPoint), moveInfo);
                     }
                 }

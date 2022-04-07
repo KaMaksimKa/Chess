@@ -20,7 +20,9 @@ namespace Chess.Models.Pieces.Base
                 {(TypePiece.Rook, TeamEnum.BlackTeam), "Data/Img/Black/Rook.png" },
                 {(TypePiece.Bishop, TeamEnum.BlackTeam), "Data/Img/Black/Bishop.png" },
                 {(TypePiece.Disc, TeamEnum.BlackTeam), "Data/Img/Checkers/Black/Disc.png" },
-                {(TypePiece.Disc, TeamEnum.WhiteTeam), "Data/Img/Checkers/White/Disc.png" }
+                {(TypePiece.Disc, TeamEnum.WhiteTeam), "Data/Img/Checkers/White/Disc.png" },
+                {(TypePiece.KingDisc, TeamEnum.BlackTeam), "Data/Img/Checkers/Black/KingDisc.png" },
+                {(TypePiece.KingDisc, TeamEnum.WhiteTeam), "Data/Img/Checkers/White/KingDisc.png" }
             };
 
         public static string GetIcon(TypePiece typePiece, TeamEnum team)
