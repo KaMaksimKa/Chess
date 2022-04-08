@@ -269,13 +269,14 @@ namespace Chess.ViewModels
             _isGameGoing = false;
             if (teamEnum is { } team)
             {
-                MessageBox.Show($"Шах и мат, проиграл {team}");
+                MessageBox.Show($"Проиграл {team}");
             }
             else
             {
                 MessageBox.Show("Ничья ");
             }
         }
+
         protected GameBoard GetNewChessBoard(TeamEnum team)
         {
             var chessBoard = new ChessBoard(team);
@@ -307,20 +308,14 @@ namespace Chess.ViewModels
             selfPlayer.MovedEvent += MovedPlayer;
             selfPlayer.SetHintsForMoveEvent += (hintsChess =>Hints= hintsChess);
             selfPlayer.GetSelectedPieceEvent += selectedPiece => SelectedPiece = selectedPiece;
-            if (GameBoard is ChessBoard chessBoard)
-            {
-                selfPlayer.SetSelectedPieceEvent += piece => chessBoard.SetReplasementPiece(piece);
-            }
+            selfPlayer.SetSelectedPieceEvent += piece => ((ChessBoard)GameBoard).SetReplasementPiece(piece);
             return selfPlayer;
         }
         protected BotChessPlayer GetNewBotChessPlayer(TeamEnum team,int depth)
         {
             var botChessPlayer = new BotChessPlayer(team, depth);
             botChessPlayer.MovedEvent += MovedPlayer;
-            if (GameBoard is ChessBoard chessBoard)
-            {
-                botChessPlayer.SetSelectedPieceEvent += piece => chessBoard.SetReplasementPiece(piece);
-            }
+            botChessPlayer.SetSelectedPieceEvent += piece => ((ChessBoard)GameBoard).SetReplasementPiece(piece);
             return botChessPlayer;
         }
         protected BotPlayer GetNewBotPlayer(TeamEnum team, int depth)

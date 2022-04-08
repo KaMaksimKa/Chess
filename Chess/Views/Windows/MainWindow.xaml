@@ -31,7 +31,6 @@
         <ContentControl x:Name="Pages" DockPanel.Dock="Right" Content="{Binding SelectedViewModel}"/>
         
 
-
     </DockPanel>
         
        

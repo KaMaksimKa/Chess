@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using Chess.Models.Boards.Base;
 using Chess.Models.Pieces.Base;
 
@@ -151,11 +152,44 @@ namespace Chess.Models.Boards
                 WhoseMove = WhoseMove == TeamEnum.WhiteTeam ? TeamEnum.BlackTeam : TeamEnum.WhiteTeam;
             }
         }
+        public void CheckEndGame()
+        {
+            if (IsNoMoves(this))
+            {
+                int countWhitePieces = 0;
+                int countBlackPieces = 0;
+                foreach (var piece in ArrayBoard)
+                {
+                    if (piece?.Team == TeamEnum.WhiteTeam)
+                    {
+                        countWhitePieces += 1;
+                    }
+                    else if (piece?.Team == TeamEnum.BlackTeam)
+                    {
+                        countBlackPieces += 1;
+                    }
+                }
+
+                if (countBlackPieces == 0)
+                {
+                    EndGameEvent?.Invoke(TeamEnum.BlackTeam);
+                }
+                else if (countWhitePieces == 0)
+                {
+                    EndGameEvent?.Invoke(TeamEnum.WhiteTeam);
+                }
+                else
+                {
+                    EndGameEvent?.Invoke(null);
+                }
+            }
+        }
         public override void MakeMove(Point startPoint, Point endPoint)
         {
             var moveInfo = GetMoveInfo(startPoint, endPoint);
             Move(moveInfo);
-            ChessBoardMovedEvent?.Invoke(moveInfo);
+            Task.Run(() => ChessBoardMovedEvent?.Invoke(moveInfo));
+            Task.Run(CheckEndGame);
         }
         public override object Clone()
         {

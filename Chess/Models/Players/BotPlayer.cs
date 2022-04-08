@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Chess.Models.Boards.Base;
 using Chess.Models.Pieces.Base;
 using Chess.Models.Players.Base;
@@ -15,7 +13,7 @@ namespace Chess.Models.Players
     {
         public event Action<Point, Point>? MovedEvent;
         public event Action<Piece?>? SetSelectedPieceEvent;
-        private int _depth;
+        private readonly int _depth;
         public BotPlayer(TeamEnum team, int depth)
         {
             Team = team;
@@ -136,7 +134,7 @@ namespace Chess.Models.Players
 
             }
 
-            var bestMoves = allMoves.Where(m => Math.Abs(m.Item2 - bestPrice) < 1).Select(m => m.Item1).ToList();
+            var bestMoves = allMoves.Where(m => Math.Abs(m.Item2 - bestPrice) < 2).Select(m => m.Item1).ToList();
             if (bestMoves.Count == 0)
             {
 
@@ -160,15 +158,9 @@ namespace Chess.Models.Players
         }
         public void SelectPiece(ChoicePiece choicePiece)
         {
-            if (Team == TeamEnum.WhiteTeam)
-            {
-                SetSelectedPieceEvent?.Invoke(choicePiece.PiecesList?.OrderBy(piece => piece.Price).Last());
-            }
-            else
-            {
-                SetSelectedPieceEvent?.Invoke(choicePiece.PiecesList?.OrderBy(piece => piece.Price).First());
-
-            }
+            SetSelectedPieceEvent?.Invoke(Team == TeamEnum.WhiteTeam
+                ? choicePiece.PiecesList?.OrderBy(piece => piece.Price).Last()
+                : choicePiece.PiecesList?.OrderBy(piece => piece.Price).First());
         }
     }
 }

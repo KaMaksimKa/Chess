@@ -13,7 +13,6 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
         {
             Direction = direction;
         }
-
         public override Dictionary<(Point, Point), MoveInfo> GetMoves(Point startPoint, Board board)
         {
             Dictionary<(Point, Point), MoveInfo> moveInfos = new Dictionary<(Point, Point), MoveInfo>();

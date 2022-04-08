@@ -13,7 +13,7 @@ namespace Chess.ViewModels
         public GameCheckersViewModel()
         {
             GameBoard = GetNewCheckersBoard(TeamEnum.WhiteTeam);
-            FirstPlayer = GetNewSelfPlayer(TeamEnum.WhiteTeam);
+            FirstPlayer = GetNewBotPlayer(TeamEnum.WhiteTeam,6);
             SecondPlayer = GetNewBotPlayer(TeamEnum.BlackTeam, 6);
 
             ListChessBoards = new List<GameBoard> {(GameBoard)GameBoard.Clone()};

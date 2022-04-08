@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
-using Chess.Models.Boards;
 using Chess.Models.Boards.Base;
 using Chess.Models.Pieces.Base;
 using Chess.Models.Players.Base;
@@ -104,8 +103,6 @@ namespace Chess.Models.Players
             }
             
             return new HintsChess { IsHintsForKill = hintsForKill, IsHintsForMove = hintsForMove };
-            
         }
-
     }
 }

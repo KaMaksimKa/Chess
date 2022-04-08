@@ -47,8 +47,7 @@ namespace Chess.ViewModels
         {
             SelectGameChessCommand = new LambdaCommand(OnSelectGameChessCommandExecuted,CanSelectGameChessCommandExecute);
             SelectGameCheckersCommand = new LambdaCommand(OnSelectGameCheckersCommandExecuted,CanSelectGameCheckersCommandExecute);
-            
-            SelectedViewModel = new GameChessViewModel();
+            _selectedViewModel = new GameChessViewModel();
         }
 
         

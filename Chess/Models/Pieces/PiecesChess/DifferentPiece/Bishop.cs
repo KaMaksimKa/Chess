@@ -1,4 +1,4 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.Drawing;
 using Chess.Models.Boards.Base;
@@ -11,7 +11,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
     internal class Bishop:Piece
     {
         public Bishop(TeamEnum team) : base(TypePiece.Bishop, team,30,
-            new double[8, 8]{
+            new[,]{
                                         {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0 },
                                         {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
                                         {-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},

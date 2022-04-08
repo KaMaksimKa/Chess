@@ -9,7 +9,7 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
     internal class Rook:Piece
     {
         public Rook(TeamEnum team) : base(TypePiece.Rook, team,50,
-            new double[8, 8]{
+            new[,]{
                 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
                 {0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5},
                 {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},

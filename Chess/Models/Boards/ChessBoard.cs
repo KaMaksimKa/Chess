@@ -43,7 +43,6 @@ namespace Chess.Models.Boards
 
             return goodMoves;
         }
-
         public override Dictionary<(Point, Point), MoveInfo> GetMovesForAllPieces()
         {
             var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
@@ -62,7 +61,6 @@ namespace Chess.Models.Boards
             
             return goodMoves;
         }
-
         public static bool IsCheck(Board board,TeamEnum team)
         {
             for (int i = 0; i < 8; i++)
@@ -149,8 +147,8 @@ namespace Chess.Models.Boards
             if (moveInfo.IsReplacePiece && moveInfo.ReplaceImg is {Item2:null} replaceImg &&
                 ArrayBoard[startPoint.X, startPoint.Y] is {} piece)
             {
-                ChoiceReplacementPieceEvent?.Invoke(piece.ReplacementPieces, replaceImg.Item1);
                 _moveInfoForReplacePiece = moveInfo;
+                ChoiceReplacementPieceEvent?.Invoke(piece.ReplacementPieces, replaceImg.Item1);
             }
             else
             {
@@ -174,7 +172,7 @@ namespace Chess.Models.Boards
             {
                 board[6, i] = factoryDown.GetPiece(TypePiece.Pawn);
             }
-           
+
             board[7, 0] = factoryDown.GetPiece(TypePiece.Rook);
             board[7, 7] = factoryDown.GetPiece(TypePiece.Rook);
             board[7, 1] = factoryDown.GetPiece(TypePiece.Knight);
@@ -191,9 +189,9 @@ namespace Chess.Models.Boards
                 board[7, 3] = factoryDown.GetPiece(TypePiece.King);
                 board[7, 4] = factoryDown.GetPiece(TypePiece.Queen);
             }
-            
 
-           
+
+
 
 
             for (int i = 0; i < 8; i++)
@@ -231,7 +229,8 @@ namespace Chess.Models.Boards
                 Price = Price,
                 ChessBoardMovedEvent = ChessBoardMovedEvent,
                 ChoiceReplacementPieceEvent = ChoiceReplacementPieceEvent,
-                EndGameEvent = EndGameEvent
+                EndGameEvent = EndGameEvent,
+                _moveInfoForReplacePiece = _moveInfoForReplacePiece
                 
             };
         }

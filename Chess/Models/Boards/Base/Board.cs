@@ -174,7 +174,6 @@ namespace Chess.Models.Boards.Base
                
             }
         }
-       
         public virtual object Clone()
         {
             return new Board((Piece?[,])ArrayBoard.Clone())

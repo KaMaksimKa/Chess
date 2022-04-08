@@ -10,7 +10,7 @@ namespace Chess.ViewModels
         public GameChessViewModel()
         {
             GameBoard = GetNewChessBoard(TeamEnum.WhiteTeam);
-            FirstPlayer = GetNewSelfPlayer(TeamEnum.WhiteTeam);
+            FirstPlayer = GetNewBotChessPlayer(TeamEnum.WhiteTeam,4);
             SecondPlayer = GetNewBotChessPlayer(TeamEnum.BlackTeam, 4);
 
             ListChessBoards = new List<GameBoard> {(GameBoard)GameBoard.Clone()};

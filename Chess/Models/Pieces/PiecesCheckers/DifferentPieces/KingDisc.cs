@@ -56,6 +56,10 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
                                     KillPoint = currentPoint
                                 });
                             }
+                            else
+                            {
+                                break;
+                            }
                         }
                         else
                         {
