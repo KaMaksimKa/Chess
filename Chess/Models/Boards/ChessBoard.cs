@@ -46,9 +46,9 @@ namespace Chess.Models.Boards
         public override Dictionary<(Point, Point), MoveInfo> GetMovesForAllPieces()
         {
             var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < Size.Height; i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < Size.Width; j++)
                 {
                     var movesPiece = GetMovesForPiece(new Point(i, j));
                     foreach (var move in movesPiece)
@@ -63,9 +63,9 @@ namespace Chess.Models.Boards
         }
         public static bool IsCheck(Board board,TeamEnum team)
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < board.Size.Height; i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < board.Size.Width; j++)
                 {
                     if (board[i, j] is King king && king.Team == team)
                     {

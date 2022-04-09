@@ -1,15 +1,17 @@
-﻿
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Chess.Models.Boards;
 using Chess.Models.Boards.Base;
 using Chess.Models.Players;
 
-
 namespace Chess.ViewModels
 {
-    internal class GameCheckersViewModel:GameViewModel
+    internal class GameCheckers10X10ViewModel:GameCheckersViewModel
     {
-        public GameCheckersViewModel()
+        public GameCheckers10X10ViewModel()
         {
             AvailablePlayers = new List<TypePlayer>
             {
@@ -18,18 +20,15 @@ namespace Chess.ViewModels
                 TypePlayer.Bot2,
                 TypePlayer.Bot3,
                 TypePlayer.Bot4,
-                TypePlayer.Bot5,
-                TypePlayer.Bot6
+                TypePlayer.Bot5
             };
 
             SelectedFirstPlayer = TypePlayer.SelfPlayer;
-            SelectedSecondPlayer = TypePlayer.Bot6;
+            SelectedSecondPlayer = TypePlayer.Bot5;
         }
-
-
         protected override GameBoard GetNewBoard()
         {
-            return new CheckersBoard(FirstPlayerTeam);
+            return new Checkers10X10Board(FirstPlayerTeam);
         }
     }
 }

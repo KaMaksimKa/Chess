@@ -24,13 +24,17 @@
         <DataTemplate DataType="{x:Type viewModels:GameCheckersViewModel}">
             <userControls:GameChessView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:GameCheckers10X10ViewModel}">
+            <userControls:GameChessView/>
+        </DataTemplate>
     </Window.Resources>
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Left" Width="150" Margin="0 10">
             <Button Height="30" Margin="5" Content="Шахматы" Command="{Binding Path=SelectGameChessCommand}"></Button>
-            <Button Height="30" Margin="5 15" Content="Шахматы 960" Command="{Binding Path=SelectGameChess960Command}"></Button>
-            <Button Height="30" Margin="5 15" Content="Шашки" Command="{Binding Path=SelectGameCheckersCommand}"></Button>
+            <Button Height="30" Margin="5 5 5 15" Content="Шахматы 960" Command="{Binding Path=SelectGameChess960Command}"></Button>
+            <Button Height="30" Margin="5 15 5 5" Content="Шашки" Command="{Binding Path=SelectGameCheckersCommand}"></Button>
+            <Button Height="30" Margin="5 " Content="Шашки 10X10" Command="{Binding SelectGameCheckers10X10Command}" ></Button>
         </StackPanel>
         <ContentControl x:Name="Pages" DockPanel.Dock="Right" Content="{Binding SelectedViewModel}"/>
         

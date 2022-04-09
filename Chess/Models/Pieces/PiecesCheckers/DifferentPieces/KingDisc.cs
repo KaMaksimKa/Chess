@@ -24,7 +24,8 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
                 {
                     currentPoint.X += xVector;
                     currentPoint.Y += yVector;
-                    if (currentPoint.X is < 0 or > 7 || currentPoint.Y is < 0 or > 7)
+                    if (currentPoint.X  < 0 || currentPoint.X >= board.Size.Height ||
+                        currentPoint.Y < 0 || currentPoint.Y >= board.Size.Width)
                     {
                         break;
                     }
@@ -45,7 +46,9 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
                         else if (board[currentPoint.X, currentPoint.Y] is { } piece && piece.Team != Team)
                         {
                             var endPoint = new Point(currentPoint.X + xVector, currentPoint.Y + yVector);
-                            if (endPoint is {X:>=0 and <=7,Y: >= 0 and <= 7 } && board[endPoint.X, endPoint.Y] == null)
+                            if (endPoint is {X:>=0,Y: >= 0 } && endPoint.X<board.Size.Height &&
+                                endPoint.Y<board.Size.Width &&
+                                board[endPoint.X, endPoint.Y] == null)
                             {
                                 killPoint = currentPoint;
                                 moveInfos.Add((startPoint, endPoint), new MoveInfo

@@ -8,14 +8,14 @@ using Chess.Models.Pieces.Base;
 
 namespace Chess.Models.Boards
 {
-    internal class CheckersBoards:GameBoard
+    internal class CheckersBoard:GameBoard
     {
         public override event Action<MoveInfo>? ChessBoardMovedEvent;
         public override event Action<TeamEnum?>? EndGameEvent;
-        public CheckersBoards(TeamEnum team) : base(GetNewBoard(team))
+        public CheckersBoard(TeamEnum team) : base(GetNewBoard(team))
         {
         }
-        public CheckersBoards(Piece?[,] arrayBoard) : base(arrayBoard)
+        public CheckersBoard(Piece?[,] arrayBoard) : base(arrayBoard)
         {
 
         }
@@ -193,7 +193,7 @@ namespace Chess.Models.Boards
         }
         public override object Clone()
         {
-            return new CheckersBoards((Piece?[,])ArrayBoard.Clone())
+            return new CheckersBoard((Piece?[,])ArrayBoard.Clone())
             {
                 WhoseMove = WhoseMove,
                 LastMoveInfo = LastMoveInfo,

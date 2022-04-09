@@ -10,6 +10,7 @@ namespace Chess.Models.Boards.Base
     public class Board : ICloneable
     {
         protected readonly Piece?[,] ArrayBoard;
+        public readonly Size Size;
         public double Price { get; set; }
         public Piece? this[int i, int j]
         {
@@ -20,6 +21,7 @@ namespace Chess.Models.Boards.Base
         public MoveInfo LastMoveInfo { get; set; } = new MoveInfo();
         public Board(Piece?[,] arrayBoard)
         {
+            Size = new Size(arrayBoard.GetLength(0), arrayBoard.GetLength(1));
             ArrayBoard = arrayBoard;
         }
         public bool CheckIsEmptySells(IEnumerable<Point>? points)
@@ -44,9 +46,9 @@ namespace Chess.Models.Boards.Base
         }
         public static bool IsNoMoves(Board board)
         {
-            for (byte i = 0; i < 8; i++)
+            for (byte i = 0; i < board.Size.Height; i++)
             {
-                for (byte j = 0; j < 8; j++)
+                for (byte j = 0; j < board.Size.Width; j++)
                 {
                     var movesPiece = board.GetMovesForPiece(new Point(i, j));
                     if (movesPiece.Count > 0)
@@ -60,9 +62,9 @@ namespace Chess.Models.Boards.Base
         public static bool IsCellForKill(Point checkPoint, Board board)
         {
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < board.Size.Height; i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < board.Size.Width; j++)
                 {
                     if (board[i, j] is { } piece)
                     {
@@ -83,9 +85,9 @@ namespace Chess.Models.Boards.Base
         {
             var goodMoves = new Dictionary<(Point, Point), MoveInfo>();
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < Size.Height; i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < Size.Width; j++)
                 {
                     if (this[i, j] is { } piece && piece.Team==WhoseMove)
                     {
@@ -119,7 +121,11 @@ namespace Chess.Models.Boards.Base
                     if (this[killPoint.X, killPoint.Y] is { } pieceKill)
                     {
                         Price -= pieceKill.Price;
-                        Price -= pieceKill.PieceEval[killPoint.X, killPoint.Y];
+                        if (pieceKill.PieceEval.GetLength(0) == Size.Height &&
+                            pieceKill.PieceEval.GetLength(1) == Size.Width)
+                        {
+                            Price -= pieceKill.PieceEval[killPoint.X, killPoint.Y];
+                        }
                     }
 
                     #endregion
@@ -136,8 +142,12 @@ namespace Chess.Models.Boards.Base
 
                         if (this[startP.X, startP.Y] is { } pieceMove)
                         {
-                            Price -= pieceMove.PieceEval[startP.X, startP.Y];
-                            Price += pieceMove.PieceEval[endP.X, endP.Y];
+                            if (pieceMove.PieceEval.GetLength(0) == Size.Height &&
+                                pieceMove.PieceEval.GetLength(1) == Size.Width)
+                            {
+                                Price -= pieceMove.PieceEval[startP.X, startP.Y];
+                                Price += pieceMove.PieceEval[endP.X, endP.Y];
+                            }
                         }
 
                         #endregion
@@ -161,9 +171,18 @@ namespace Chess.Models.Boards.Base
                     if (this[replaceImg.Item1.X, replaceImg.Item1.Y] is { } piece)
                     {
                         Price -= piece.Price;
-                        Price -= piece.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        if (piece.PieceEval.GetLength(0) == Size.Height &&
+                            piece.PieceEval.GetLength(1) == Size.Width)
+                        {
+                            Price -= piece.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        }
+
                         Price += replaceImg.Item2.Price;
-                        Price += replaceImg.Item2.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        if (replaceImg.Item2.PieceEval.GetLength(0) == Size.Height &&
+                            replaceImg.Item2.PieceEval.GetLength(1) == Size.Width)
+                        {
+                            Price += replaceImg.Item2.PieceEval[replaceImg.Item1.X, replaceImg.Item1.Y];
+                        }
                     }
 
                     #endregion

@@ -14,7 +14,7 @@ using Point = System.Drawing.Point;
 
 namespace Chess.ViewModels
 {
-    internal abstract class GameViewModel:ViewModel
+    internal class GameViewModel:ViewModel
     {
         private bool _isGameGoing;
         public bool IsGameGoing
@@ -43,7 +43,12 @@ namespace Chess.ViewModels
             set
             {
                 _gameBoard = value;
-                BoardForDraw = new BoardForDraw { Icons = value.GetIcons(),LastMoveInfo = value.LastMoveInfo};
+                BoardForDraw = new BoardForDraw
+                {
+                    Icons = value.GetIcons(),
+                    Size = value.Size,
+                    LastMoveInfo = value.LastMoveInfo
+                };
                 if (!IsGameGoing)
                 {
                     _listChessBoards.Add((GameBoard)GameBoard.Clone());
@@ -268,7 +273,7 @@ namespace Chess.ViewModels
 
         #endregion
 
-        protected GameViewModel()
+        public GameViewModel()
         {
             #region Команды
             NextStateStateChessBoardCommand = new LambdaCommand(OnNextStateStateChessBoardCommandExecuted,
@@ -359,7 +364,10 @@ namespace Chess.ViewModels
             SetSecondPlayer(SelectedSecondPlayer);
         }
 
-        protected abstract GameBoard GetNewBoard();
+        protected virtual GameBoard GetNewBoard()
+        {
+            return new CheckersBoard(FirstPlayerTeam);
+        }
 
         protected SelfPlayer GetNewSelfPlayer(TeamEnum team)
         {

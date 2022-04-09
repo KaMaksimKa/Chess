@@ -1,4 +1,4 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.Drawing;
 using Chess.Models.Boards.Base;
@@ -22,55 +22,57 @@ namespace Chess.Models.Pieces.PiecesCheckers.DifferentPieces
                 (direction,1),(direction,-1),(2*direction,2),(2*direction,-2),(-2*direction,2),(-2*direction,-2)
             };
 
-            var currPoint = new Point();
+            var currentPoint = new Point();
             foreach (var (xVector, yVector) in moveVectors)
             {
-                currPoint.X = startPoint.X + xVector;
-                currPoint.Y = startPoint.Y + yVector;
-                if (currPoint.X is < 0 or > 7 || currPoint.Y is < 0 or > 7)
+                currentPoint.X = startPoint.X + xVector;
+                currentPoint.Y = startPoint.Y + yVector;
+
+                if (currentPoint.X < 0 || currentPoint.X >=board.Size.Height ||
+                    currentPoint.Y < 0 || currentPoint.Y >=board.Size.Width)
                 {
                     continue;
                 }
 
                 if ((xVector, yVector) == (direction, 1) || (xVector, yVector) == (direction, -1))
                 {
-                    if (board[currPoint.X, currPoint.Y] == null)
+                    if (board[currentPoint.X, currentPoint.Y] == null)
                     {
                         var moveInfo = new MoveInfo
                         {
-                            Move = new ChangePosition(startPoint, currPoint),
+                            Move = new ChangePosition(startPoint, currentPoint),
                             IsMoved = true,
-                            ChangePositions = new[] { new ChangePosition(startPoint, currPoint) },
+                            ChangePositions = new[] { new ChangePosition(startPoint, currentPoint) },
                         };
-                        if (currPoint.X == 0 && Direction == Direction.Down ||
-                            currPoint.X == 7 && Direction == Direction.Up)
+                        if (currentPoint.X == 0 && Direction == Direction.Down ||
+                            currentPoint.X == (board.Size.Height-1) && Direction == Direction.Up)
                         {
                             moveInfo.IsReplacePiece = true;
-                            moveInfo.ReplaceImg = (currPoint, new KingDisc(Team));
+                            moveInfo.ReplaceImg = (currentPoint, new KingDisc(Team));
                         }
-                        moveInfos.Add((startPoint, currPoint), moveInfo);
+                        moveInfos.Add((startPoint, currentPoint), moveInfo);
                     }
                 }
                 else if ((xVector, yVector) == (2*direction, 2) || (xVector, yVector) == (2*direction, -2)||
                          (xVector, yVector) == (-2 * direction, 2) || (xVector, yVector) == (-2 * direction, -2))
                 {
-                    if (board[currPoint.X, currPoint.Y]  == null &&
-                        board[currPoint.X-xVector/2, currPoint.Y-yVector/2] is { } piece && piece.Team!=Team) 
+                    if (board[currentPoint.X, currentPoint.Y]  == null &&
+                        board[currentPoint.X-xVector/2, currentPoint.Y-yVector/2] is { } piece && piece.Team!=Team) 
                     {
                         var moveInfo = new MoveInfo
                         {
-                            Move = new ChangePosition(startPoint, currPoint),
+                            Move = new ChangePosition(startPoint, currentPoint),
                             IsMoved = true,
-                            KillPoint = new Point(currPoint.X - xVector / 2, currPoint.Y - yVector / 2),
-                            ChangePositions = new[] { new ChangePosition(startPoint, currPoint) }
+                            KillPoint = new Point(currentPoint.X - xVector / 2, currentPoint.Y - yVector / 2),
+                            ChangePositions = new[] { new ChangePosition(startPoint, currentPoint) }
                         };
-                        if (currPoint.X == 0 && Direction == Direction.Down ||
-                            currPoint.X == 7 && Direction == Direction.Up)
+                        if (currentPoint.X == 0 && Direction == Direction.Down ||
+                            currentPoint.X == (board.Size.Height-1) && Direction == Direction.Up)
                         {
                             moveInfo.IsReplacePiece = true;
-                            moveInfo.ReplaceImg = (currPoint, new KingDisc(Team));
+                            moveInfo.ReplaceImg = (currentPoint, new KingDisc(Team));
                         }
-                        moveInfos.Add((startPoint, currPoint), moveInfo);
+                        moveInfos.Add((startPoint, currentPoint), moveInfo);
                     }
                 }
             }

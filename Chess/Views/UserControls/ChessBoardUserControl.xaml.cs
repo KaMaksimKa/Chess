@@ -16,7 +16,7 @@ namespace Chess.Views.UserControls
     public partial class ChessBoardUserControl : UserControl
     {
         private Point? _currentMovePoint;
-        private readonly Image?[,] _images = new Image?[8, 8];
+        private  Image?[,] _images = new Image?[8, 8];
         private int _sizeCell;
         private readonly Queue<MoveInfo> _moveInfosQueue = new Queue<MoveInfo>();
         private bool _isAnimGo;
@@ -130,8 +130,8 @@ namespace Chess.Views.UserControls
             }
             else
             {
-                if (EndPoint is { X: <= 7 and >= 0, Y: <= 7 and >= 0 } endP &&
-                    _images[endP.X, endP.Y] is { })
+                if (EndPoint is {X: >= 0,Y:>=0} endP && endP.X<_images.GetLength(0)
+                    && endP.Y<_images.GetLength(1) && _images[endP.X, endP.Y] is { })
                 {
                     StartPoint = endP;
                     EndPoint = null;
@@ -332,11 +332,17 @@ namespace Chess.Views.UserControls
         private static void DrawChessBoard(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             ChessBoardUserControl control = (ChessBoardUserControl)o;
-            control.StartPoint = null;
-            control.EndPoint = null;
-            control.DrawBoard();
-            control.DrawStateDraw((BoardForDraw)e.NewValue);
-           
+            if (e.NewValue is BoardForDraw boardForDraw)
+            {
+                control.StartPoint = null;
+                control.EndPoint = null;
+
+                
+                control._images = new Image[boardForDraw.Icons.GetLength(0), boardForDraw.Icons.GetLength(1)];
+                control._sizeCell = (int)control.SizeBoard / boardForDraw.Size.Height;
+                control.DrawBoard();
+                control.DrawStateDraw(boardForDraw);
+            }
         }
         private void DrawStateDraw(BoardForDraw boardForDraw)
         {
@@ -348,11 +354,13 @@ namespace Chess.Views.UserControls
             #region Нарисовать фигуры
             CanvasCell.Children.Clear();
             CanvasPieces.Children.Clear();
-            for (int i = 0; i < 8; i++)
+
+            
+            for (int i = 0; i < boardForDraw.Icons.GetLength(0); i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < boardForDraw.Icons.GetLength(1); j++)
                 {
-                    if (boardForDraw?.Icons[i, j]?.Icon is { } icon)
+                    if (boardForDraw.Icons[i, j]?.Icon is { } icon)
                     {
                         var img = new Image()
                         {
@@ -374,21 +382,23 @@ namespace Chess.Views.UserControls
                     }
                 }
 
-            }
-            #endregion
+                
+                #endregion
 
-            #region Нарисовать последний ход
+                #region Нарисовать последний ход
 
-            if (boardForDraw?.LastMoveInfo?.ChangePositions is { } changePositions)
-            {
-                foreach (var (startP, endP) in changePositions)
+                if (boardForDraw.LastMoveInfo?.ChangePositions is { } changePositions)
                 {
-                    DrawChoiceCell(startP);
-                    DrawChoiceCell(endP);
+                    foreach (var (startP, endP) in changePositions)
+                    {
+                        DrawChoiceCell(startP);
+                        DrawChoiceCell(endP);
+                    }
                 }
+
+                #endregion
             }
 
-            #endregion
         }
 
         #endregion
@@ -483,7 +493,7 @@ namespace Chess.Views.UserControls
             
             SizeBoard = sizeBoard;
             int prevSizeCell = _sizeCell;
-            int currSizeCell = (int)sizeBoard / 8;
+            int currSizeCell = (int)sizeBoard / _images.GetLength(0);
             _sizeCell = currSizeCell;
 
 
@@ -533,9 +543,9 @@ namespace Chess.Views.UserControls
             #region Нарисовать поле
             CanvasBack.Children.Clear();
             CanvasEmptyCells.Children.Clear();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < _images.GetLength(0); i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < _images.GetLength(1); j++)
                 {
                     var rect = new Rectangle()
                     {
@@ -561,9 +571,9 @@ namespace Chess.Views.UserControls
 
             #region Добавить EmptyCells
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < _images.GetLength(0); i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < _images.GetLength(1); j++)
                 {
                     var rect = new Rectangle()
                     {

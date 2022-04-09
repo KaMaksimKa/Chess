@@ -31,18 +31,6 @@ namespace Chess.ViewModels
 
         #endregion
 
-        #region Команда SelectChessGameCommand 
-        public ICommand SelectGameCheckersCommand { get; }
-
-        private bool CanSelectGameCheckersCommandExecute(object p) => true;
-
-        private void OnSelectGameCheckersCommandExecuted(object p)
-        {
-            SelectedViewModel = new GameCheckersViewModel();
-        }
-
-        #endregion
-
         #region Команда SelectGameChess960Command 
         public ICommand SelectGameChess960Command { get; }
 
@@ -54,15 +42,41 @@ namespace Chess.ViewModels
         }
 
         #endregion
-        
+
+        #region Команда SelectGameCheckersCommand 
+        public ICommand SelectGameCheckersCommand { get; }
+
+        private bool CanSelectGameCheckersCommandExecute(object p) => true;
+
+        private void OnSelectGameCheckersCommandExecuted(object p)
+        {
+            SelectedViewModel = new GameCheckersViewModel();
+        }
+
+        #endregion
+
+        #region Команда SelectGameCheckers10X10Command 
+        public ICommand SelectGameCheckers10X10Command { get; }
+
+        private bool CanSelectGameCheckers10X10CommandExecute(object p) => true;
+
+        private void OnSelectGameCheckers10X10CommandExecuted(object p)
+        {
+            SelectedViewModel = new GameCheckers10X10ViewModel();
+        }
+
+        #endregion
         #endregion
         public NavigationViewModel()
         {
             SelectGameChessCommand = new LambdaCommand(OnSelectGameChessCommandExecuted,CanSelectGameChessCommandExecute);
             SelectGameCheckersCommand = new LambdaCommand(OnSelectGameCheckersCommandExecuted,CanSelectGameCheckersCommandExecute);
-            _selectedViewModel = new GameChessViewModel();
             SelectGameChess960Command =
                 new LambdaCommand(OnSelectGameChess960CommandExecuted, CanSelectGameChess960CommandExecute);
+            SelectGameCheckers10X10Command = new LambdaCommand(OnSelectGameCheckers10X10CommandExecuted,
+                CanSelectGameCheckers10X10CommandExecute);
+
+            _selectedViewModel = new GameChessViewModel();
         }
 
         
