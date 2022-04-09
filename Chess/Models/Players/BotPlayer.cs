@@ -144,7 +144,7 @@ namespace Chess.Models.Players
         public TeamEnum Team { get; init; }
         public void CanMovePlayer(Board board)
         {
-            Thread.Sleep(200);
+            Thread.Sleep(250);
             var bestMoves = GetBestMoves(board, Team, _depth);
             if (bestMoves.Count > 0)
             {

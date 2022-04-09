@@ -1,22 +1,14 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Chess.Models;
 using Chess.Models.Boards;
 using Chess.Models.Boards.Base;
 using Chess.Models.Players;
 
-
 namespace Chess.ViewModels
 {
-    internal class GameChessViewModel:GameViewModel
+    internal class GameChess960ViewModel:GameViewModel
     {
-        
-
-        #region Команды
-
-        
-        #endregion
-        public GameChessViewModel()
+        public GameChess960ViewModel()
         {
             AvailablePlayers = new List<TypePlayer>
             {
@@ -30,11 +22,10 @@ namespace Chess.ViewModels
             SelectedFirstPlayer = TypePlayer.SelfPlayer;
             SelectedSecondPlayer = TypePlayer.ChessBot4;
         }
-
-
         protected override GameBoard GetNewBoard()
         {
-            var chessBoard = new ChessBoard(FirstPlayerTeam);
+            var chessBoard = new Chess960Board(FirstPlayerTeam);
+
             chessBoard.ChoiceReplacementPieceEvent += (pieces, whereReplace) =>
             {
                 GetCurrentPlayer().SelectPiece(new ChoicePiece

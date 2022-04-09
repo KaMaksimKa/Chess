@@ -334,19 +334,19 @@ namespace Chess.Views.UserControls
             ChessBoardUserControl control = (ChessBoardUserControl)o;
             control.StartPoint = null;
             control.EndPoint = null;
-
+            control.DrawBoard();
             control.DrawStateDraw((BoardForDraw)e.NewValue);
            
         }
-
         private void DrawStateDraw(BoardForDraw boardForDraw)
         {
             if (_sizeCell == 0)
             {
                 return;
             }
-            CanvasCell.Children.Clear();
+
             #region Нарисовать фигуры
+            CanvasCell.Children.Clear();
             CanvasPieces.Children.Clear();
             for (int i = 0; i < 8; i++)
             {
@@ -482,12 +482,38 @@ namespace Chess.Views.UserControls
             var sizeBoard = constraint.Height > constraint.Width ? constraint.Width : constraint.Height;
             
             SizeBoard = sizeBoard;
-            _sizeCell = (int)sizeBoard / 8;
-            
-            DrawBoard();
-            DrawStateDraw(BoardForDraw);
+            int prevSizeCell = _sizeCell;
+            int currSizeCell = (int)sizeBoard / 8;
+            _sizeCell = currSizeCell;
 
+
+            ReSizeImages(CanvasPieces, prevSizeCell, currSizeCell);
+            ReSizeImages(CanvasCell, prevSizeCell, currSizeCell);
+            ReSizeImages(CanvasBack, prevSizeCell, currSizeCell);
+            ReSizeImages(CanvasEmptyCells, prevSizeCell, currSizeCell);
+            ReSizeImages(CanvasChoicePiece, prevSizeCell, currSizeCell);
+            ReSizeImages(CanvasHints, prevSizeCell, currSizeCell);
             return constraint;
+        }
+
+        private void ReSizeImages(Canvas canvas,int prevSizeCell,int currSizeCell)
+        {
+            foreach (var canvasChild in canvas.Children)
+            {
+
+                
+                if (canvasChild is FrameworkElement image)
+                {
+                    var newLeft = Canvas.GetLeft(image) / prevSizeCell *currSizeCell;
+                    var newTop = Canvas.GetTop(image) / prevSizeCell * currSizeCell;
+                    image.BeginAnimation(Canvas.LeftProperty,null);
+                    image.BeginAnimation(Canvas.TopProperty, null);
+                    image.Height = (image.Height / prevSizeCell) * currSizeCell;
+                    image.Width = (image.Width / prevSizeCell) * currSizeCell;
+                    Canvas.SetLeft(image, newLeft);
+                    Canvas.SetTop(image, newTop);
+                }
+            }
         }
         private void DrawChoiceCell(System.Drawing.Point point)
         {
@@ -506,6 +532,7 @@ namespace Chess.Views.UserControls
         {
             #region Нарисовать поле
             CanvasBack.Children.Clear();
+            CanvasEmptyCells.Children.Clear();
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)

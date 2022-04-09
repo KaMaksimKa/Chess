@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -13,15 +14,27 @@ using Point = System.Drawing.Point;
 
 namespace Chess.ViewModels
 {
-    internal class GameViewModel:ViewModel
+    internal abstract class GameViewModel:ViewModel
     {
         private bool _isGameGoing;
+        public bool IsGameGoing
+        {
+            get => _isGameGoing;
+            private set
+            {
+                Set(ref _isGameGoing, value);
+                IsChangePlayers = !value;
+            }
+        }
 
-        protected List<GameBoard> ListChessBoards = new List<GameBoard>();
-        protected int CurrentBoardId;
+        private List<GameBoard> _listChessBoards = new List<GameBoard>();
+        private int _currentBoardId;
 
-        protected  IPlayer FirstPlayer;
-        protected  IPlayer SecondPlayer;
+        protected  IPlayer FirstPlayer = new SelfPlayer(TeamEnum.WhiteTeam);
+        protected  IPlayer SecondPlayer = new BotPlayer(TeamEnum.BlackTeam,2);
+        protected TeamEnum FirstPlayerTeam = TeamEnum.WhiteTeam;
+        protected TeamEnum SecondPlayerTeam = TeamEnum.BlackTeam;
+
 
         private GameBoard _gameBoard = new ChessBoard(TeamEnum.WhiteTeam);
         protected GameBoard GameBoard
@@ -31,8 +44,41 @@ namespace Chess.ViewModels
             {
                 _gameBoard = value;
                 BoardForDraw = new BoardForDraw { Icons = value.GetIcons(),LastMoveInfo = value.LastMoveInfo};
+                if (!IsGameGoing)
+                {
+                    _listChessBoards.Add((GameBoard)GameBoard.Clone());
+                    _currentBoardId = 0;
+                }
             }
         }
+
+        public List<TypePlayer> AvailablePlayers { get;protected init; } = new List<TypePlayer>
+        {
+            TypePlayer.SelfPlayer,
+            TypePlayer.Bot1,
+            TypePlayer.Bot2
+        };
+        private bool _isChangePlayers = true;
+        public bool IsChangePlayers
+        {
+            get => _isChangePlayers;
+            set => Set(ref _isChangePlayers, value);
+        }
+
+        private TypePlayer _selectedFirstPlayer = TypePlayer.SelfPlayer;
+        public TypePlayer SelectedFirstPlayer
+        {
+            get => _selectedFirstPlayer;
+            set => Set(ref _selectedFirstPlayer, value);
+        }
+
+        private TypePlayer _selectedSecondPlayer = TypePlayer.Bot2;
+        public TypePlayer SelectedSecondPlayer
+        {
+            get => _selectedSecondPlayer;
+            set => Set(ref _selectedSecondPlayer, value);
+        }
+
 
         #region Свойство StartPoint
         private Point? _startPoint;
@@ -42,7 +88,7 @@ namespace Chess.ViewModels
             set
             {
                 Set(ref _startPoint, value);
-                if (_isGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer)
+                if (IsGameGoing && GetCurrentPlayer()  is SelfPlayer selfPlayer)
                 {
                     selfPlayer.StartPoint = value;
                 }
@@ -59,7 +105,7 @@ namespace Chess.ViewModels
             set
             {
                 Set(ref _endPoint, value);
-                if (_isGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer )
+                if (IsGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer )
                 {
                     selfPlayer.EndPoint = value;
                 }
@@ -85,7 +131,7 @@ namespace Chess.ViewModels
             set
             {
                 Set(ref _selectedPiece, value);
-                if (_isGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer)
+                if (IsGameGoing && GetCurrentPlayer() is SelfPlayer selfPlayer)
                 {
                     Task.Run(() => selfPlayer.SetSelectPiece(value));
                 }
@@ -147,10 +193,10 @@ namespace Chess.ViewModels
 
         private void OnNextStateStateChessBoardCommandExecuted(object p)
         {
-            if (CurrentBoardId + 1 < ListChessBoards.Count)
+            if (_currentBoardId + 1 < _listChessBoards.Count)
             {
-                CurrentBoardId += 1;
-                GameBoard = (GameBoard)ListChessBoards[CurrentBoardId].Clone();
+                _currentBoardId += 1;
+                GameBoard = (GameBoard)_listChessBoards[_currentBoardId].Clone();
                 Move();
             }
         }
@@ -165,10 +211,10 @@ namespace Chess.ViewModels
 
         private void OnPrevStateStateChessBoardCommandExecuted(object p)
         {
-            if (CurrentBoardId - 1 >= 0)
+            if (_currentBoardId - 1 >= 0)
             {
-                CurrentBoardId -= 1;
-                GameBoard = (GameBoard)ListChessBoards[CurrentBoardId].Clone();
+                _currentBoardId -= 1;
+                GameBoard = (GameBoard)_listChessBoards[_currentBoardId].Clone();
                 Move();
             }
         }
@@ -179,26 +225,50 @@ namespace Chess.ViewModels
 
         public ICommand StartGameCommand { get; }
 
-        private bool CanStartGameCommandExecute(object p) => true;
+        private bool CanStartGameCommandExecute(object p) => !IsGameGoing;
 
         private void OnStartGameCommandExecuted(object p)
         {
-            GameBoard = (GameBoard)ListChessBoards[0].Clone();
-
-            ListChessBoards = ListChessBoards.GetRange(0, 1);
-            CurrentBoardId = 0;
-
-            _isGameGoing = true;
+            SetStartGameState();
+            IsGameGoing = true;
             Move();
             
         }
-        
+
+        #endregion
+
+        #region Команда GiveUpPlayerCommand 
+
+        public ICommand GiveUpPlayerCommand { get; }
+
+        private bool CanGiveUpPlayerCommandExecute(object p) => IsGameGoing&&GetCurrentPlayer() is SelfPlayer;
+
+        private void OnGiveUpPlayerCommandExecuted(object p)
+        {
+           EndGame(GameBoard.WhoseMove);
+        }
+
+
+        #endregion
+
+        #region Команда ChangePlayerTeamsCommand 
+
+        public ICommand ChangePlayerTeamsCommand { get; }
+
+        private bool CanChangePlayerTeamsCommandExecute(object p) => !IsGameGoing;
+
+        private void OnChangePlayerTeamsCommandExecuted(object p)
+        {
+            (FirstPlayerTeam, SecondPlayerTeam) = (SecondPlayerTeam, FirstPlayerTeam);
+            SetStartGameState();
+        }
+
 
         #endregion
 
         #endregion
 
-        public GameViewModel()
+        protected GameViewModel()
         {
             #region Команды
             NextStateStateChessBoardCommand = new LambdaCommand(OnNextStateStateChessBoardCommandExecuted,
@@ -208,17 +278,14 @@ namespace Chess.ViewModels
                                                                 CanPrevStateStateChessBoardCommandExecute);
 
             StartGameCommand = new LambdaCommand(OnStartGameCommandExecuted,
-                CanStartGameCommandExecute);
+                                                 CanStartGameCommandExecute);
+            ChangePlayerTeamsCommand = new LambdaCommand(OnChangePlayerTeamsCommandExecuted, 
+                                                         CanChangePlayerTeamsCommandExecute);
+            GiveUpPlayerCommand = new LambdaCommand(OnGiveUpPlayerCommandExecuted, CanGiveUpPlayerCommandExecute);
+
             #endregion
 
-            
-            GameBoard = GetNewCheckersBoard(TeamEnum.WhiteTeam);
-            FirstPlayer = GetNewBotPlayer(TeamEnum.WhiteTeam,6);
-            SecondPlayer = GetNewBotPlayer(TeamEnum.BlackTeam,6);
-            
-            ListChessBoards.Add((GameBoard)GameBoard.Clone());
-            CurrentBoardId = 0;
-            
+            SetStartGameState();
         }
         public IPlayer GetCurrentPlayer()
         {
@@ -226,36 +293,40 @@ namespace Chess.ViewModels
         }
         public void SaveStateChessBoard()
         {
-            if (CurrentBoardId + 1 != ListChessBoards.Count)
+            if (_currentBoardId + 1 != _listChessBoards.Count)
             {
-                ListChessBoards = ListChessBoards.GetRange(0, CurrentBoardId + 1);
-                ListChessBoards.Add((GameBoard)GameBoard.Clone());
-                CurrentBoardId += 1;
+                _listChessBoards = _listChessBoards.GetRange(0, _currentBoardId + 1);
+                _listChessBoards.Add((GameBoard)GameBoard.Clone());
+                _currentBoardId += 1;
             }
             else
             {
-                ListChessBoards.Add((GameBoard)GameBoard.Clone());
-                CurrentBoardId += 1;
+                _listChessBoards.Add((GameBoard)GameBoard.Clone());
+                _currentBoardId += 1;
             }
         }
         private void Move()
         {
             Task.Run(() => GetCurrentPlayer().CanMovePlayer(GameBoard));
         }
-        public void MovedPlayer(Point startPoint, Point endPoint)
+        private void MovedPlayer(Point startPoint, Point endPoint)
         {
-            if (_isGameGoing)
+            if (IsGameGoing)
             {
                 GameBoard.MakeMove(startPoint, endPoint);
             }
         }
-        public void MovedBoard(MoveInfo moveInfo)
+        private void MovedBoard(MoveInfo moveInfo)
         {
             var queue = new Queue<MoveInfo>();
             queue.Enqueue(moveInfo);
             if (moveInfo.IsMoved)
             {
-                SaveStateChessBoard();
+
+                if (GetCurrentPlayer() is SelfPlayer)
+                {
+                    SaveStateChessBoard();
+                }
                 MoveInfoQueue = queue;
                 Move();
             }
@@ -264,9 +335,9 @@ namespace Chess.ViewModels
                 MoveInfoQueue = queue;
             }
         }
-        public void EndGame(TeamEnum? teamEnum)
+        private void EndGame(TeamEnum? teamEnum)
         {
-            _isGameGoing = false;
+            IsGameGoing = false;
             if (teamEnum is { } team)
             {
                 MessageBox.Show($"Проиграл {team}");
@@ -277,56 +348,78 @@ namespace Chess.ViewModels
             }
         }
 
-        protected GameBoard GetNewChessBoard(TeamEnum team)
+        private void SetStartGameState()
         {
-            var chessBoard = new ChessBoard(team);
-            chessBoard.ChessBoardMovedEvent += MovedBoard;
-            chessBoard.EndGameEvent += EndGame;
-           
+            GameBoard board = GetNewBoard();
+            board.ChessBoardMovedEvent += MovedBoard;
+            board.EndGameEvent += EndGame;
+            GameBoard = board;
 
-            chessBoard.ChoiceReplacementPieceEvent += (pieces, whereReplace) =>
-            {
-                GetCurrentPlayer().SelectPiece(new ChoicePiece
-                {
-                    PiecesList = pieces, WhereReplace = whereReplace
-                });
-            };
-            
-            return chessBoard;
+            SetFirstPlayer(SelectedFirstPlayer);
+            SetSecondPlayer(SelectedSecondPlayer);
         }
-        protected GameBoard GetNewCheckersBoard(TeamEnum team)
-        {
-            var checkersBoard = new CheckersBoards(team);
-            checkersBoard.ChessBoardMovedEvent += MovedBoard;
-            checkersBoard.EndGameEvent += EndGame;
 
-            return checkersBoard;
-        }
+        protected abstract GameBoard GetNewBoard();
+
         protected SelfPlayer GetNewSelfPlayer(TeamEnum team)
         {
             var selfPlayer = new SelfPlayer(team);
             selfPlayer.MovedEvent += MovedPlayer;
             selfPlayer.SetHintsForMoveEvent += (hintsChess =>Hints= hintsChess);
             selfPlayer.GetSelectedPieceEvent += selectedPiece => SelectedPiece = selectedPiece;
-            selfPlayer.SetSelectedPieceEvent += piece => ((ChessBoard)GameBoard).SetReplasementPiece(piece);
+            if (GameBoard is ChessBoard)
+            {
+                selfPlayer.SetSelectedPieceEvent += piece => ((ChessBoard) GameBoard).SetReplasementPiece(piece);
+            }
+
             return selfPlayer;
         }
         protected BotChessPlayer GetNewBotChessPlayer(TeamEnum team,int depth)
         {
             var botChessPlayer = new BotChessPlayer(team, depth);
             botChessPlayer.MovedEvent += MovedPlayer;
-            botChessPlayer.SetSelectedPieceEvent += piece => ((ChessBoard)GameBoard).SetReplasementPiece(piece);
+            if (GameBoard is ChessBoard)
+            {
+                botChessPlayer.SetSelectedPieceEvent += piece => ((ChessBoard)GameBoard).SetReplasementPiece(piece);
+            }
+           
             return botChessPlayer;
         }
         protected BotPlayer GetNewBotPlayer(TeamEnum team, int depth)
         {
             var botPlayer = new BotPlayer(team, depth);
             botPlayer.MovedEvent += MovedPlayer;
-            if (GameBoard is ChessBoard chessBoard)
+            if (GameBoard is ChessBoard)
             {
-                botPlayer.SetSelectedPieceEvent += piece => chessBoard.SetReplasementPiece(piece);
+                botPlayer.SetSelectedPieceEvent += piece => ((ChessBoard) GameBoard).SetReplasementPiece(piece);
             }
             return botPlayer;
+        }
+        protected void SetFirstPlayer(TypePlayer typePlayer)
+        {
+            FirstPlayer = GetNewPlayer(typePlayer, FirstPlayerTeam);
+        }
+        protected void SetSecondPlayer(TypePlayer typePlayer)
+        {
+            SecondPlayer = GetNewPlayer(typePlayer, SecondPlayerTeam);
+        }
+        private IPlayer GetNewPlayer(TypePlayer typePlayer,TeamEnum team)
+        {
+            return typePlayer switch
+            {
+                TypePlayer.SelfPlayer => GetNewSelfPlayer(team),
+                TypePlayer.Bot1 => GetNewBotPlayer(team,1),
+                TypePlayer.Bot2 => GetNewBotPlayer(team, 2),
+                TypePlayer.Bot3 => GetNewBotPlayer(team, 3),
+                TypePlayer.Bot4 => GetNewBotPlayer(team, 4),
+                TypePlayer.Bot5 => GetNewBotPlayer(team, 5),
+                TypePlayer.Bot6 => GetNewBotPlayer(team, 6),
+                TypePlayer.ChessBot1 => GetNewBotChessPlayer(team, 1),
+                TypePlayer.ChessBot2 => GetNewBotChessPlayer(team, 2),
+                TypePlayer.ChessBot3 => GetNewBotChessPlayer(team, 3),
+                TypePlayer.ChessBot4 => GetNewBotChessPlayer(team, 4),
+                _ => throw new ArgumentOutOfRangeException(nameof(typePlayer), typePlayer, null)
+            };
         }
     }
 }

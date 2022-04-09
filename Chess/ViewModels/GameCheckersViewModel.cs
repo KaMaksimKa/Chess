@@ -1,10 +1,9 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Chess.Models;
+using Chess.Models.Boards;
 using Chess.Models.Boards.Base;
+using Chess.Models.Players;
+
 
 namespace Chess.ViewModels
 {
@@ -12,12 +11,25 @@ namespace Chess.ViewModels
     {
         public GameCheckersViewModel()
         {
-            GameBoard = GetNewCheckersBoard(TeamEnum.WhiteTeam);
-            FirstPlayer = GetNewBotPlayer(TeamEnum.WhiteTeam,6);
-            SecondPlayer = GetNewBotPlayer(TeamEnum.BlackTeam, 6);
+            AvailablePlayers = new List<TypePlayer>
+            {
+                TypePlayer.SelfPlayer,
+                TypePlayer.Bot1,
+                TypePlayer.Bot2,
+                TypePlayer.Bot3,
+                TypePlayer.Bot4,
+                TypePlayer.Bot5,
+                TypePlayer.Bot6
+            };
 
-            ListChessBoards = new List<GameBoard> {(GameBoard)GameBoard.Clone()};
-            CurrentBoardId = 0;
+            SelectedFirstPlayer = TypePlayer.SelfPlayer;
+            SelectedSecondPlayer = TypePlayer.Bot6;
+        }
+
+
+        protected override GameBoard GetNewBoard()
+        {
+            return new CheckersBoards(FirstPlayerTeam);
         }
     }
 }
