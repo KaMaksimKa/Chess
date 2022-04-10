@@ -19,7 +19,8 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
                 {
                     currentPoint.X += xVector;
                     currentPoint.Y += yVector;
-                    if (currentPoint.X is < 0 or > 7 || currentPoint.Y is < 0 or > 7)
+                    if (currentPoint.X < 0 || currentPoint.X >= board.Size.Height ||
+                        currentPoint.Y < 0 || currentPoint.Y >= board.Size.Width)
                     {
                         break;
                     }

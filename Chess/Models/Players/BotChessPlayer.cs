@@ -52,9 +52,9 @@ namespace Chess.Models.Players
                 }
                 else
                 {*/
-                for (byte i = 0; i < 8; i++)
+                for (byte i = 0; i < board.Size.Height; i++)
                 {
-                    for (byte j = 0; j < 8; j++)
+                    for (byte j = 0; j < board.Size.Width; j++)
                     {
                         if (board[i, j] is { } piece && piece.Team == board.WhoseMove)
                         {

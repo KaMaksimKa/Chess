@@ -113,7 +113,8 @@ namespace Chess.Models.Pieces.PiecesChess.DifferentPiece
             {
                 currPoint.X = startPoint.X + xVector;
                 currPoint.Y = startPoint.Y + yVector;
-                if (currPoint.X is < 0 or > 7 || currPoint.Y is < 0 or > 7)
+                if (currPoint.X < 0 || currPoint.X >= board.Size.Height ||
+                    currPoint.Y < 0 || currPoint.Y >= board.Size.Width)
                 {
                     continue;
                 }
